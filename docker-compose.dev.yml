@@ -1,0 +1,27 @@
+services:
+  news-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://news:devpassword@news-db:5432/news_curator
+      ENVIRONMENT: development
+    volumes:
+      - ./api:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8100 --reload
+
+  news-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    environment:
+      API_URL: http://news-api:8100
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  news-db:
+    environment:
+      POSTGRES_PASSWORD: devpassword
