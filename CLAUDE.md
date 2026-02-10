@@ -83,4 +83,4 @@ Public API endpoints return `summary_ja` + source link only. `body_original` and
 
 ## Container Registry
 
-Images push to `registry.oshiire.to/news-curator/{api,frontend}:latest`.
+Images push to `${REGISTRY}/news-curator/{api,frontend}:latest`. Set `REGISTRY` in `.env` or `Makefile`.

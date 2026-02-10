@@ -37,6 +37,8 @@ async def test_list_digests(client):
     assert response.status_code == 200
     data = response.json()
     assert data["total"] == 3
+    assert data["page"] == 1
+    assert data["per_page"] == 20
     assert len(data["items"]) == 3
     # Should be sorted by date descending
     assert data["items"][0]["digest_date"] == "2026-01-17"

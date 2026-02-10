@@ -14,12 +14,19 @@ async def create_digest(session: AsyncSession, data: DigestCreate) -> Digest:
     return digest
 
 
-async def get_digests(session: AsyncSession) -> tuple[list[Digest], int]:
+async def get_digests(
+    session: AsyncSession,
+    page: int = 1,
+    per_page: int = 20,
+) -> tuple[list[Digest], int]:
     count_result = await session.execute(select(func.count()).select_from(Digest))
     total = count_result.scalar_one()
 
     result = await session.execute(
-        select(Digest).order_by(Digest.digest_date.desc())
+        select(Digest)
+        .order_by(Digest.digest_date.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
     )
     digests = list(result.scalars().all())
     return digests, total

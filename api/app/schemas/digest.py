@@ -42,3 +42,5 @@ class DigestListResponse(AppBaseModel):
 
     items: list[DigestListItem]
     total: int
+    page: int
+    per_page: int

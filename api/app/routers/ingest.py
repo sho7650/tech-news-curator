@@ -13,7 +13,7 @@ def ingest_article(request: IngestRequest):
     This is a sync (def) endpoint because trafilatura uses blocking IO.
     FastAPI automatically runs it in a thread pool.
     """
-    result = extract_article(request.url)
+    result = extract_article(str(request.url))
     if result is None:
         raise HTTPException(status_code=422, detail="Failed to extract content from URL")
     return result

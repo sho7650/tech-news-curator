@@ -55,4 +55,6 @@ export interface DigestResponse {
 export interface DigestListResponse {
   items: DigestListItem[]
   total: number
+  page: number
+  per_page: number
 }

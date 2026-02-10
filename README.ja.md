@@ -65,7 +65,7 @@ make deploy       # 本番デプロイ: DB → API → マイグレーション 
 make test         # APIテスト実行（要: pip install -r api/requirements-dev.txt）
 make migrate msg="add column"   # Alembic マイグレーション生成
 make migrate-up                 # 実行中コンテナでマイグレーション適用
-make push         # registry.oshiire.to へイメージをプッシュ
+make push         # コンテナレジストリへイメージをプッシュ
 ```
 
 ### 単一テストの実行

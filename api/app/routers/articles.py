@@ -76,6 +76,7 @@ async def get_article(
 
 
 def _parse_date(date_str: str) -> date:
-    from datetime import date as date_type
-    parts = date_str.split("-")
-    return date_type(int(parts[0]), int(parts[1]), int(parts[2]))
+    try:
+        return date.fromisoformat(date_str)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Invalid date: {date_str}")
