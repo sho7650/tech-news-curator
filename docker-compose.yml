@@ -1,0 +1,45 @@
+services:
+  news-db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: news
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: news_curator
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U news -d news_curator"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  news-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    image: registry.oshiire.to/news-curator/api:latest
+    ports:
+      - "8100:8100"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://news:${POSTGRES_PASSWORD}@news-db:5432/news_curator
+      ENVIRONMENT: production
+    depends_on:
+      news-db:
+        condition: service_healthy
+
+  news-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: registry.oshiire.to/news-curator/frontend:latest
+    ports:
+      - "3100:3000"
+    environment:
+      API_URL: http://news-api:8100
+    depends_on:
+      - news-api
+
+volumes:
+  postgres_data:
