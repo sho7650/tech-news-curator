@@ -201,15 +201,15 @@
 
 | 項目 | 値 |
 |------|-----|
-| URL | https://registry.oshiire.to |
+| URL | https://<your-registry> |
 | 運用方式 | ビルド後にpush → 本番はregistryからpull |
 
 ### 6.2 イメージ命名規則
 
 | サービス | イメージ名 |
 |----------|-----------|
-| API | `registry.oshiire.to/news-curator/api:{tag}` |
-| Frontend | `registry.oshiire.to/news-curator/frontend:{tag}` |
+| API | `<your-registry>/news-curator/api:{tag}` |
+| Frontend | `<your-registry>/news-curator/frontend:{tag}` |
 
 ### 6.3 タグ運用
 
@@ -226,8 +226,8 @@
 docker compose build
 
 # Push: レジストリへアップロード
-docker push registry.oshiire.to/news-curator/api:latest
-docker push registry.oshiire.to/news-curator/frontend:latest
+docker push <your-registry>/news-curator/api:latest
+docker push <your-registry>/news-curator/frontend:latest
 
 # 本番: レジストリからデプロイ
 docker compose pull

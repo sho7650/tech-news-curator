@@ -65,7 +65,7 @@ make deploy       # Production deploy: DB → API → migrations → frontend
 make test         # Run API tests (requires: pip install -r api/requirements-dev.txt)
 make migrate msg="add column"   # Generate Alembic migration
 make migrate-up                 # Apply migrations in running container
-make push         # Push images to registry.oshiire.to
+make push         # Push images to container registry
 ```
 
 ### Running a single test

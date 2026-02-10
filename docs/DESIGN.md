@@ -181,7 +181,7 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    database_url: str = "postgresql+asyncpg://news:password@news-db:5432/news_curator"
+    database_url: str = "postgresql+asyncpg://news:CHANGEME@localhost:5432/news_curator"
     environment: str = "development"
 ```
 
@@ -1242,7 +1242,7 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
-    image: registry.oshiire.to/news-curator/api:latest
+    image: <your-registry>/news-curator/api:latest
     ports:
       - "8100:8100"
     environment:
@@ -1256,7 +1256,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    image: registry.oshiire.to/news-curator/frontend:latest
+    image: <your-registry>/news-curator/frontend:latest
     ports:
       - "3100:3000"
     environment:
@@ -1572,8 +1572,8 @@ deploy:
 
 # レジストリへpush
 push:
-	docker push registry.oshiire.to/news-curator/api:latest
-	docker push registry.oshiire.to/news-curator/frontend:latest
+	docker push <your-registry>/news-curator/api:latest
+	docker push <your-registry>/news-curator/frontend:latest
 ```
 
 ---

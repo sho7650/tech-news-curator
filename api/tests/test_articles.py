@@ -99,3 +99,8 @@ async def test_get_article_not_found(client):
     response = await client.get(f"/articles/{fake_id}")
     assert response.status_code == 404
     assert "not found" in response.json()["detail"]
+
+
+async def test_list_articles_invalid_date(client):
+    response = await client.get("/articles", params={"date": "2026-13-45"})
+    assert response.status_code == 400

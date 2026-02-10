@@ -49,6 +49,7 @@ export default async function ArticlePage({
       {article.summary_ja && (
         <div className="mb-6 rounded bg-gray-800 p-4 text-sm text-gray-300">
           <p className="mb-1 font-semibold text-gray-400">要約</p>
+          {/* react-markdown v10+ はデフォルトで raw HTML を描画しない（rehype-raw 不使用で安全） */}
           <ReactMarkdown>{article.summary_ja}</ReactMarkdown>
         </div>
       )}

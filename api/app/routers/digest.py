@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,10 +33,12 @@ async def create_digest_endpoint(
 
 @router.get("", response_model=DigestListResponse)
 async def list_digests(
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
     session: AsyncSession = Depends(get_session),
 ):
-    digests, total = await get_digests(session)
-    return DigestListResponse(items=digests, total=total)
+    digests, total = await get_digests(session, page, per_page)
+    return DigestListResponse(items=digests, total=total, page=page, per_page=per_page)
 
 
 @router.get("/{digest_date}", response_model=DigestResponse)

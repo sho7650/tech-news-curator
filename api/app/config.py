@@ -8,5 +8,12 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    database_url: str = "postgresql+asyncpg://news:password@news-db:5432/news_curator"
+    database_url: str = "postgresql+asyncpg://news:CHANGEME@localhost:5432/news_curator"
     environment: str = "development"
+
+    def validate_production(self) -> None:
+        if self.environment == "production" and "CHANGEME" in self.database_url:
+            raise ValueError(
+                "DATABASE_URL contains placeholder credentials. "
+                "Set DATABASE_URL environment variable for production."
+            )

@@ -41,3 +41,8 @@ async def test_ingest_extract_failure(client):
 
     assert response.status_code == 422
     assert "Failed to extract" in response.json()["detail"]
+
+
+async def test_ingest_invalid_url(client):
+    response = await client.post("/ingest", json={"url": "not-a-url"})
+    assert response.status_code == 422

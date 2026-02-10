@@ -1,12 +1,14 @@
 from typing import Optional
 
+from pydantic import HttpUrl
+
 from app.schemas import AppBaseModel
 
 
 class IngestRequest(AppBaseModel):
     """POST /ingest request body."""
 
-    url: str
+    url: HttpUrl
 
 
 class IngestResponse(AppBaseModel):

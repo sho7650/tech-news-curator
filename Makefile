@@ -1,3 +1,5 @@
+REGISTRY ?= ghcr.io/your-org
+
 .PHONY: dev up down build test migrate migrate-up deploy push
 
 # Development environment
@@ -38,5 +40,5 @@ deploy:
 
 # Push to registry
 push:
-	docker push registry.oshiire.to/news-curator/api:latest
-	docker push registry.oshiire.to/news-curator/frontend:latest
+	docker push $(REGISTRY)/news-curator/api:latest
+	docker push $(REGISTRY)/news-curator/frontend:latest
