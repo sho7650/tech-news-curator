@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+asyncpg://news:CHANGEME@localhost:5432/news_curator"
     environment: str = "development"
+    cors_origins: list[str] = ["http://localhost:3100", "http://localhost:3000"]
 
     def validate_production(self) -> None:
         if self.environment == "production" and "CHANGEME" in self.database_url:

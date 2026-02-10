@@ -2,6 +2,47 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Absolute Rules
+
+### NEVER (Absolutely Forbidden)
+
+The following are **forbidden under any circumstances**. No exceptions. No context override.
+
+#### Implementation
+
+- **NEVER** generate code before design/plan approval
+- **NEVER** start implementation while a design review is in progress
+- **NEVER** assume approval — wait for explicit "実装してよい" or equivalent
+- **NEVER** expand scope during execution phase
+- **NEVER** modify files directly on the main branch (create a feature branch first)
+
+#### Assumptions
+
+- **NEVER** say "should be" or "probably" without verifying actual state
+- **NEVER** assume current state based on past information
+- **NEVER** assert "already done" without verification
+- **NEVER** guess configuration parameters
+
+### ALWAYS (Mandatory Actions)
+
+The following are **always required**. No shortcuts.
+
+#### Process
+
+- **ALWAYS** follow the workflow: Design → Review → Approval → Branch → Implement
+- **ALWAYS** wait for explicit approval after design review before writing any code
+- **ALWAYS** create a branch with an appropriate name before making any modifications
+- **ALWAYS** output progress for each step during implementation
+
+#### Verification
+
+- **ALWAYS** follow: "I'll check" → actually check → report results
+- **ALWAYS** say "verification needed" when uncertain
+
+#### Documentation
+
+- **ALWAYS** place project docs under `docs/`
+
 ## Build & Run Commands
 
 ```bash

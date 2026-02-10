@@ -104,3 +104,22 @@ async def test_get_article_not_found(client):
 async def test_list_articles_invalid_date(client):
     response = await client.get("/articles", params={"date": "2026-13-45"})
     assert response.status_code == 400
+
+
+async def test_list_articles_excludes_body_original(client):
+    """Copyright: list response must not include body_original."""
+    await client.post("/articles", json=SAMPLE_ARTICLE)
+    response = await client.get("/articles")
+    assert response.status_code == 200
+    item = response.json()["items"][0]
+    assert "body_original" not in item
+
+
+async def test_detail_excludes_body_original(client):
+    """Copyright: detail response must not include body_original."""
+    create_resp = await client.post("/articles", json=SAMPLE_ARTICLE)
+    article_id = create_resp.json()["id"]
+    response = await client.get(f"/articles/{article_id}")
+    assert response.status_code == 200
+    data = response.json()
+    assert "body_original" not in data

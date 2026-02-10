@@ -1,18 +1,23 @@
-from trafilatura import bare_extraction, fetch_url
+from trafilatura import bare_extraction
 
 from app.schemas.ingest import IngestResponse
+from app.services.safe_fetch import safe_fetch
 
 
 def extract_article(url: str) -> IngestResponse | None:
     """Extract article content and metadata from a URL.
 
-    This is a blocking IO function (trafilatura uses synchronous HTTP).
+    safe_fetch() handles SSRF validation + redirect following.
+    bare_extraction() extracts content from the fetched HTML.
+    UnsafeURLError is caught by the router.
+
+    This is a blocking IO function (urllib3 uses synchronous HTTP).
     Call from a sync (def) endpoint so FastAPI runs it in a thread pool.
 
     Returns:
         IngestResponse or None on failure.
     """
-    downloaded = fetch_url(url)
+    downloaded = safe_fetch(url)
     if downloaded is None:
         return None
 

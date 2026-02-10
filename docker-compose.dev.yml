@@ -18,6 +18,7 @@ services:
       target: dev
     environment:
       API_URL: http://news-api:8100
+      NEXT_PUBLIC_SSE_URL: http://localhost:8100
     volumes:
       - ./frontend:/app
       - /app/node_modules
