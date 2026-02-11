@@ -17,7 +17,12 @@ export default async function ArticlesPage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">記事一覧</h1>
-      <ArticleListLive initialArticles={data.items} total={data.total} />
+      <ArticleListLive
+        initialArticles={data.items}
+        total={data.total}
+        initialPage={1}
+        perPage={20}
+      />
     </div>
   )
 }

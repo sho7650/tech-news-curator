@@ -19,7 +19,12 @@ export default async function HomePage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">最新のテックニュース</h1>
-      <ArticleListLive initialArticles={data.items} total={data.total} />
+      <ArticleListLive
+        initialArticles={data.items}
+        total={data.total}
+        initialPage={1}
+        perPage={20}
+      />
     </div>
   )
 }
