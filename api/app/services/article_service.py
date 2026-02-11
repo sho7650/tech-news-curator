@@ -18,6 +18,7 @@ async def check_article_exists(session: AsyncSession, url: str) -> bool:
 
 async def create_article(session: AsyncSession, data: ArticleCreate) -> Article:
     dump = data.model_dump()
+    dump["source_url"] = str(data.source_url)
     dump["metadata_"] = dump.pop("metadata")
     article = Article(**dump)
     session.add(article)

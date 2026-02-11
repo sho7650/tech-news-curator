@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Optional
 
-from pydantic import Field
+from pydantic import Field, HttpUrl
 
 from app.schemas import AppBaseModel
 
@@ -14,17 +14,17 @@ class ArticleCreate(AppBaseModel):
     n8n converts the /ingest published_at string to datetime before sending.
     """
 
-    source_url: str
-    source_name: Optional[str] = None
-    title_original: Optional[str] = None
-    title_ja: Optional[str] = None
-    body_original: Optional[str] = None
-    body_translated: Optional[str] = None
-    summary_ja: Optional[str] = None
-    author: Optional[str] = None
+    source_url: HttpUrl
+    source_name: Optional[str] = Field(None, max_length=100)
+    title_original: Optional[str] = Field(None, max_length=500)
+    title_ja: Optional[str] = Field(None, max_length=500)
+    body_original: Optional[str] = Field(None, max_length=200000)
+    body_translated: Optional[str] = Field(None, max_length=200000)
+    summary_ja: Optional[str] = Field(None, max_length=5000)
+    author: Optional[str] = Field(None, max_length=200)
     published_at: Optional[datetime] = None
-    og_image_url: Optional[str] = None
-    categories: Optional[list[str]] = None
+    og_image_url: Optional[str] = Field(None, max_length=2083)
+    categories: Optional[list[Annotated[str, Field(max_length=50)]]] = Field(None, max_length=20)
     metadata: Optional[dict] = None
 
 
