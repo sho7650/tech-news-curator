@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     )
 
     database_url: str = "postgresql+asyncpg://news:CHANGEME@localhost:5432/news_curator"
+    database_admin_url: str = ""
     environment: str = "development"
     cors_origins: list[str] = ["http://localhost:3100", "http://localhost:3000"]
     api_keys: list[str] = []
