@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Security
 
+from app.dependencies import verify_api_key
 from app.schemas.ingest import IngestRequest, IngestResponse
 from app.services.ingest_service import extract_article
 from app.services.url_validator import UnsafeURLError
@@ -8,7 +9,10 @@ router = APIRouter(tags=["ingest"])
 
 
 @router.post("/ingest", response_model=IngestResponse)
-def ingest_article(request: IngestRequest):
+def ingest_article(
+    request: IngestRequest,
+    _api_key: str = Security(verify_api_key),
+):
     """Extract article content from a URL using trafilatura.
 
     This is a sync (def) endpoint because the underlying fetcher uses blocking IO.

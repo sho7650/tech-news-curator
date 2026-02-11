@@ -1,10 +1,11 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
+from app.dependencies import verify_api_key
 from app.schemas.digest import (
     DigestCreate,
     DigestListResponse,
@@ -23,6 +24,7 @@ router = APIRouter(prefix="/digest", tags=["digest"])
 async def create_digest_endpoint(
     data: DigestCreate,
     session: AsyncSession = Depends(get_session),
+    _api_key: str = Security(verify_api_key),
 ):
     try:
         digest = await create_digest(session, data)

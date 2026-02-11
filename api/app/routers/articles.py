@@ -2,11 +2,12 @@ import uuid
 from datetime import date
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
+from app.dependencies import verify_api_key
 from app.schemas.article import (
     ArticleCheckResponse,
     ArticleCreate,
@@ -36,6 +37,7 @@ async def check_article(
 async def create_article_endpoint(
     data: ArticleCreate,
     session: AsyncSession = Depends(get_session),
+    _api_key: str = Security(verify_api_key),
 ):
     try:
         article = await create_article(session, data)

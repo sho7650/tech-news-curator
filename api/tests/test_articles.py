@@ -1,5 +1,11 @@
 import uuid
 
+from httpx import ASGITransport, AsyncClient
+
+from app.database import settings
+from app.main import app
+
+TEST_API_KEY = "test-key-for-testing"
 
 SAMPLE_ARTICLE = {
     "source_url": "https://example.com/article-1",
@@ -123,3 +129,34 @@ async def test_detail_excludes_body_original(client):
     assert response.status_code == 200
     data = response.json()
     assert "body_original" not in data
+
+
+async def test_create_article_without_api_key():
+    """POST /articles without API key should return 401."""
+    original = settings.api_keys
+    settings.api_keys = [TEST_API_KEY]
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as ac:
+            response = await ac.post("/articles", json=SAMPLE_ARTICLE)
+        assert response.status_code == 401
+    finally:
+        settings.api_keys = original
+
+
+async def test_create_article_with_invalid_api_key():
+    """POST /articles with invalid API key should return 401."""
+    original = settings.api_keys
+    settings.api_keys = [TEST_API_KEY]
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"X-API-Key": "invalid-key"},
+        ) as ac:
+            response = await ac.post("/articles", json=SAMPLE_ARTICLE)
+        assert response.status_code == 401
+    finally:
+        settings.api_keys = original

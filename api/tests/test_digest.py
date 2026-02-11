@@ -1,5 +1,11 @@
 import uuid
 
+from httpx import ASGITransport, AsyncClient
+
+from app.database import settings
+from app.main import app
+
+TEST_API_KEY = "test-key-for-testing"
 
 SAMPLE_DIGEST = {
     "digest_date": "2026-01-15",
@@ -58,3 +64,34 @@ async def test_get_digest_not_found(client):
     response = await client.get("/digest/2099-12-31")
     assert response.status_code == 404
     assert "not found" in response.json()["detail"]
+
+
+async def test_create_digest_without_api_key():
+    """POST /digest without API key should return 401."""
+    original = settings.api_keys
+    settings.api_keys = [TEST_API_KEY]
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as ac:
+            response = await ac.post("/digest", json=SAMPLE_DIGEST)
+        assert response.status_code == 401
+    finally:
+        settings.api_keys = original
+
+
+async def test_create_digest_with_invalid_api_key():
+    """POST /digest with invalid API key should return 401."""
+    original = settings.api_keys
+    settings.api_keys = [TEST_API_KEY]
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"X-API-Key": "invalid-key"},
+        ) as ac:
+            response = await ac.post("/digest", json=SAMPLE_DIGEST)
+        assert response.status_code == 401
+    finally:
+        settings.api_keys = original
