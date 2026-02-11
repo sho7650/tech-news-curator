@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next'
 
+const API_URL = process.env.API_URL || 'http://news-api:8100'
+
 const nextConfig: NextConfig = {
   output: 'standalone',
   images: {
@@ -10,6 +12,15 @@ const nextConfig: NextConfig = {
         hostname: '**',
       },
     ],
+  },
+  // クライアントサイドfetchをAPIにプロキシ（CORS不要）
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${API_URL}/:path*`,
+      },
+    ]
   },
 }
 

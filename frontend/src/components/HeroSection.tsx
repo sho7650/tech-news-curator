@@ -6,9 +6,12 @@ import type { ArticleListItem } from '@/lib/types'
 import { formatRelativeTime } from '@/lib/formatRelativeTime'
 import ArticleImage from '@/components/ArticleImage'
 
-export default function ArticleCard({ article }: { article: ArticleListItem }) {
+interface HeroSectionProps {
+  articles: ArticleListItem[]
+}
+
+function HeroCard({ article }: { article: ArticleListItem }) {
   const [imageError, setImageError] = useState(false)
-  const hasImage = Boolean(article.og_image_url) && !imageError
 
   const meta: string[] = []
   if (article.source_name) meta.push(article.source_name)
@@ -19,11 +22,12 @@ export default function ArticleCard({ article }: { article: ArticleListItem }) {
   return (
     <article className="rounded-xl border border-gray-200 bg-white transition-shadow duration-200 hover:shadow-lg">
       <Link href={`/articles/${article.id}`}>
-        {hasImage && (
+        {!imageError && article.og_image_url && (
           <ArticleImage
-            src={article.og_image_url!}
+            src={article.og_image_url}
             alt={article.title_ja || 'article image'}
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            eager
             onImageError={() => setImageError(true)}
           />
         )}
@@ -40,11 +44,11 @@ export default function ArticleCard({ article }: { article: ArticleListItem }) {
               ))}
             </div>
           )}
-          <h2 className="mb-2 line-clamp-2 text-lg font-semibold text-gray-900">
+          <h2 className="mb-2 line-clamp-2 text-xl font-bold text-gray-900">
             {article.title_ja || '(タイトルなし)'}
           </h2>
           {article.summary_ja && (
-            <p className="mb-3 line-clamp-3 text-sm text-gray-600">
+            <p className="mb-3 line-clamp-2 text-sm text-gray-600">
               {article.summary_ja}
             </p>
           )}
@@ -56,5 +60,23 @@ export default function ArticleCard({ article }: { article: ArticleListItem }) {
         </div>
       </Link>
     </article>
+  )
+}
+
+export default function HeroSection({ articles }: HeroSectionProps) {
+  if (articles.length === 0) return null
+
+  return (
+    <section aria-label="注目記事">
+      <div
+        className={`grid gap-6 ${
+          articles.length === 1 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'
+        }`}
+      >
+        {articles.map((article) => (
+          <HeroCard key={article.id} article={article} />
+        ))}
+      </div>
+    </section>
   )
 }
