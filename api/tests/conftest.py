@@ -54,11 +54,14 @@ async def client(db_session):
     app.dependency_overrides[get_session] = lambda: db_session
     original_api_keys = settings.api_keys
     settings.api_keys = [TEST_API_KEY]
+    # Disable rate limiting in tests
+    app.state.limiter.enabled = False
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
         headers={"X-API-Key": TEST_API_KEY},
     ) as ac:
         yield ac
+    app.state.limiter.enabled = True
     settings.api_keys = original_api_keys
     app.dependency_overrides.clear()
