@@ -1,6 +1,6 @@
 REGISTRY ?= ghcr.io/your-org
 
-.PHONY: dev up down build test migrate migrate-up deploy push
+.PHONY: dev up down build test migrate migrate-up deploy push lint sast audit security
 
 # Development environment
 dev:
@@ -42,3 +42,15 @@ deploy:
 push:
 	docker push $(REGISTRY)/news-curator/api:latest
 	docker push $(REGISTRY)/news-curator/frontend:latest
+
+# Security scanning
+lint:
+	cd api && ruff check app/
+
+sast:
+	cd api && bandit -r app/ -x tests/
+
+audit:
+	cd api && pip-audit -r requirements.txt
+
+security: lint sast audit
