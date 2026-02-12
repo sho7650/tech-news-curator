@@ -17,7 +17,7 @@ export default function ArticleCard({ article }: { article: ArticleListItem }) {
   if (relTime) meta.push(relTime)
 
   return (
-    <article className="rounded-xl border border-gray-200 bg-white transition-shadow duration-200 hover:shadow-lg">
+    <article aria-label={article.title_ja || '記事'} className="rounded-xl border border-gray-200 bg-white transition-shadow duration-200 hover:shadow-lg">
       <Link href={`/articles/${article.id}`}>
         {hasImage && (
           <ArticleImage

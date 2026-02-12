@@ -176,11 +176,13 @@ export default function ArticleListLive({
 
   return (
     <div>
-      {newCount > 0 && (
-        <p className="mb-4 text-sm text-blue-600">
-          {newCount}件の新着記事
-        </p>
-      )}
+      <div aria-live="polite" aria-atomic="true">
+        {newCount > 0 && (
+          <p className="mb-4 text-sm text-blue-600">
+            {newCount}件の新着記事
+          </p>
+        )}
+      </div>
 
       <p className="mb-6 text-sm text-gray-500">
         全{articles.length}件表示
