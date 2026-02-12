@@ -18,6 +18,7 @@ async def check_article_exists(session: AsyncSession, url: str) -> bool:
 
 async def create_article(session: AsyncSession, data: ArticleCreate) -> Article:
     dump = data.model_dump()
+    dump["source_url"] = str(data.source_url)
     dump["metadata_"] = dump.pop("metadata")
     article = Article(**dump)
     session.add(article)
@@ -34,7 +35,9 @@ async def get_articles(
     query = select(Article)
 
     if date_filter:
-        start = datetime(date_filter.year, date_filter.month, date_filter.day, tzinfo=timezone.utc)
+        start = datetime(
+            date_filter.year, date_filter.month, date_filter.day, tzinfo=timezone.utc
+        )
         end = start + timedelta(days=1)
         query = query.where(Article.published_at >= start, Article.published_at < end)
 
@@ -51,8 +54,8 @@ async def get_articles(
     return articles, total
 
 
-async def get_article_by_id(session: AsyncSession, article_id: uuid.UUID) -> Article | None:
-    result = await session.execute(
-        select(Article).where(Article.id == article_id)
-    )
+async def get_article_by_id(
+    session: AsyncSession, article_id: uuid.UUID
+) -> Article | None:
+    result = await session.execute(select(Article).where(Article.id == article_id))
     return result.scalar_one_or_none()

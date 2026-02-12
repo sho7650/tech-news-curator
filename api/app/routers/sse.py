@@ -3,10 +3,10 @@
 import asyncio
 import json
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from sse_starlette import EventSourceResponse, ServerSentEvent
 
-from app.services.sse_broker import article_broker
+from app.services.sse_broker import ConnectionLimitExceeded, article_broker
 
 router = APIRouter(tags=["sse"])
 
@@ -38,7 +38,10 @@ async def stream_articles(request: Request):
       const es = new EventSource('/articles/stream')
       es.addEventListener('new_article', (e) => { ... })
     """
-    return EventSourceResponse(
-        _article_stream(request),
-        ping=15,
-    )
+    try:
+        return EventSourceResponse(
+            _article_stream(request),
+            ping=15,
+        )
+    except ConnectionLimitExceeded:
+        raise HTTPException(status_code=503, detail="Too many SSE connections")

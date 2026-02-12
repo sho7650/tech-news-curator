@@ -6,6 +6,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 CLIENT_QUEUE_MAXSIZE = 64
+MAX_SSE_CONNECTIONS = 20
+
+
+class ConnectionLimitExceeded(Exception):
+    """Raised when SSE connection limit is exceeded."""
 
 
 class SSEBroker:
@@ -16,6 +21,10 @@ class SSEBroker:
 
     def subscribe(self) -> asyncio.Queue[dict]:
         """Create and return a new client queue."""
+        if len(self._queues) >= MAX_SSE_CONNECTIONS:
+            raise ConnectionLimitExceeded(
+                f"Maximum SSE connections ({MAX_SSE_CONNECTIONS}) exceeded"
+            )
         queue: asyncio.Queue[dict] = asyncio.Queue(maxsize=CLIENT_QUEUE_MAXSIZE)
         self._queues.add(queue)
         return queue

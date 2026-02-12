@@ -8,8 +8,10 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.pool import NullPool
 from testcontainers.postgres import PostgresContainer
 
-from app.database import Base, get_session
+from app.database import Base, get_session, settings
 from app.main import app
+
+TEST_API_KEY = "test-key-for-testing"
 
 
 @pytest.fixture(scope="session")
@@ -50,9 +52,16 @@ async def db_session(db_engine):
 @pytest.fixture(scope="function")
 async def client(db_session):
     app.dependency_overrides[get_session] = lambda: db_session
+    original_api_keys = settings.api_keys
+    settings.api_keys = TEST_API_KEY
+    # Disable rate limiting in tests
+    app.state.limiter.enabled = False
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test",
+        headers={"X-API-Key": TEST_API_KEY},
     ) as ac:
         yield ac
+    app.state.limiter.enabled = True
+    settings.api_keys = original_api_keys
     app.dependency_overrides.clear()

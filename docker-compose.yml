@@ -1,45 +1,59 @@
 services:
   news-db:
-    image: postgres:16
+    image: postgres:16.11
     environment:
       POSTGRES_USER: news
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: news_curator
-    ports:
-      - "5432:5432"
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+      NEWS_APP_PASSWORD: ${NEWS_APP_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U news -d news_curator"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - backend-net
 
   news-api:
     build:
       context: ./api
       dockerfile: Dockerfile
     image: ${REGISTRY:-ghcr.io/your-org}/news-curator/api:latest
-    ports:
-      - "8100:8100"
     environment:
-      DATABASE_URL: postgresql+asyncpg://news:${POSTGRES_PASSWORD}@news-db:5432/news_curator
+      DATABASE_URL: postgresql+asyncpg://news_app:${NEWS_APP_PASSWORD}@news-db:5432/news_curator
+      DATABASE_ADMIN_URL: postgresql+asyncpg://news:${POSTGRES_PASSWORD}@news-db:5432/news_curator
       ENVIRONMENT: production
+      API_KEYS: ${API_KEYS}
+      CORS_ORIGINS: ${CORS_ORIGINS}
     depends_on:
       news-db:
         condition: service_healthy
+    networks:
+      - frontend-net
+      - backend-net
 
   news-frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     image: ${REGISTRY:-ghcr.io/your-org}/news-curator/frontend:latest
-    ports:
-      - "3100:3000"
     environment:
       API_URL: http://news-api:8100
     depends_on:
       - news-api
+    networks:
+      - frontend-net
 
 volumes:
   postgres_data:
+
+networks:
+  frontend-net:
+    driver: bridge
+  backend-net:
+    driver: bridge
+    internal: true

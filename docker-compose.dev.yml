@@ -4,6 +4,8 @@ services:
       context: ./api
       dockerfile: Dockerfile
     user: "root"
+    ports:
+      - "8100:8100"
     environment:
       DATABASE_URL: postgresql+asyncpg://news:${POSTGRES_PASSWORD:-devpassword}@news-db:5432/news_curator
       ENVIRONMENT: development
@@ -16,6 +18,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: dev
+    ports:
+      - "3100:3000"
     environment:
       API_URL: http://news-api:8100
       NEXT_PUBLIC_SSE_URL: http://localhost:8100
@@ -27,3 +31,5 @@ services:
   news-db:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
+    ports:
+      - "127.0.0.1:5432:5432"

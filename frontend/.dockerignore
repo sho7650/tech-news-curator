@@ -1,0 +1,15 @@
+.env
+.env.*
+.git
+.gitignore
+node_modules
+.next
+out
+build
+coverage
+e2e/
+docs/
+*.md
+.DS_Store
+.idea
+.vscode

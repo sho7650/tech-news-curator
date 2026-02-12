@@ -19,7 +19,9 @@ class Digest(Base):
     title: Mapped[Optional[str]] = mapped_column(Text)
     content: Mapped[Optional[str]] = mapped_column(Text)
     article_count: Mapped[Optional[int]] = mapped_column(Integer)
-    article_ids: Mapped[Optional[list[uuid.UUID]]] = mapped_column(ARRAY(UUID(as_uuid=True)))
+    article_ids: Mapped[Optional[list[uuid.UUID]]] = mapped_column(
+        ARRAY(UUID(as_uuid=True))
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

@@ -1,6 +1,12 @@
 from unittest.mock import MagicMock, patch
 
+from httpx import ASGITransport, AsyncClient
+
+from app.database import settings
+from app.main import app
 from app.services.url_validator import UnsafeURLError
+
+TEST_API_KEY = "test-key-for-testing"
 
 
 async def test_ingest_success(client):
@@ -84,3 +90,34 @@ async def test_ingest_link_local(client):
 
     assert response.status_code == 400
     assert "private or reserved" in response.json()["detail"]
+
+
+async def test_ingest_without_api_key():
+    """POST /ingest without API key should return 401."""
+    original = settings.api_keys
+    settings.api_keys = TEST_API_KEY
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+        ) as ac:
+            response = await ac.post("/ingest", json={"url": "https://example.com/article"})
+        assert response.status_code == 401
+    finally:
+        settings.api_keys = original
+
+
+async def test_ingest_with_invalid_api_key():
+    """POST /ingest with invalid API key should return 401."""
+    original = settings.api_keys
+    settings.api_keys = TEST_API_KEY
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={"X-API-Key": "invalid-key"},
+        ) as ac:
+            response = await ac.post("/ingest", json={"url": "https://example.com/article"})
+        assert response.status_code == 401
+    finally:
+        settings.api_keys = original

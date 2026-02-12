@@ -2,6 +2,8 @@ import uuid
 from datetime import date, datetime
 from typing import Optional
 
+from pydantic import Field
+
 from app.schemas import AppBaseModel
 
 
@@ -9,10 +11,10 @@ class DigestCreate(AppBaseModel):
     """POST /digest request body."""
 
     digest_date: date
-    title: Optional[str] = None
-    content: Optional[str] = None
-    article_count: Optional[int] = None
-    article_ids: Optional[list[uuid.UUID]] = None
+    title: Optional[str] = Field(None, max_length=500)
+    content: Optional[str] = Field(None, max_length=100000)
+    article_count: Optional[int] = Field(None, ge=0, le=10000)
+    article_ids: Optional[list[uuid.UUID]] = Field(None, max_length=1000)
 
 
 class DigestResponse(AppBaseModel):
