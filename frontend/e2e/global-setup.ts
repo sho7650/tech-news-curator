@@ -27,7 +27,6 @@ async function globalSetup() {
       title_ja: 'テスト記事 2',
       summary_ja: 'テスト記事2の要約です。',
       categories: ['hardware'],
-      og_image_url: 'https://via.placeholder.com/800x400',
       published_at: new Date().toISOString(),
     },
   ]
