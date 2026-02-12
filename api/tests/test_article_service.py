@@ -99,8 +99,52 @@ async def test_get_articles_date_filter(db_session):
     await db_session.commit()
 
     # Filter for Jan 15 — half-open interval [2026-01-15, 2026-01-16)
-    articles, total = await get_articles(
-        db_session, date_filter=date(2026, 1, 15)
-    )
+    articles, total = await get_articles(db_session, date_filter=date(2026, 1, 15))
     assert total == 1
     assert articles[0].source_url == "https://example.com/jan15"
+
+
+async def test_get_articles_category_filter(db_session):
+    data_ai = _make_article_data(
+        source_url="https://example.com/ai-article",
+        categories=["ai", "startup"],
+    )
+    data_hw = _make_article_data(
+        source_url="https://example.com/hw-article",
+        categories=["hardware"],
+    )
+    await create_article(db_session, data_ai)
+    await create_article(db_session, data_hw)
+    await db_session.commit()
+
+    articles, total = await get_articles(db_session, category_filter="ai")
+    assert total == 1
+    assert articles[0].source_url == "https://example.com/ai-article"
+
+
+async def test_get_articles_category_and_date(db_session):
+    data1 = _make_article_data(
+        source_url="https://example.com/ai-jan15",
+        categories=["ai"],
+        published_at=datetime(2026, 1, 15, 10, 0, 0, tzinfo=timezone.utc),
+    )
+    data2 = _make_article_data(
+        source_url="https://example.com/ai-jan16",
+        categories=["ai"],
+        published_at=datetime(2026, 1, 16, 10, 0, 0, tzinfo=timezone.utc),
+    )
+    data3 = _make_article_data(
+        source_url="https://example.com/hw-jan15",
+        categories=["hardware"],
+        published_at=datetime(2026, 1, 15, 10, 0, 0, tzinfo=timezone.utc),
+    )
+    await create_article(db_session, data1)
+    await create_article(db_session, data2)
+    await create_article(db_session, data3)
+    await db_session.commit()
+
+    articles, total = await get_articles(
+        db_session, date_filter=date(2026, 1, 15), category_filter="ai"
+    )
+    assert total == 1
+    assert articles[0].source_url == "https://example.com/ai-jan15"

@@ -10,6 +10,7 @@ interface Props {
   total: number
   initialPage: number
   perPage: number
+  category?: string
 }
 
 function LoadingIndicator() {
@@ -41,6 +42,7 @@ export default function ArticleListLive({
   total,
   initialPage,
   perPage,
+  category,
 }: Props) {
   const [articles, setArticles] = useState<ArticleListItem[]>(initialArticles)
   const [newCount, setNewCount] = useState(0)
@@ -56,9 +58,11 @@ export default function ArticleListLive({
   const isLoadingRef = useRef(false)
   const hasMoreRef = useRef(initialArticles.length < total)
 
-  const sseUrl = process.env.NEXT_PUBLIC_SSE_URL || ''
+  // category ref for stale closure avoidance
+  const categoryRef = useRef(category)
+  categoryRef.current = category
 
-  // Infinite scroll uses same-origin proxy (next.config.ts rewrites)
+  // All client-side fetches use same-origin proxy (next.config.ts rewrites)
   // to avoid CORS issues regardless of browser origin
   const apiBase = '/api'
 
@@ -80,10 +84,16 @@ export default function ArticleListLive({
     setIsLoading(true)
     try {
       const nextPage = pageRef.current + 1
-      const res = await fetch(
-        `${apiBase}/articles?page=${nextPage}&per_page=${perPage}`,
-        { signal: AbortSignal.timeout(10_000) }
-      )
+      const params = new URLSearchParams({
+        page: String(nextPage),
+        per_page: String(perPage),
+      })
+      if (categoryRef.current) {
+        params.set('category', categoryRef.current)
+      }
+      const res = await fetch(`${apiBase}/articles?${params}`, {
+        signal: AbortSignal.timeout(10_000),
+      })
       if (!res.ok) throw new Error('Failed to fetch')
       const data: ArticleListResponse = await res.json()
 
@@ -139,12 +149,21 @@ export default function ArticleListLive({
     function connect() {
       esRef.current?.close()
 
-      const es = new EventSource(`${sseUrl}/articles/stream`)
+      const es = new EventSource('/api/articles/stream')
       esRef.current = es
 
       es.addEventListener('new_article', (e: MessageEvent) => {
         const article: ArticleListItem = JSON.parse(e.data)
         if (knownIds.current.has(article.id)) return
+
+        // カテゴリフィルタ適用中の場合、一致しない記事は無視
+        if (
+          categoryRef.current &&
+          (!article.categories || !article.categories.includes(categoryRef.current))
+        ) {
+          return
+        }
+
         knownIds.current.add(article.id)
         setArticles((prev) => [article, ...prev])
         setNewCount((c) => c + 1)
@@ -172,7 +191,7 @@ export default function ArticleListLive({
       esRef.current?.close()
       esRef.current = null
     }
-  }, [sseUrl])
+  }, [])
 
   return (
     <div>

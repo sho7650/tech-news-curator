@@ -36,7 +36,10 @@ async def test_monitor_broadcasts_new_articles(db_session):
 
     with (
         patch("app.services.article_monitor.article_broker", mock_broker),
-        patch("app.services.article_monitor.AsyncSessionFactory", return_value=mock_session),
+        patch(
+            "app.services.article_monitor.AsyncSessionFactory",
+            return_value=mock_session,
+        ),
         patch("app.services.article_monitor.POLL_INTERVAL_SECONDS", 0),
     ):
         task = asyncio.create_task(article_monitor())
@@ -96,7 +99,10 @@ async def test_monitor_recovers_from_db_error():
 
     with (
         patch("app.services.article_monitor.article_broker", mock_broker),
-        patch("app.services.article_monitor.AsyncSessionFactory", return_value=mock_session),
+        patch(
+            "app.services.article_monitor.AsyncSessionFactory",
+            return_value=mock_session,
+        ),
         patch("app.services.article_monitor.POLL_INTERVAL_SECONDS", 0),
     ):
         task = asyncio.create_task(article_monitor())

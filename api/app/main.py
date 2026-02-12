@@ -14,7 +14,7 @@ from starlette.requests import Request
 from app.database import async_engine, settings
 from app.middleware import SecurityHeadersMiddleware
 from app.rate_limit import limiter
-from app.routers import articles, digest, health, ingest, sse
+from app.routers import articles, digest, feed, health, ingest, sources, sse
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Tech News Curator API",
-    version="1.2.0",
+    version="2.0.0",
     lifespan=lifespan,
     docs_url=None if settings.environment == "production" else "/docs",
     redoc_url=None if settings.environment == "production" else "/redoc",
@@ -55,7 +55,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.get_cors_origins(),
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Content-Type", "Accept", "X-API-Key"],
 )
 
@@ -81,3 +81,5 @@ app.include_router(
 )  # before articles (avoids /articles/{id} catching /articles/stream)
 app.include_router(articles.router)
 app.include_router(digest.router)
+app.include_router(sources.router)
+app.include_router(feed.router)

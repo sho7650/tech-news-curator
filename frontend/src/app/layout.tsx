@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Tech News Curator',
   description: '海外テックニュースを日本語で',
+  alternates: {
+    types: {
+      'application/rss+xml': '/api/feed/rss',
+    },
+  },
 }
 
 export default function RootLayout({

@@ -22,13 +22,13 @@ services:
       - "3100:3000"
     environment:
       API_URL: http://news-api:8100
-      NEXT_PUBLIC_SSE_URL: http://localhost:8100
     volumes:
       - ./frontend:/app
       - /app/node_modules
     command: npm run dev
 
   news-db:
+    command: []
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
     ports:

@@ -41,10 +41,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 20
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -59,3 +59,79 @@ jobs:
       - name: Type check
         working-directory: frontend
         run: npx tsc --noEmit
+
+  frontend-e2e:
+    name: Frontend E2E Tests
+    runs-on: ubuntu-latest
+    needs: [api-test]
+
+    services:
+      postgres:
+        image: postgres:16.11
+        env:
+          POSTGRES_USER: news
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: news_curator
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Start API server
+        working-directory: api
+        run: |
+          pip install -r requirements.txt
+          alembic upgrade head
+          uvicorn app.main:app --host 0.0.0.0 --port 8100 &
+        env:
+          DATABASE_URL: postgresql+asyncpg://news:testpassword@localhost:5432/news_curator
+          ENVIRONMENT: development
+          API_KEYS: test-key-for-testing
+
+      - name: Wait for API server
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8100/health && break
+            sleep 1
+          done
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        working-directory: frontend
+        run: npx playwright test
+        env:
+          API_URL: http://localhost:8100
+          TEST_API_KEY: test-key-for-testing
+
+      - name: Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30
