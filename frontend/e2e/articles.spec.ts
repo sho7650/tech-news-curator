@@ -34,6 +34,7 @@ test('should filter by category', async ({ page }) => {
 })
 
 test('should handle 404 for invalid article', async ({ page }) => {
-  await page.goto('/articles/00000000-0000-0000-0000-000000000000')
-  await expect(page.locator('body')).toBeVisible()
+  const response = await page.goto('/articles/00000000-0000-0000-0000-000000000000')
+  // サーバーエラーでないことを確認（Next.js not-found は 200 を返す）
+  expect(response?.status()).toBeLessThan(500)
 })

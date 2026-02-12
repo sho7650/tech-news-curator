@@ -23,7 +23,7 @@ export default function ArticleImage({
   if (hasError) return null
 
   return (
-    <div className="relative aspect-video">
+    <div className="relative aspect-video overflow-hidden">
       <Image
         src={src}
         alt={alt}
