@@ -95,7 +95,7 @@ async def test_ingest_link_local(client):
 async def test_ingest_without_api_key():
     """POST /ingest without API key should return 401."""
     original = settings.api_keys
-    settings.api_keys = [TEST_API_KEY]
+    settings.api_keys = TEST_API_KEY
     try:
         async with AsyncClient(
             transport=ASGITransport(app=app),
@@ -110,7 +110,7 @@ async def test_ingest_without_api_key():
 async def test_ingest_with_invalid_api_key():
     """POST /ingest with invalid API key should return 401."""
     original = settings.api_keys
-    settings.api_keys = [TEST_API_KEY]
+    settings.api_keys = TEST_API_KEY
     try:
         async with AsyncClient(
             transport=ASGITransport(app=app),

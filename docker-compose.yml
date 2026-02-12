@@ -1,6 +1,6 @@
 services:
   news-db:
-    image: postgres:16.12
+    image: postgres:16.11
     environment:
       POSTGRES_USER: news
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -15,11 +15,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    cpus: "1.0"
-    mem_limit: 1g
-    restart: "on-failure:3"
-    cap_drop:
-      - ALL
     networks:
       - backend-net
 
@@ -28,8 +23,6 @@ services:
       context: ./api
       dockerfile: Dockerfile
     image: ${REGISTRY:-ghcr.io/your-org}/news-curator/api:latest
-    ports:
-      - "127.0.0.1:8100:8100"
     environment:
       DATABASE_URL: postgresql+asyncpg://news_app:${NEWS_APP_PASSWORD}@news-db:5432/news_curator
       DATABASE_ADMIN_URL: postgresql+asyncpg://news:${POSTGRES_PASSWORD}@news-db:5432/news_curator
@@ -39,11 +32,6 @@ services:
     depends_on:
       news-db:
         condition: service_healthy
-    cpus: "1.0"
-    mem_limit: 512m
-    restart: "on-failure:3"
-    cap_drop:
-      - ALL
     networks:
       - frontend-net
       - backend-net
@@ -53,17 +41,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     image: ${REGISTRY:-ghcr.io/your-org}/news-curator/frontend:latest
-    ports:
-      - "3100:3000"
     environment:
       API_URL: http://news-api:8100
     depends_on:
       - news-api
-    cpus: "0.5"
-    mem_limit: 256m
-    restart: "on-failure:3"
-    cap_drop:
-      - ALL
     networks:
       - frontend-net
 

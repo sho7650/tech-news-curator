@@ -1,0 +1,31 @@
+services:
+  news-db:
+    cpus: "1.0"
+    mem_limit: 1g
+    restart: "on-failure:3"
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+
+  news-api:
+    ports:
+      - "127.0.0.1:8100:8100"
+    cpus: "1.0"
+    mem_limit: 512m
+    restart: "on-failure:3"
+    cap_drop:
+      - ALL
+
+  news-frontend:
+    ports:
+      - "3100:3000"
+    cpus: "0.5"
+    mem_limit: 256m
+    restart: "on-failure:3"
+    cap_drop:
+      - ALL

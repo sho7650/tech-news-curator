@@ -1,22 +1,24 @@
 REGISTRY ?= ghcr.io/your-org
+COMPOSE_DEV  = docker compose -f docker-compose.yml -f docker-compose.dev.yml
+COMPOSE_PROD = docker compose -f docker-compose.yml -f docker-compose.prod.yml
 
 .PHONY: dev up down build test migrate migrate-up deploy push lint sast audit security
 
 # Development environment
 dev:
-	docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+	$(COMPOSE_DEV) up --build
 
 # Production start (no migration, apps only)
 up:
-	docker compose up -d
+	$(COMPOSE_PROD) up -d
 
-# Stop
+# Stop (works for both dev and prod)
 down:
 	docker compose down
 
 # Build
 build:
-	docker compose build
+	$(COMPOSE_PROD) build
 
 # Run tests (Docker required: testcontainers auto-starts PostgreSQL)
 # Prerequisite: pip install -r api/requirements-dev.txt
@@ -33,10 +35,10 @@ migrate-up:
 
 # Deploy (migration -> start in order)
 deploy:
-	docker compose up -d news-db
-	docker compose up -d news-api
-	docker compose exec news-api alembic upgrade head
-	docker compose up -d news-frontend
+	$(COMPOSE_PROD) up -d news-db
+	$(COMPOSE_PROD) up -d news-api
+	$(COMPOSE_PROD) exec news-api alembic upgrade head
+	$(COMPOSE_PROD) up -d news-frontend
 
 # Push to registry
 push:

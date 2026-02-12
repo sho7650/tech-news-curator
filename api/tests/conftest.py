@@ -53,7 +53,7 @@ async def db_session(db_engine):
 async def client(db_session):
     app.dependency_overrides[get_session] = lambda: db_session
     original_api_keys = settings.api_keys
-    settings.api_keys = [TEST_API_KEY]
+    settings.api_keys = TEST_API_KEY
     # Disable rate limiting in tests
     app.state.limiter.enabled = False
     async with AsyncClient(

@@ -134,7 +134,7 @@ async def test_detail_excludes_body_original(client):
 async def test_create_article_without_api_key():
     """POST /articles without API key should return 401."""
     original = settings.api_keys
-    settings.api_keys = [TEST_API_KEY]
+    settings.api_keys = TEST_API_KEY
     try:
         async with AsyncClient(
             transport=ASGITransport(app=app),
@@ -149,7 +149,7 @@ async def test_create_article_without_api_key():
 async def test_create_article_with_invalid_api_key():
     """POST /articles with invalid API key should return 401."""
     original = settings.api_keys
-    settings.api_keys = [TEST_API_KEY]
+    settings.api_keys = TEST_API_KEY
     try:
         async with AsyncClient(
             transport=ASGITransport(app=app),

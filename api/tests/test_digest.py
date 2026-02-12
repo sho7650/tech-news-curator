@@ -69,7 +69,7 @@ async def test_get_digest_not_found(client):
 async def test_create_digest_without_api_key():
     """POST /digest without API key should return 401."""
     original = settings.api_keys
-    settings.api_keys = [TEST_API_KEY]
+    settings.api_keys = TEST_API_KEY
     try:
         async with AsyncClient(
             transport=ASGITransport(app=app),
@@ -84,7 +84,7 @@ async def test_create_digest_without_api_key():
 async def test_create_digest_with_invalid_api_key():
     """POST /digest with invalid API key should return 401."""
     original = settings.api_keys
-    settings.api_keys = [TEST_API_KEY]
+    settings.api_keys = TEST_API_KEY
     try:
         async with AsyncClient(
             transport=ASGITransport(app=app),
