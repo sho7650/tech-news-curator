@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.3.0...tech-news-curator-frontend-v0.3.1) (2026-02-12)
+
+
+### Bug Fixes
+
+* correct docker compose merge issues, pydantic-settings type, and prod hardening ([6f1cb15](https://github.com/sho7650/tech-news-curator/commit/6f1cb159cedf6903d9c4f82eb11d42531daab978))
+
 ## [0.3.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.2.0...tech-news-curator-frontend-v0.3.0) (2026-02-11)
 
 
