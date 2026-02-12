@@ -49,7 +49,9 @@ async def create_article_endpoint(
         article = await create_article(session, data)
         return article
     except IntegrityError:
-        raise HTTPException(status_code=409, detail="Article with this URL already exists")
+        raise HTTPException(
+            status_code=409, detail="Article with this URL already exists"
+        )
 
 
 @router.get("", response_model=ArticleListResponse)

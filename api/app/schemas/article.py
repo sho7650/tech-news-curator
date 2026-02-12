@@ -24,7 +24,9 @@ class ArticleCreate(AppBaseModel):
     author: Optional[str] = Field(None, max_length=200)
     published_at: Optional[datetime] = None
     og_image_url: Optional[str] = Field(None, max_length=2083)
-    categories: Optional[list[Annotated[str, Field(max_length=50)]]] = Field(None, max_length=20)
+    categories: Optional[list[Annotated[str, Field(max_length=50)]]] = Field(
+        None, max_length=20
+    )
     metadata: Optional[dict] = None
 
 

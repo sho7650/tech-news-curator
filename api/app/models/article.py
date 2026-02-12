@@ -31,6 +31,4 @@ class Article(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
-    __table_args__ = (
-        Index("ix_articles_published_at", "published_at"),
-    )
+    __table_args__ = (Index("ix_articles_published_at", "published_at"),)

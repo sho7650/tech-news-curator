@@ -76,6 +76,8 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 app.include_router(health.router)
 app.include_router(ingest.router)
-app.include_router(sse.router)       # before articles (avoids /articles/{id} catching /articles/stream)
+app.include_router(
+    sse.router
+)  # before articles (avoids /articles/{id} catching /articles/stream)
 app.include_router(articles.router)
 app.include_router(digest.router)

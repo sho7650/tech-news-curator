@@ -34,7 +34,9 @@ async def create_digest_endpoint(
         digest = await create_digest(session, data)
         return digest
     except IntegrityError:
-        raise HTTPException(status_code=409, detail="Digest for this date already exists")
+        raise HTTPException(
+            status_code=409, detail="Digest for this date already exists"
+        )
 
 
 @router.get("", response_model=DigestListResponse)

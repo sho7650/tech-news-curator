@@ -34,21 +34,24 @@ async def article_monitor() -> None:
                     articles = result.scalars().all()
 
                     for article in articles:
-                        await article_broker.broadcast({
-                            "id": str(article.id),
-                            "source_url": article.source_url,
-                            "source_name": article.source_name,
-                            "title_ja": article.title_ja,
-                            "summary_ja": article.summary_ja,
-                            "author": article.author,
-                            "published_at": (
-                                article.published_at.isoformat()
-                                if article.published_at else None
-                            ),
-                            "og_image_url": article.og_image_url,
-                            "categories": article.categories,
-                            "created_at": article.created_at.isoformat(),
-                        })
+                        await article_broker.broadcast(
+                            {
+                                "id": str(article.id),
+                                "source_url": article.source_url,
+                                "source_name": article.source_name,
+                                "title_ja": article.title_ja,
+                                "summary_ja": article.summary_ja,
+                                "author": article.author,
+                                "published_at": (
+                                    article.published_at.isoformat()
+                                    if article.published_at
+                                    else None
+                                ),
+                                "og_image_url": article.og_image_url,
+                                "categories": article.categories,
+                                "created_at": article.created_at.isoformat(),
+                            }
+                        )
 
                     if articles:
                         last_checked = articles[-1].created_at

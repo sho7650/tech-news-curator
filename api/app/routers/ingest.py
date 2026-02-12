@@ -25,7 +25,11 @@ def ingest_article(
     try:
         result = extract_article(str(data.url))
     except UnsafeURLError:
-        raise HTTPException(status_code=400, detail="URL points to a private or reserved address")
+        raise HTTPException(
+            status_code=400, detail="URL points to a private or reserved address"
+        )
     if result is None:
-        raise HTTPException(status_code=422, detail="Failed to extract content from URL")
+        raise HTTPException(
+            status_code=422, detail="Failed to extract content from URL"
+        )
     return result
