@@ -32,6 +32,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run build && npm run start',
     url: BASE_URL,
+    timeout: 120_000,
     reuseExistingServer: !process.env.CI,
     env: {
       API_URL: 'http://localhost:8100',

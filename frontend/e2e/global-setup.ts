@@ -31,11 +31,15 @@ async function globalSetup() {
     },
   ]
   for (const article of articles) {
-    await api.post('/articles', { data: article })
+    const res = await api.post('/articles', { data: article })
+    // 201=作成成功, 409=既存（リトライ時）— どちらも正常
+    if (!res.ok() && res.status() !== 409) {
+      throw new Error(`Seed article failed: ${res.status()} ${res.statusText()}`)
+    }
   }
 
   // テスト用ダイジェストを投入
-  await api.post('/digest', {
+  const digestRes = await api.post('/digest', {
     data: {
       digest_date: new Date().toISOString().split('T')[0],
       title: 'テストダイジェスト',
@@ -43,9 +47,12 @@ async function globalSetup() {
       article_count: articles.length,
     },
   })
+  if (!digestRes.ok() && digestRes.status() !== 409) {
+    throw new Error(`Seed digest failed: ${digestRes.status()} ${digestRes.statusText()}`)
+  }
 
   // テスト用ソースを投入
-  await api.post('/sources', {
+  const sourceRes = await api.post('/sources', {
     data: {
       name: 'TechCrunch',
       rss_url: 'https://techcrunch.com/feed/',
@@ -53,6 +60,9 @@ async function globalSetup() {
       category: 'general',
     },
   })
+  if (!sourceRes.ok() && sourceRes.status() !== 409) {
+    throw new Error(`Seed source failed: ${sourceRes.status()} ${sourceRes.statusText()}`)
+  }
 
   await api.dispose()
 }

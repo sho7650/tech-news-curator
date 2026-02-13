@@ -17,6 +17,7 @@ test('should navigate between pages', async ({ page }) => {
 })
 
 test('should display 404 page', async ({ page }) => {
-  await page.goto('/nonexistent-page')
-  await expect(page.locator('body')).toBeVisible()
+  const response = await page.goto('/nonexistent-page')
+  // サーバーエラーでないことを確認（Next.js not-found は 200 を返す）
+  expect(response?.status()).toBeLessThan(500)
 })
