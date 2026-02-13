@@ -58,3 +58,20 @@ export interface DigestListResponse {
   page: number
   per_page: number
 }
+
+export interface SourceResponse {
+  id: string
+  name: string | null
+  rss_url: string
+  site_url: string | null
+  category: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface SourceListResponse {
+  items: SourceResponse[]
+  total: number
+  page: number
+  per_page: number
+}

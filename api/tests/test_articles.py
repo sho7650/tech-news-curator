@@ -42,13 +42,17 @@ async def test_create_article_duplicate(client):
 
 async def test_check_article_exists(client):
     await client.post("/articles", json=SAMPLE_ARTICLE)
-    response = await client.get("/articles/check", params={"url": SAMPLE_ARTICLE["source_url"]})
+    response = await client.get(
+        "/articles/check", params={"url": SAMPLE_ARTICLE["source_url"]}
+    )
     assert response.status_code == 200
     assert response.json()["exists"] is True
 
 
 async def test_check_article_not_exists(client):
-    response = await client.get("/articles/check", params={"url": "https://nonexistent.example.com"})
+    response = await client.get(
+        "/articles/check", params={"url": "https://nonexistent.example.com"}
+    )
     assert response.status_code == 200
     assert response.json()["exists"] is False
 
@@ -160,3 +164,64 @@ async def test_create_article_with_invalid_api_key():
         assert response.status_code == 401
     finally:
         settings.api_keys = original
+
+
+async def test_list_articles_category_filter(client):
+    """GET /articles?category=AI should return only articles with that category."""
+    article_ai = SAMPLE_ARTICLE.copy()
+    article_ai["source_url"] = "https://example.com/ai-article"
+    article_ai["categories"] = ["AI", "Startups"]
+
+    article_hw = SAMPLE_ARTICLE.copy()
+    article_hw["source_url"] = "https://example.com/hw-article"
+    article_hw["categories"] = ["Hardware"]
+
+    await client.post("/articles", json=article_ai)
+    await client.post("/articles", json=article_hw)
+
+    response = await client.get("/articles", params={"category": "AI"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 1
+    assert data["items"][0]["source_url"] == "https://example.com/ai-article"
+
+
+async def test_list_articles_category_no_match(client):
+    """GET /articles?category=nonexistent should return empty list."""
+    await client.post("/articles", json=SAMPLE_ARTICLE)
+
+    response = await client.get("/articles", params={"category": "nonexistent"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 0
+    assert len(data["items"]) == 0
+
+
+async def test_list_articles_category_and_date(client):
+    """Combined category and date filter."""
+    article1 = SAMPLE_ARTICLE.copy()
+    article1["source_url"] = "https://example.com/ai-jan15"
+    article1["categories"] = ["AI"]
+    article1["published_at"] = "2026-01-15T10:00:00Z"
+
+    article2 = SAMPLE_ARTICLE.copy()
+    article2["source_url"] = "https://example.com/ai-jan16"
+    article2["categories"] = ["AI"]
+    article2["published_at"] = "2026-01-16T10:00:00Z"
+
+    article3 = SAMPLE_ARTICLE.copy()
+    article3["source_url"] = "https://example.com/hw-jan15"
+    article3["categories"] = ["Hardware"]
+    article3["published_at"] = "2026-01-15T10:00:00Z"
+
+    await client.post("/articles", json=article1)
+    await client.post("/articles", json=article2)
+    await client.post("/articles", json=article3)
+
+    response = await client.get(
+        "/articles", params={"category": "AI", "date": "2026-01-15"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 1
+    assert data["items"][0]["source_url"] == "https://example.com/ai-jan15"

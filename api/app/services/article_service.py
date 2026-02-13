@@ -31,6 +31,7 @@ async def get_articles(
     page: int = 1,
     per_page: int = 20,
     date_filter: Optional[date] = None,
+    category_filter: Optional[str] = None,
 ) -> tuple[list[Article], int]:
     query = select(Article)
 
@@ -40,6 +41,9 @@ async def get_articles(
         )
         end = start + timedelta(days=1)
         query = query.where(Article.published_at >= start, Article.published_at < end)
+
+    if category_filter:
+        query = query.where(Article.categories.any(category_filter))
 
     count_result = await session.execute(
         select(func.count()).select_from(query.subquery())

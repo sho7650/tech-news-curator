@@ -78,7 +78,9 @@ def test_dns_timeout():
         return []
 
     with (
-        patch("app.services.url_validator.socket.getaddrinfo", side_effect=slow_resolve),
+        patch(
+            "app.services.url_validator.socket.getaddrinfo", side_effect=slow_resolve
+        ),
         patch("app.services.url_validator.DNS_TIMEOUT_SECONDS", 0.1),
         pytest.raises(UnsafeURLError, match="timed out"),
     ):
@@ -100,7 +102,10 @@ def test_redirect_to_private_blocked():
         return "93.184.216.34"
 
     with (
-        patch("app.services.safe_fetch._resolve_and_validate", side_effect=resolve_side_effect),
+        patch(
+            "app.services.safe_fetch._resolve_and_validate",
+            side_effect=resolve_side_effect,
+        ),
         patch("app.services.safe_fetch.urllib3.HTTPConnectionPool") as mock_pool_cls,
         pytest.raises(UnsafeURLError),
     ):
@@ -149,7 +154,10 @@ def test_max_redirects_exceeded():
     redirect_response.headers = {"Location": "http://example.com/loop"}
 
     with (
-        patch("app.services.safe_fetch._resolve_and_validate", return_value="93.184.216.34"),
+        patch(
+            "app.services.safe_fetch._resolve_and_validate",
+            return_value="93.184.216.34",
+        ),
         patch("app.services.safe_fetch.urllib3.HTTPConnectionPool") as mock_pool_cls,
     ):
         mock_pool_cls.return_value.request.return_value = redirect_response

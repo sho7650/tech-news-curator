@@ -61,13 +61,14 @@ async def list_articles(
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$"),
+    category: Optional[str] = Query(None, max_length=50),
     session: AsyncSession = Depends(get_session),
 ):
     date_filter = None
     if date:
         date_filter = _parse_date(date)
 
-    articles, total = await get_articles(session, page, per_page, date_filter)
+    articles, total = await get_articles(session, page, per_page, date_filter, category)
     return ArticleListResponse(
         items=articles,
         total=total,

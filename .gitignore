@@ -23,5 +23,18 @@ frontend/.next/
 frontend/node_modules/
 frontend/out/
 
+# SSL certificates
+db/ssl/*.key
+db/ssl/*.crt
+db/ssl/*.csr
+db/ssl/*.srl
+
+# ZAP reports
+zap-reports/
+
+# Playwright
+frontend/playwright-report/
+frontend/test-results/
+
 # OS
 .DS_Store

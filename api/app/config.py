@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     # complex type parsing (json.loads) which fails on plain CSV values.
     cors_origins: str = "http://localhost:3100,http://localhost:3000"
     api_keys: str = ""
+    public_url: str = "http://localhost:3100"
 
     def get_cors_origins(self) -> list[str]:
         return [s.strip() for s in self.cors_origins.split(",") if s.strip()]

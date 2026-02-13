@@ -2,8 +2,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-# Paths where CSP is skipped (Swagger UI needs inline JS/CSS)
-_DOCS_PATHS = {"/docs", "/redoc", "/openapi.json"}
+# Paths where CSP is skipped (Swagger UI needs inline JS/CSS, RSS feed is XML)
+_SKIP_CSP_PATHS = {"/docs", "/redoc", "/openapi.json", "/feed/rss"}
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -23,7 +23,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-XSS-Protection"] = "0"
 
         # CSP: skip for docs paths in development (Swagger UI needs inline resources)
-        if request.url.path not in _DOCS_PATHS:
+        if request.url.path not in _SKIP_CSP_PATHS:
             response.headers["Content-Security-Policy"] = (
                 "default-src 'none'; frame-ancestors 'none'"
             )

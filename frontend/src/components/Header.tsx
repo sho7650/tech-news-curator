@@ -14,6 +14,9 @@ export default function Header() {
           <Link href="/digest" className="text-gray-600 hover:text-gray-900">
             ダイジェスト
           </Link>
+          <Link href="/sources" className="text-gray-600 hover:text-gray-900">
+            ソース
+          </Link>
         </div>
       </nav>
     </header>

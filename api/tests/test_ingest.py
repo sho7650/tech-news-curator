@@ -18,10 +18,15 @@ async def test_ingest_success(client):
     mock_doc.image = "https://example.com/image.jpg"
 
     with (
-        patch("app.services.ingest_service.safe_fetch", return_value="<html>content</html>"),
+        patch(
+            "app.services.ingest_service.safe_fetch",
+            return_value="<html>content</html>",
+        ),
         patch("app.services.ingest_service.bare_extraction", return_value=mock_doc),
     ):
-        response = await client.post("/ingest", json={"url": "https://example.com/article"})
+        response = await client.post(
+            "/ingest", json={"url": "https://example.com/article"}
+        )
 
     assert response.status_code == 200
     data = response.json()
@@ -34,7 +39,9 @@ async def test_ingest_success(client):
 
 async def test_ingest_fetch_failure(client):
     with patch("app.services.ingest_service.safe_fetch", return_value=None):
-        response = await client.post("/ingest", json={"url": "https://invalid.example.com"})
+        response = await client.post(
+            "/ingest", json={"url": "https://invalid.example.com"}
+        )
 
     assert response.status_code == 422
     assert "Failed to extract" in response.json()["detail"]
@@ -42,10 +49,15 @@ async def test_ingest_fetch_failure(client):
 
 async def test_ingest_extract_failure(client):
     with (
-        patch("app.services.ingest_service.safe_fetch", return_value="<html>content</html>"),
+        patch(
+            "app.services.ingest_service.safe_fetch",
+            return_value="<html>content</html>",
+        ),
         patch("app.services.ingest_service.bare_extraction", return_value=None),
     ):
-        response = await client.post("/ingest", json={"url": "https://example.com/empty"})
+        response = await client.post(
+            "/ingest", json={"url": "https://example.com/empty"}
+        )
 
     assert response.status_code == 422
     assert "Failed to extract" in response.json()["detail"]
@@ -62,7 +74,9 @@ async def test_ingest_private_ip(client):
         "app.services.ingest_service.safe_fetch",
         side_effect=UnsafeURLError("unsafe"),
     ):
-        response = await client.post("/ingest", json={"url": "http://192.168.1.1/article"})
+        response = await client.post(
+            "/ingest", json={"url": "http://192.168.1.1/article"}
+        )
 
     assert response.status_code == 400
     assert "private or reserved" in response.json()["detail"]
@@ -101,7 +115,9 @@ async def test_ingest_without_api_key():
             transport=ASGITransport(app=app),
             base_url="http://test",
         ) as ac:
-            response = await ac.post("/ingest", json={"url": "https://example.com/article"})
+            response = await ac.post(
+                "/ingest", json={"url": "https://example.com/article"}
+            )
         assert response.status_code == 401
     finally:
         settings.api_keys = original
@@ -117,7 +133,9 @@ async def test_ingest_with_invalid_api_key():
             base_url="http://test",
             headers={"X-API-Key": "invalid-key"},
         ) as ac:
-            response = await ac.post("/ingest", json={"url": "https://example.com/article"})
+            response = await ac.post(
+                "/ingest", json={"url": "https://example.com/article"}
+            )
         assert response.status_code == 401
     finally:
         settings.api_keys = original
