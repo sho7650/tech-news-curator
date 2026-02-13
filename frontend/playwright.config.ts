@@ -36,6 +36,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     env: {
       API_URL: 'http://localhost:8100',
+      NEXT_OUTPUT_STANDALONE: '0',
     },
   },
 })

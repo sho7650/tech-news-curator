@@ -22,7 +22,8 @@ if (!isDev) {
 const cspHeader = cspDirectives.join('; ')
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
+  // Docker 本番は standalone、E2E テストは next start 互換のため無効化
+  output: process.env.NEXT_OUTPUT_STANDALONE === '0' ? undefined : 'standalone',
   images: {
     // og_image_url は様々な外部サイトから取得するため全 HTTPS ドメインを許可
     remotePatterns: [
