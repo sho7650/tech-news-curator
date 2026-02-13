@@ -16,7 +16,10 @@ const cspDirectives = [
   "form-action 'self'",
   "frame-ancestors 'none'",
 ]
-if (!isDev) {
+// upgrade-insecure-requests は HTTPS 本番環境のみ有効化。
+// HTTP 環境（E2E テスト等）では WebKit が全リクエストを HTTPS に
+// アップグレードし TLS ハンドシェイクが失敗するため無効化する。
+if (!isDev && process.env.ENABLE_UPGRADE_INSECURE_REQUESTS !== '0') {
   cspDirectives.push('upgrade-insecure-requests')
 }
 const cspHeader = cspDirectives.join('; ')
