@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.2.0...tech-news-curator-api-v1.3.0) (2026-02-13)
+
+
+### Features
+
+* add Phase 2 public features - sources API, category filter, RSS feed ([10a9708](https://github.com/sho7650/tech-news-curator/commit/10a970855ffebc72b05cb3f021c8c855d5e89aab))
+* add Phase 2 public features - sources API, category filter, RSS feed ([b325d1d](https://github.com/sho7650/tech-news-curator/commit/b325d1d07e2fccfb7123bbb6da44871cf8d798be))
+
 ## [1.2.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.1.0...tech-news-curator-api-v1.2.0) (2026-02-12)
 
 
