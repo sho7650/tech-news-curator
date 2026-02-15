@@ -55,7 +55,7 @@ async def create_article_endpoint(
 
 
 @router.get("", response_model=ArticleListResponse)
-@limiter.limit("60/minute")
+@limiter.limit("200/minute")
 async def list_articles(
     request: Request,
     page: int = Query(1, ge=1),
@@ -78,7 +78,7 @@ async def list_articles(
 
 
 @router.get("/{article_id}", response_model=ArticleDetail)
-@limiter.limit("60/minute")
+@limiter.limit("200/minute")
 async def get_article(
     request: Request,
     article_id: uuid.UUID,
