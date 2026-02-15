@@ -18,8 +18,8 @@ export default async function ArticlesPage({ searchParams }: Props) {
   } catch {
     return (
       <div>
-        <h1 className="mb-6 text-2xl font-bold">記事一覧</h1>
-        <p className="text-gray-500">記事を取得できませんでした。</p>
+        <h1 className="mb-6 text-2xl font-bold text-text-primary">記事一覧</h1>
+        <p className="text-text-muted">記事を取得できませんでした。</p>
       </div>
     )
   }
@@ -34,7 +34,7 @@ export default async function ArticlesPage({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">記事一覧</h1>
+      <h1 className="mb-6 text-2xl font-bold text-text-primary">記事一覧</h1>
       <CategoryFilter categories={categories} />
       <ArticleListLive
         key={category || 'all'}

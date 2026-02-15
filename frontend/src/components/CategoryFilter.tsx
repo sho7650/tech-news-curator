@@ -32,8 +32,8 @@ export default function CategoryFilter({ categories }: CategoryFilterProps) {
             aria-pressed={!current}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
               !current
-                ? 'bg-gray-900 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-accent text-white'
+                : 'bg-bg-secondary text-text-secondary hover:bg-border'
             }`}
           >
             すべて
@@ -46,8 +46,8 @@ export default function CategoryFilter({ categories }: CategoryFilterProps) {
               aria-pressed={current === cat}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 current === cat
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-accent text-white'
+                  : 'bg-bg-secondary text-text-secondary hover:bg-border'
               }`}
             >
               {cat}
