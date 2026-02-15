@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.4.0...tech-news-curator-frontend-v0.5.0) (2026-02-15)
+
+
+### Features
+
+* Phase 3.0 UI refresh - dark mode, fonts, Bento Grid, reading UX ([b82cb3a](https://github.com/sho7650/tech-news-curator/commit/b82cb3aee260c809dabfd6455b81783208e825c0))
+* Phase 3.0 UI refresh - dark mode, fonts, Bento Grid, reading UX ([5bbdb75](https://github.com/sho7650/tech-news-curator/commit/5bbdb75a67e4cf787e55e8fafd89a2dc3e194772))
+
+
+### Bug Fixes
+
+* increase GET /articles rate limit to prevent E2E test failures ([2de04b1](https://github.com/sho7650/tech-news-curator/commit/2de04b1f72fa03367284ed253b1acb7f42ce2755))
+* resolve lint errors and E2E test failures for Phase 3.0 ([e24cfb2](https://github.com/sho7650/tech-news-curator/commit/e24cfb29303e9fcf4f9bd4383634782b187eccef))
+* use polling assertion in bento-grid E2E test for WebKit hydration ([2f50403](https://github.com/sho7650/tech-news-curator/commit/2f504034c7cc5f278682d55c6904f92298673654))
+
 ## [0.4.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.3.1...tech-news-curator-frontend-v0.4.0) (2026-02-13)
 
 
