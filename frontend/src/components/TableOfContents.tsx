@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback, useSyncExternalStore } from 'react'
 
 interface TocItem {
   id: string
@@ -8,14 +8,15 @@ interface TocItem {
   level: number
 }
 
-export default function TableOfContents({ contentId }: { contentId: string }) {
-  const [items, setItems] = useState<TocItem[]>([])
-  const [activeId, setActiveId] = useState<string>('')
-  const observerRef = useRef<IntersectionObserver | null>(null)
+const emptyItems: TocItem[] = []
 
-  useEffect(() => {
+export default function TableOfContents({ contentId }: { contentId: string }) {
+  const [activeId, setActiveId] = useState<string>('')
+  const itemsRef = useRef<TocItem[]>(emptyItems)
+
+  const subscribe = useCallback((onStoreChange: () => void) => {
     const container = document.getElementById(contentId)
-    if (!container) return
+    if (!container) return () => {}
 
     const headings = container.querySelectorAll('h2, h3')
     const tocItems: TocItem[] = []
@@ -30,11 +31,26 @@ export default function TableOfContents({ contentId }: { contentId: string }) {
       })
     })
 
-    setItems(tocItems)
+    itemsRef.current = tocItems
+    onStoreChange()
 
-    if (tocItems.length < 3) return
+    return () => {}
+  }, [contentId])
 
-    observerRef.current = new IntersectionObserver(
+  const items = useSyncExternalStore(
+    subscribe,
+    () => itemsRef.current,
+    () => emptyItems
+  )
+
+  useEffect(() => {
+    if (items.length < 3) return
+
+    const container = document.getElementById(contentId)
+    if (!container) return
+
+    const headings = container.querySelectorAll('h2, h3')
+    const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
@@ -46,12 +62,10 @@ export default function TableOfContents({ contentId }: { contentId: string }) {
       { rootMargin: '-80px 0px -60% 0px', threshold: 0 }
     )
 
-    headings.forEach((heading) => {
-      observerRef.current?.observe(heading)
-    })
+    headings.forEach((heading) => observer.observe(heading))
 
-    return () => observerRef.current?.disconnect()
-  }, [contentId])
+    return () => observer.disconnect()
+  }, [contentId, items.length])
 
   if (items.length < 3) return null
 

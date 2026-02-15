@@ -5,8 +5,9 @@ test('should toggle between dark and light themes', async ({ page }) => {
   // Default theme is dark
   await expect(page.locator('html')).toHaveClass(/dark/)
 
+  // Use .first() because ThemeToggle renders in both desktop and mobile nav
+  const toggle = page.locator('button[aria-label^="テーマ切り替え"]').first()
   // Click theme toggle to switch to system
-  const toggle = page.locator('button[aria-label^="テーマ切り替え"]')
   await toggle.click()
 
   // Click again to switch to light
@@ -16,7 +17,7 @@ test('should toggle between dark and light themes', async ({ page }) => {
 
 test('should persist theme across page navigation', async ({ page }) => {
   await page.goto('/')
-  const toggle = page.locator('button[aria-label^="テーマ切り替え"]')
+  const toggle = page.locator('button[aria-label^="テーマ切り替え"]').first()
 
   // Switch to light mode (dark → system → light)
   await toggle.click()
@@ -33,6 +34,6 @@ test('should persist theme across page navigation', async ({ page }) => {
 
 test('should display theme toggle in header', async ({ page }) => {
   await page.goto('/')
-  const toggle = page.locator('button[aria-label^="テーマ切り替え"]')
+  const toggle = page.locator('button[aria-label^="テーマ切り替え"]').first()
   await expect(toggle).toBeVisible()
 })
