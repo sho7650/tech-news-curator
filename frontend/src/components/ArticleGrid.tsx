@@ -10,7 +10,7 @@ export default function ArticleGrid({ articles }: ArticleGridProps) {
 
   return (
     <section aria-label="記事一覧">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {articles.map((article) => (
           <ArticleCard key={article.id} article={article} />
         ))}

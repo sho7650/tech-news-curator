@@ -8,8 +8,8 @@ export default async function HomePage() {
   } catch {
     return (
       <div>
-        <h1 className="mb-6 text-2xl font-bold">最新のテックニュース</h1>
-        <p className="text-gray-500">
+        <h1 className="mb-6 text-2xl font-bold text-text-primary">最新のテックニュース</h1>
+        <p className="text-text-muted">
           記事を取得できませんでした。APIが起動しているか確認してください。
         </p>
       </div>
@@ -18,7 +18,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">最新のテックニュース</h1>
+      <h1 className="mb-6 text-2xl font-bold text-text-primary">最新のテックニュース</h1>
       <ArticleListLive
         initialArticles={data.items}
         total={data.total}

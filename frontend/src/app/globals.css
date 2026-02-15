@@ -1,84 +1,107 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* --- Dark mode variant (class-based, not media query) --- */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* --- Theme: light mode values (output as CSS custom properties in :root) --- */
+@theme {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-bg-card: #ffffff;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #9ca3af;
+  --color-border: #e5e7eb;
+  --color-accent: #e07070;
+  --color-accent-hover: #d45a5a;
+  --color-badge-bg: #fde8e8;
+  --color-badge-text: #b91c1c;
+  --font-sans: var(--font-inter), var(--font-noto-sans-jp), ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* --- Dark mode overrides (in base layer so Tailwind preserves them) --- */
+@layer base {
+  .dark {
+    --color-bg-primary: #0f0f0f;
+    --color-bg-secondary: #1a1a1a;
+    --color-bg-card: #1e1e1e;
+    --color-text-primary: #f0f0f0;
+    --color-text-secondary: #a0a0a0;
+    --color-text-muted: #6b7280;
+    --color-border: #2e2e2e;
+    --color-accent: #e88585;
+    --color-accent-hover: #f09090;
+    --color-badge-bg: #3d2020;
+    --color-badge-text: #fca5a5;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* --- Theme transition --- */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease;
+  }
 }
 
-/* Markdown body styles */
-.markdown-body {
-  line-height: 1.8;
-}
-.markdown-body h1,
-.markdown-body h2,
-.markdown-body h3 {
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-  font-weight: 700;
-}
-.markdown-body h1 { font-size: 1.5em; }
-.markdown-body h2 { font-size: 1.25em; }
-.markdown-body h3 { font-size: 1.1em; }
-.markdown-body p {
-  margin-bottom: 1em;
-}
-.markdown-body ul,
-.markdown-body ol {
-  margin-bottom: 1em;
-  padding-left: 1.5em;
-}
-.markdown-body ul { list-style: disc; }
-.markdown-body ol { list-style: decimal; }
-.markdown-body li {
-  margin-bottom: 0.25em;
-}
-.markdown-body strong {
-  font-weight: 700;
-}
-.markdown-body a {
-  color: #3b82f6;
-  text-decoration: underline;
-}
-.markdown-body blockquote {
-  border-left: 3px solid #4b5563;
-  padding-left: 1em;
-  margin: 1em 0;
-  color: #9ca3af;
-}
-.markdown-body code {
-  background: #1f2937;
-  padding: 0.15em 0.4em;
-  border-radius: 0.25em;
-  font-size: 0.9em;
-}
-.markdown-body pre {
-  background: #1f2937;
-  padding: 1em;
-  border-radius: 0.5em;
-  overflow-x: auto;
-  margin-bottom: 1em;
-}
-.markdown-body pre code {
-  background: none;
-  padding: 0;
+/* --- Markdown body styles --- */
+@layer base {
+  .markdown-body {
+    line-height: 1.8;
+  }
+  .markdown-body h1,
+  .markdown-body h2,
+  .markdown-body h3 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+  .markdown-body h1 { font-size: 1.5em; }
+  .markdown-body h2 { font-size: 1.25em; }
+  .markdown-body h3 { font-size: 1.1em; }
+  .markdown-body p {
+    margin-bottom: 1em;
+  }
+  .markdown-body ul,
+  .markdown-body ol {
+    margin-bottom: 1em;
+    padding-left: 1.5em;
+  }
+  .markdown-body ul { list-style: disc; }
+  .markdown-body ol { list-style: decimal; }
+  .markdown-body li {
+    margin-bottom: 0.25em;
+  }
+  .markdown-body strong {
+    font-weight: 700;
+  }
+  .markdown-body a {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+  .markdown-body blockquote {
+    border-left: 3px solid var(--color-border);
+    padding-left: 1em;
+    margin: 1em 0;
+    color: var(--color-text-muted);
+  }
+  .markdown-body code {
+    background: var(--color-bg-secondary);
+    padding: 0.15em 0.4em;
+    border-radius: 0.25em;
+    font-size: 0.9em;
+  }
+  .markdown-body pre {
+    background: var(--color-bg-secondary);
+    padding: 1em;
+    border-radius: 0.5em;
+    overflow-x: auto;
+    margin-bottom: 1em;
+  }
+  .markdown-body pre code {
+    background: none;
+    padding: 0;
+  }
 }

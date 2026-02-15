@@ -15,21 +15,21 @@ interface Props {
 
 function LoadingIndicator() {
   return (
-    <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {[...Array(3)].map((_, i) => (
         <div
           key={i}
-          className="animate-pulse rounded-xl border border-gray-200 bg-white"
+          className="animate-pulse rounded-xl border border-border bg-bg-card"
         >
-          <div className="aspect-video rounded-t-xl bg-gray-200" />
+          <div className="aspect-video rounded-t-xl bg-bg-secondary" />
           <div className="space-y-3 p-4">
-            <div className="h-3 w-16 rounded bg-gray-200" />
-            <div className="h-5 w-3/4 rounded bg-gray-200" />
+            <div className="h-3 w-16 rounded bg-bg-secondary" />
+            <div className="h-5 w-3/4 rounded bg-bg-secondary" />
             <div className="space-y-2">
-              <div className="h-3 w-full rounded bg-gray-200" />
-              <div className="h-3 w-5/6 rounded bg-gray-200" />
+              <div className="h-3 w-full rounded bg-bg-secondary" />
+              <div className="h-3 w-5/6 rounded bg-bg-secondary" />
             </div>
-            <div className="h-3 w-1/3 rounded bg-gray-200" />
+            <div className="h-3 w-1/3 rounded bg-bg-secondary" />
           </div>
         </div>
       ))}
@@ -66,7 +66,7 @@ export default function ArticleListLive({
   // to avoid CORS issues regardless of browser origin
   const apiBase = '/api'
 
-  // Hero: top 2 articles with images
+  // Hero: top 2 articles with images (Bento Grid: first = large hero, second = side card)
   const heroArticles = useMemo(() => {
     return articles.filter((a) => Boolean(a.og_image_url)).slice(0, 2)
   }, [articles])
@@ -197,24 +197,24 @@ export default function ArticleListLive({
     <div>
       <div aria-live="polite" aria-atomic="true">
         {newCount > 0 && (
-          <p className="mb-4 text-sm text-blue-600">
+          <p className="mb-4 text-sm text-accent">
             {newCount}件の新着記事
           </p>
         )}
       </div>
 
-      <p className="mb-6 text-sm text-gray-500">
+      <p className="mb-6 text-sm text-text-muted">
         全{articles.length}件表示
       </p>
 
       {articles.length === 0 ? (
-        <p className="text-gray-500">まだ記事がありません。</p>
+        <p className="text-text-muted">まだ記事がありません。</p>
       ) : (
         <>
           <HeroSection articles={heroArticles} />
 
           {heroArticles.length > 0 && (
-            <div className="my-8 border-b border-gray-200" />
+            <div className="my-8 border-b border-border" />
           )}
 
           <ArticleGrid articles={gridArticles} />
@@ -222,7 +222,7 @@ export default function ArticleListLive({
           {isLoading && <LoadingIndicator />}
 
           {!hasMore && articles.length > 0 && (
-            <p className="py-8 text-center text-sm text-gray-400">
+            <p className="py-8 text-center text-sm text-text-muted">
               すべての記事を表示しました
             </p>
           )}

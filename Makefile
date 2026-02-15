@@ -5,8 +5,9 @@ COMPOSE_PROD = docker compose -f docker-compose.yml -f docker-compose.prod.yml
 .PHONY: dev up down build test migrate migrate-up deploy push lint sast audit security test-e2e test-e2e-ui zap-scan
 
 # Development environment
+# -V renews anonymous volumes (node_modules) so new dependencies are picked up
 dev:
-	$(COMPOSE_DEV) up --build
+	$(COMPOSE_DEV) up --build -V
 
 # Production start (no migration, apps only)
 up:
