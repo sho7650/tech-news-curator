@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.3.0...tech-news-curator-api-v1.4.0) (2026-02-15)
+
+
+### Features
+
+* Phase 3.0 UI refresh - dark mode, fonts, Bento Grid, reading UX ([b82cb3a](https://github.com/sho7650/tech-news-curator/commit/b82cb3aee260c809dabfd6455b81783208e825c0))
+
+
+### Bug Fixes
+
+* increase GET /articles rate limit to prevent E2E test failures ([2de04b1](https://github.com/sho7650/tech-news-curator/commit/2de04b1f72fa03367284ed253b1acb7f42ce2755))
+
 ## [1.3.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.2.0...tech-news-curator-api-v1.3.0) (2026-02-13)
 
 
