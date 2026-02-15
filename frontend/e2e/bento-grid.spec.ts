@@ -5,14 +5,13 @@ test('should display hero section and article grid', async ({ page }) => {
   // Page should load with articles
   await expect(page.locator('h1')).toBeVisible()
 
-  // Hero section should be visible if articles exist
+  // Seed data has no og_image_url → HeroSection returns null, only ArticleGrid renders.
+  // Use polling assertion (not instant isVisible()) to wait for client hydration.
   const heroSection = page.locator('section[aria-label="注目記事"]')
   const articleSection = page.locator('section[aria-label="記事一覧"]')
 
-  // At least one section should be present
-  const heroVisible = await heroSection.isVisible().catch(() => false)
-  const gridVisible = await articleSection.isVisible().catch(() => false)
-  expect(heroVisible || gridVisible).toBeTruthy()
+  // At least one section should be present after hydration
+  await expect(heroSection.or(articleSection)).toBeVisible()
 })
 
 test('should display articles with themed card styles', async ({ page }) => {
