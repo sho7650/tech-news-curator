@@ -17,8 +17,7 @@ export function getPgErrorCode(err: unknown): string | undefined {
 }
 
 function getPgErrorMessage(err: unknown): string | undefined {
-  const inner =
-    err && typeof err === "object" && "cause" in err ? (err as any).cause : err;
+  const inner = err && typeof err === "object" && "cause" in err ? (err as any).cause : err;
   if (inner && typeof inner === "object" && "message" in inner) {
     return (inner as any).message;
   }
