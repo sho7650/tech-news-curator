@@ -55,15 +55,16 @@ make down        # stop all services
 make deploy      # start DB → API → run migrations → start frontend (proper order)
 
 # Database migrations
-make migrate msg="description"   # generate new migration
-make migrate-up                  # apply migrations inside running container
+make migrate     # generate new migration with drizzle-kit
+make migrate-up  # apply migrations inside running container
 
-# Tests (run from host - requires local Python + dev deps)
-cd api && pip install -r requirements-dev.txt
-make test                        # runs pytest in api/
+# Tests (Docker required: testcontainers auto-starts PostgreSQL)
+cd api && npm test                   # runs Vitest
+cd api && npx vitest run tests/articles.test.ts  # run a single test file
 
-# Run a single test
-cd api && python -m pytest tests/test_articles.py::test_create_article -v
+# Lint & Type check
+cd api && npx biome check src/       # Biome lint
+cd api && npx tsc --noEmit           # TypeScript type check
 
 # Push images to registry
 make push
@@ -73,50 +74,61 @@ make push
 
 Three Docker services orchestrated externally by n8n:
 
-- **news-api** (FastAPI, port 8100): Receives data from n8n, serves JSON to frontend
+- **news-api** (Hono + Node.js, port 8100): Receives data from n8n, serves JSON to frontend
 - **news-frontend** (Next.js 16, port 3100): Server Components fetch from news-api at runtime
 - **news-db** (PostgreSQL 16, port 5432): Stores articles, digests, sources
 
 n8n handles RSS fetching, deduplication, translation (Ollama), and summarization. The Docker side only does content extraction (`POST /ingest`), storage, and delivery.
 
-### API Layer (`api/app/`)
+### API Layer (`api/src/`)
 
 ```
-routers/   → HTTP endpoints (FastAPI router)
-services/  → Business logic and DB queries
-schemas/   → Pydantic v2 request/response models
-models/    → SQLAlchemy 2.0 ORM models
+routes/      → HTTP endpoints (Hono routes)
+services/    → Business logic and DB queries
+schemas/     → Zod request/response validation schemas
+db/schema/   → Drizzle ORM table definitions
+middleware/  → Auth, rate-limit, security headers, error handler
 ```
 
-Request flow: Router → Service → Database. Routers depend on `Depends(get_session)` for async DB sessions.
+Request flow: Route → Middleware (auth/rate-limit) → Service → Database (Drizzle + postgres.js).
 
 ### Frontend (`frontend/src/`)
 
 All pages are Server Components. Data fetching happens server-side via `API_URL` (internal Docker network, not public). No client-side fetching or `NEXT_PUBLIC_` env vars.
 
-## Critical Version-Specific Patterns
+## Tech Stack
 
-These patterns differ from older tutorials/docs. Using outdated patterns will break things:
+| Layer | Technology |
+|-------|-----------|
+| Framework | Hono 4.x + @hono/node-server |
+| ORM | Drizzle ORM + postgres.js |
+| Validation | Zod + @hono/zod-validator |
+| Migrations | drizzle-kit |
+| Rate Limit | hono-rate-limiter |
+| RSS | feed (npm) |
+| SSE | hono/streaming (built-in) |
+| Extraction | @mozilla/readability + linkedom |
+| Test | Vitest + @testcontainers/postgresql |
+| Linter | Biome |
+| Build | tsup (esbuild) → node |
 
-- **trafilatura 2.0**: `bare_extraction()` returns a `Document` object, not a dict. Access fields as attributes (`.title`, `.text`).
-- **httpx 0.28+**: No `app=` parameter. Use `AsyncClient(transport=ASGITransport(app=app), base_url="http://test")`.
-- **pytest-asyncio 1.3+**: No `event_loop` fixture. `asyncio_mode = "auto"` in pyproject.toml handles everything.
-- **Pydantic v2**: `ConfigDict(from_attributes=True)` not `orm_mode`. `BaseSettings` lives in `pydantic_settings`.
-- **SQLAlchemy 2.0**: `Mapped[type]` + `mapped_column()` pattern. `expire_on_commit=False` required for async sessions.
+## Critical Patterns
+
+- **Drizzle ORM errors**: PostgreSQL errors are wrapped in `DrizzleQueryError`. Access the PG error code via `err.cause.code` (not `err.code`). Use `getPgErrorCode()` from `middleware/error-handler.ts`.
 - **Next.js 16**: Dynamic route `params` is `Promise<{id: string}>` — must `await params` in Server Components.
-- **FastAPI**: Use `lifespan` context manager, not deprecated `@app.on_event`.
+- **postgres.js**: Connection string uses `postgresql://` (no `+asyncpg` suffix).
 
 ## Database Conventions
 
-- All timestamps use `DateTime(timezone=True)` (TIMESTAMPTZ) in UTC
-- PostgreSQL-specific types: `ARRAY(Text)`, `JSONB` — no SQLite compatibility
+- All timestamps use `timestamp('col', { withTimezone: true })` (TIMESTAMPTZ) in UTC
+- PostgreSQL-specific types: `text('col').array()`, `jsonb('col')` — no SQLite compatibility
 - Date filtering uses half-open intervals: `[start, start + 1 day)` not `23:59:59`
 - `source_url` UNIQUE constraint auto-creates index — don't add a redundant index
-- `metadata_` Python attribute maps to `metadata` column (reserved word avoidance)
+- UUID primary keys use `defaultRandom()` (server-side `gen_random_uuid()`)
 
 ## Testing
 
-Tests use real PostgreSQL via testcontainers (not SQLite). The container is session-scoped; tables are recreated per test function via `create_all`/`drop_all`. DB sessions are injected through `app.dependency_overrides[get_session]`. Test engines use `NullPool`.
+Tests use real PostgreSQL via `@testcontainers/postgresql` (Docker required). The container is created once per test run; tables are cleaned via `TRUNCATE` before each test. Each test file creates its own Hono app with route handlers wired to the shared test DB. Rate limiting is disabled in tests. API key `test-key-for-testing` is injected.
 
 ## Copyright Constraint
 

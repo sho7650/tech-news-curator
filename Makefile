@@ -22,23 +22,22 @@ build:
 	$(COMPOSE_PROD) build
 
 # Run tests (Docker required: testcontainers auto-starts PostgreSQL)
-# Prerequisite: pip install -r api/requirements-dev.txt
 test:
-	cd api && python -m pytest tests/ -v
+	cd api && npm test
 
 # Create migration
 migrate:
-	cd api && alembic revision --autogenerate -m "$(msg)"
+	cd api && npx drizzle-kit generate
 
 # Apply migrations (inside news-api container)
 migrate-up:
-	docker compose exec news-api alembic upgrade head
+	docker compose exec news-api npx drizzle-kit push
 
 # Deploy (migration -> start in order)
 deploy:
 	$(COMPOSE_PROD) up -d news-db
 	$(COMPOSE_PROD) up -d news-api
-	$(COMPOSE_PROD) exec news-api alembic upgrade head
+	$(COMPOSE_PROD) exec news-api npx drizzle-kit push
 	$(COMPOSE_PROD) up -d news-frontend
 
 # Push to registry
@@ -48,15 +47,7 @@ push:
 
 # Security scanning
 lint:
-	cd api && ruff check app/
-
-sast:
-	cd api && bandit -r app/ -x tests/
-
-audit:
-	cd api && pip-audit -r requirements.txt
-
-security: lint sast audit
+	cd api && npx biome check src/
 
 # E2E tests
 test-e2e:
