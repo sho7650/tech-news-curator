@@ -102,7 +102,9 @@ jobs:
 
       - name: Apply DB schema
         working-directory: api
-        run: npx drizzle-kit push
+        run: |
+          npx drizzle-kit push
+          PGPASSWORD=testpassword psql -h localhost -U news -d news_curator -c "\dt" | grep -q articles || { echo "::error::Table 'articles' not found — drizzle-kit push likely failed silently"; exit 1; }
         env:
           DATABASE_URL: postgresql://news:testpassword@localhost:5432/news_curator
 
