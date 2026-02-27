@@ -7,11 +7,12 @@ services:
     ports:
       - "8100:8100"
     environment:
-      DATABASE_URL: postgresql+asyncpg://news:${POSTGRES_PASSWORD:-devpassword}@news-db:5432/news_curator
+      DATABASE_URL: postgresql://news:${POSTGRES_PASSWORD:-devpassword}@news-db:5432/news_curator
       ENVIRONMENT: development
     volumes:
       - ./api:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8100 --reload
+      - /app/node_modules
+    command: npx tsx watch src/index.ts
 
   news-frontend:
     build:

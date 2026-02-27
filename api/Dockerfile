@@ -1,16 +1,19 @@
-FROM python:3.12.12-slim AS base
-
+FROM node:22-slim AS builder
 WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY tsup.config.ts tsconfig.json ./
+COPY src/ src/
+RUN npm run build
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
+FROM node:22-slim AS production
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY --from=builder /app/dist ./dist
 RUN adduser --disabled-password --gecos "" --no-create-home --uid 10001 appuser
 USER appuser
-
 EXPOSE 8100
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8100/health')"]
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8100"]
+    CMD ["node", "-e", "fetch('http://localhost:8100/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+CMD ["node", "dist/index.js"]

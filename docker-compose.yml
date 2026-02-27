@@ -37,8 +37,8 @@ services:
       dockerfile: Dockerfile
     image: ${REGISTRY:-ghcr.io/your-org}/news-curator/api:latest
     environment:
-      DATABASE_URL: postgresql+asyncpg://news_app:${NEWS_APP_PASSWORD}@news-db:5432/news_curator?ssl=require
-      DATABASE_ADMIN_URL: postgresql+asyncpg://news:${POSTGRES_PASSWORD}@news-db:5432/news_curator?ssl=require
+      DATABASE_URL: postgresql://news_app:${NEWS_APP_PASSWORD}@news-db:5432/news_curator?ssl=require
+      DATABASE_ADMIN_URL: postgresql://news:${POSTGRES_PASSWORD}@news-db:5432/news_curator?ssl=require
       ENVIRONMENT: production
       API_KEYS: ${API_KEYS}
       CORS_ORIGINS: ${CORS_ORIGINS}
