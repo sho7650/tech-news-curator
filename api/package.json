@@ -1,6 +1,6 @@
 {
   "name": "tech-news-curator-api",
-  "version": "2.0.0",
+  "version": "1.5.0",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
