@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.5.0...tech-news-curator-api-v1.6.0) (2026-03-01)
+
+
+### Features
+
+* add cleanArticleText() for refined noise removal in ingest pipeline ([b898fad](https://github.com/sho7650/tech-news-curator/commit/b898fad60ffad3f4cb3bf2a6e8ed0d45dd695554))
+* extend ingest noise removal and add E2E snapshot tests ([973015c](https://github.com/sho7650/tech-news-curator/commit/973015cc2d38127155409c4662603b6a329827cd))
+* extend ingest noise removal and add E2E snapshot tests ([e409896](https://github.com/sho7650/tech-news-curator/commit/e40989691f9a3adb2de1179fae5faf6556a47d1a))
+
 ## [1.5.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.4.0...tech-news-curator-api-v1.5.0) (2026-02-27)
 
 
