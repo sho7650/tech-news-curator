@@ -204,6 +204,100 @@ describe("cleanArticleText", () => {
     expect(result).toBe(input);
   });
 
+  // --- Leading metadata removal (Category C) ---
+
+  it("should remove In Brief + Posted + timestamp", () => {
+    const input =
+      "In Brief\n\nPosted:\n\n2:07 PM PST · February 28, 2026\n\nArticle content here.";
+    const result = cleanArticleText(input);
+    expect(result).toBe("Article content here.");
+  });
+
+  it("should not remove 'In Brief' without timestamp anchor", () => {
+    const input = "In Brief\n\nArticle content here.";
+    const result = cleanArticleText(input);
+    expect(result).toBe(input);
+  });
+
+  it("should remove standalone timestamp at the start", () => {
+    const input = "2:07 PM PST · February 28, 2026\n\nArticle content here.";
+    const result = cleanArticleText(input);
+    expect(result).toBe("Article content here.");
+  });
+
+  // --- Event promotion block removal (Category A) ---
+
+  it("should remove event promotion block (title + location|date)", () => {
+    const input =
+      "Content before.\n\nTechcrunch event\n\nBoston, MA | June 9, 2026\n\nContent after.";
+    const result = cleanArticleText(input);
+    expect(result).toBe("Content before.\n\nContent after.");
+  });
+
+  it("should remove event block with date range", () => {
+    const input =
+      "Content before.\n\nTechcrunch event\n\nSan Francisco, CA | October 13-15, 2026\n\nContent after.";
+    const result = cleanArticleText(input);
+    expect(result).toBe("Content before.\n\nContent after.");
+  });
+
+  it("should preserve long paragraphs before location|date", () => {
+    const input =
+      "Content about Boston, MA and its flourishing tech scene that discusses many interesting developments.\n\nMore content.";
+    const result = cleanArticleText(input);
+    expect(result).toBe(input);
+  });
+
+  it("should not remove paragraphs without location|date pattern", () => {
+    const input = "Short text\n\nNormal paragraph with content.\n\nMore content.";
+    const result = cleanArticleText(input);
+    expect(result).toBe(input);
+  });
+
+  // --- Trailing navigation section removal (Category B) ---
+
+  it("should remove trailing Newsletters + CTA + Related + Latest", () => {
+    const input = [
+      "Article content here.",
+      "",
+      "### Newsletters",
+      "",
+      "Subscribe for the industry's biggest tech news",
+      "",
+      "## Related",
+      "",
+      "## Latest in Media & Entertainment",
+    ].join("\n");
+    const result = cleanArticleText(input);
+    expect(result).toBe("Article content here.");
+  });
+
+  it("should preserve '## Related Work' followed by substantial content", () => {
+    const input =
+      "Article content.\n\n## Related Work\n\nSmith et al. demonstrated that the approach is viable for large-scale systems.";
+    const result = cleanArticleText(input);
+    expect(result).toBe(input);
+  });
+
+  it("should remove trailing empty heading", () => {
+    const input = "Content here.\n\n## Related";
+    const result = cleanArticleText(input);
+    expect(result).toBe("Content here.");
+  });
+
+  it("should not affect navigation headings in the middle of the article", () => {
+    const input =
+      "First section.\n\n## Related\n\nSmith et al. found interesting results.\n\nConclusion paragraph.";
+    const result = cleanArticleText(input);
+    expect(result).toBe(input);
+  });
+
+  it("should remove '## More from TechCrunch' at the end", () => {
+    const input = "Content here.\n\n## More from TechCrunch";
+    const result = cleanArticleText(input);
+    expect(result).toBe("Content here.");
+  });
+
   // --- Integration: full pipeline ---
 
   it("should handle combined noise in a single pass", () => {
@@ -221,5 +315,34 @@ describe("cleanArticleText", () => {
 
     const result = cleanArticleText(input, { byline: "Andrew Cunningham" });
     expect(result).toBe("Apple's 2018-era design.\n\nMain article content here.");
+  });
+
+  it("should handle all Phase 2 noise types combined", () => {
+    const input = [
+      "In Brief",
+      "",
+      "Posted:",
+      "",
+      "2:07 PM PST · February 28, 2026",
+      "",
+      "Main article content about the tech industry.",
+      "",
+      "Techcrunch event",
+      "",
+      "Boston, MA | June 9, 2026",
+      "",
+      "More article content with important details. Credit: Photographer",
+      "",
+      "### Newsletters",
+      "",
+      "Subscribe for the industry's biggest tech news",
+      "",
+      "## Related",
+    ].join("\n");
+
+    const result = cleanArticleText(input);
+    expect(result).toBe(
+      "Main article content about the tech industry.\n\nMore article content with important details.",
+    );
   });
 });

@@ -1,0 +1,169 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ingest E2E (fixture-based snapshot) > Article #1: TechCrunch: WBD sale > should match snapshot 1`] = `
+{
+  "author": "Lauren Forristal",
+  "body": "The streaming and entertainment industry just witnessed one of its most high-stakes megadeals ever, stunning industry observers. Not only is it historic in its size, but it is also predicted to disrupt Hollywood and the media business as we know it. 
+
+After years of Warner Bros. Discovery struggling under the weight of billions of dollars in debt, compounded by [declining cable viewership](https://www.reuters.com/breakingviews/tv-burdened-wbd-will-struggle-cut-cord-2025-06-05/) and fierce competition from streaming platforms, the company has been considering major strategic changes, including selling its entertainment assets to one of its rivals.
+
+Several major players saw the potential in acquiring the media giant and in December, Netflix [announced it would acquire](https://techcrunch.com/2025/12/05/netflix-to-acquire-warner-bros-in-a-disruptive-deal-valued-at-82-7b/) WBD’s studios and streaming for $82.7 billion.
+
+But in a surprise eleventh-hour move this month, it now looks like the David Ellison-run [Paramount will actually be the winner](https://techcrunch.com/2026/02/26/netflix-warner-bros-discovery-paramount-wbd-bid-studios-hbo-cnn-ellison/) of this bidding war, offering $111 billion to acquire all of Warner Bros. Discovery’s assets, including its studios, HBO, streaming platforms, games, and TV networks such as CNN and HGTV. Paramount was itself recently acquired by Ellison with significant support from his father, the Oracle chairman, world’s sixth-richest person, and major Trump donor Larry Ellison.
+
+Paramount’s offer still awaits formal approval from WBD’s board of directors, and any potential agreement may also face pressure from regulators.
+
+Let’s break down exactly what is happening, what’s at stake, and what could come next. 
+
+## What has happened so far?
+
+​This all started back in October when Warner Bros. Discovery (WBD) [revealed it was exploring a potential sale](https://www.wbd.com/news/warner-bros-discovery-initiates-review-potential-alternatives-maximize-shareholder-value) after receiving unsolicited interest from several major players in the industry.
+
+​The bidding process quickly became competitive, and Paramount and Comcast emerged as serious contenders, with [Paramount](https://www.reuters.com/legal/transactional/david-ellisons-paramount-seen-front-runner-warner-bros-discovery-deal-2025-10-23/) initially viewed as the frontrunner. 
+
+However, WBD’s board eventually determined that an offer from the streaming giant Netflix was the most attractive. Netflix offered $82.7 billion for just Warner’s film, television, and streaming assets.
+
+Thus began the bidding war. Paramount believed its bid, of approximately $108 billion for all of Warner’s assets, was superior to Netflix’s offer that focused on just the studios and streaming. To sweeten its deal, Netflix [amended its agreement](https://techcrunch.com/2026/01/20/netflix-revises-offer-to-pay-all-cash-for-warner-bros-to-stave-off-paramount/) in January to an all-cash offer at $27.75 per share of Warner Bros. Discovery, further reassuring investors and paving the way for the deal to proceed.
+
+​Paramount [persisted in its attempts to acquire WBD](https://techcrunch.com/2025/12/08/paramount-goes-to-war-with-netflix-for-warner-bros-discovery-with-hostile-108-4b-bid/). Still, the Warner board repeatedly [rejected](https://techcrunch.com/2026/01/07/warner-bros-discovery-rejects-paramounts-bid-again-calls-it-a-leveraged-buyout/) its offers, citing concerns about Paramount’s heavy debt load and the increased risk associated with its proposal, including concern over the suite of investors bankrolling Paramount’s bid, which includes Saudi, Qatari, and Abu Dhabi sovereign wealth funds. The board noted that Paramount’s offer would have left the combined company burdened with $87 billion in debt, a risk they were unwilling to take at the time.
+
+In January, Paramount [filed a lawsuit](https://techcrunch.com/2026/01/12/paramount-files-lawsuit-against-warner-bros-amidst-controversial-netflix-merger/) seeking more information about the Netflix deal. A month later, the company sought to sweeten its deal by [announcing](https://www.prnewswire.com/news-releases/paramount-enhances-its-superior-30-per-share-all-cash-offer-for-warner-bros-discovery-and-provides-update-on-regulatory-progress-302683694.html?tc=eml_cleartime) it would offer a $0.25 per share “ticking fee” to WBD shareholders for each quarter the deal fails to close by December 31, 2026. It also said it would pay the $2.8 billion breakup fee if Warner backs out of its deal with Netflix.
+
+Then, in a final attempt to secure a deal, Paramount increased its offer to $31 per share in February. This prompted the WBD board to [prolong discussions](https://www.wbd.com/news/warner-bros-discovery-board-directors-determines-revised-proposal-paramount-skydance) with Paramount regarding a potential agreement, considering it as a superior offer. Netflix declined to increase its bid and withdrew from the negotiations.
+
+“The transaction we negotiated would have created shareholder value with a clear path to regulatory approval,” Netflix co-CEOs Ted Sarandos and Greg Peters [said in a statement](https://ir.netflix.net/investor-news-and-events/financial-releases/press-release-details/2026/Netflix-Declines-to-Raise-Offer-for-Warner-Bros-/default.aspx) on Feb. 26. “However, we’ve always been disciplined, and at the price required to match Paramount Skydance’s latest offer, the deal is no longer financially attractive, so we are declining to match the Paramount Skydance bid.”
+
+In addition to the billions Paramount already holds in debt, the company is also set to assume the approximately $33 billion in debt Warner Bros. Discovery holds [under the agreement](https://ir.paramount.com/news-releases/news-release-details/paramount-acquire-warner-bros-discovery-form-next-generation). The deal will be [backed](https://www.bloomberg.com/news/articles/2026-02-27/paramount-s-57-5-billion-of-warner-debt-to-mix-junk-high-grade) by a $54 billion debt commitment from Bank of America Merrill Lynch, Citi, and Apollo Global Management, as well as $45.7 billion in equity from Larry Ellison.
+
+## Regulatory hurdles and other concerns
+
+In addition to the assumption of substantial debt posing a significant financial burden, Paramount faces several other hurdles in its deal with WBD that could impact the success of the transaction. 
+
+For one, Ellison has warned about significant job reductions that are expected in the near future. There have already been [widespread concerns among critics](https://techcrunch.com/2025/12/15/netflix-responds-to-concerns-about-wbd-deal/) [about potential job losses](https://techcrunch.com/2025/12/15/netflix-responds-to-concerns-about-wbd-deal/) and lower wages.
+
+Ellison is also a controversial figure in the industry, and his ownership of CBS News has been seen as sympathetic and supportive of the administration of Donald Trump, of whom his father, Larry Ellison, is a major donor. Under Ellison’s ownership of Paramount, reporting critical of the administration has been shelved or received increased scrutiny from Ellison or his appointed head of CBS News, the conservative provocateur Bari Weiss.
+
+This has led to some concern among employees at Warner-owned CNN. Trump has personally sought concessions from news divisions critical of him, including a [$16 million settlement from CBS](https://apnews.com/article/trump-media-harris-minutes-paramount-6415042fe910ae60b432dd8c73ef61b2), before his FCC [would approve](https://www.nytimes.com/2025/07/24/business/media/fcc-skydance-merger-paramount.html) the Ellison takeover of Paramount. Before Netflix bowed out of the deal, Trump [pressured the company](https://techcrunch.com/2026/02/22/trump-says-netflix-will-face-consequences-if-it-doesnt-fire-board-member-susan-rice/) to fire the former Biden White House official Susan Rice from its board. He has publicly stated his intentions to [bring CNN to heel](https://www.theguardian.com/commentisfree/2026/feb/28/trump-paramount-skydance-warner-bros-cnn-netflix) under new owners.
+
+Regulatory scrutiny is another hurdle. Such a large-scale merger has attracted attention from lawmakers.
+
+For instance, California Attorney General Rob Bonta [said in a statement](https://variety.com/2026/biz/news/rob-bonta-california-ag-warn-paramount-warner-bros-1236674377/) on February 26 that “these two Hollywood titans have not cleared regulatory scrutiny — the California Department of Justice has an open investigation, and we intend to be vigorous in our review.”
+
+A day before Netflix backed out, it was revealed that a [coalition of 11 state attorneys general](https://dojmt.gov/attorney-general-knudsen-asks-usdoj-to-review-proposed-netflix-warner-brothers-merger/) urged the U.S. Department of Justice (DOJ) to review the merger under concerns it will stifle competition and increase subscription prices. This comes months after U.S. senators Elizabeth Warren, Bernie Sanders, and Richard Blumenthal voiced [their concerns to the Justice Department’s Antitrust Division](https://www.hollywoodreporter.com/business/business-news/sen-elizabeth-warren-letter-doj-wbd-sale-paramount-1236430180/), warning that such a massive merger could have serious consequences for consumers and the industry at large. The senators argue that the merger could give the new media giant excessive market power, enabling it to raise prices for consumers and stifle competition.
+
+That said, Ellison’s father, the Oracle chairman Larry Ellison, is a significant Trump donor and has close ties to the Trump administration. His deal to acquire Paramount last year cleared quickly after acquiescing to c
+
+## When is the deal expected to close?
+
+The deal is not yet final.
+
+Initially, a deal with Netflix was expected to lead to a stockholder vote around April, with the deal anticipated to close within 12 to 18 months following that vote. However, the transition to the Paramount deal will likely create a new timeline for approval. Plus, regulatory approvals are still pending, and scrutiny could shape the final outcome. 
+
+Stay tuned…",
+  "og_image_url": "https://techcrunch.com/wp-content/uploads/2024/10/GettyImages-1574594892.jpg?resize=1200,800",
+  "published_at": "2026-02-28T21:28:06+00:00",
+  "title": "What to know about the landmark Warner Bros. Discovery sale | TechCrunch",
+}
+`;
+
+exports[`ingest E2E (fixture-based snapshot) > Article #2: TechCrunch: Anthropic trap > should match snapshot 1`] = `
+{
+  "author": "Connie Loizos",
+  "body": "Friday afternoon, just as this interview was getting underway, a news alert flashed across my computer screen: the Trump administration was severing ties with Anthropic, the San Francisco AI company founded in 2021 by Dario Amodei. Defense Secretary Pete Hegseth had invoked a [national security law](https://techcrunch.com/2026/02/27/pentagon-moves-to-designate-anthropic-as-a-supply-chain-risk/) to blacklist the company from doing business with the Pentagon after Amodei refused to allow Anthropic’s tech to be used for mass surveillance of U.S. citizens or for autonomous armed drones that could select and kill targets without human input.
+
+It was a jaw-dropping sequence. Anthropic stands to lose a contract worth up to $200 million and will be barred from working with other defense contractors after President Trump posted on Truth Social directing every federal agency to “immediately cease all use of Anthropic technology.” (Anthropic has since said it will [challenge the Pentagon in court](https://www.anthropic.com/news/statement-comments-secretary-war).)
+
+Max Tegmark has spent the better part of a decade warning that the race to build ever-more-powerful AI systems is outpacing the world’s ability to govern them. The MIT physicist founded the [Future of Life Institute](https://futureoflife.org/) in 2014 and helped organize an [open letter](https://futureoflife.org/open-letter/pause-giant-ai-experiments/) — ultimately signed by more than 33,000 people, including Elon Musk — calling for a pause in advanced AI development.
+
+His view of the Anthropic crisis is unsparing: the company, like its rivals, has sown the seeds of its own predicament. Tegmark’s argument doesn’t begin with the Pentagon but with a decision made years earlier — a choice, shared across the industry, to resist binding regulation. Anthropic, OpenAI, Google DeepMind and others have long promised to govern themselves responsibly. Anthropic this week even dropped the [central tenet of its own safety pledge](https://www.businessinsider.com/anthropic-changing-safety-policy-2026-2) — its promise not to release increasingly powerful AI systems until the company was confident they wouldn’t cause harm.
+
+Now, in the absence of rules, there’s not a lot to protect these players, says Tegmark. Here’s more from that interview, edited for length and clarity. You can hear the full conversation this coming week on TechCrunch’s [StrictlyVC Download](https://open.spotify.com/show/76SeToo8Rxj8hRTE0iQwWZ) podcast.
+
+**When you saw this news just now about Anthropic, what was your first reaction?**
+
+The road to hell is paved with good intentions. It’s so interesting to think back a decade ago, when people were so excited about how we were going to make artificial intelligence to cure cancer, to grow the prosperity in America and make America strong. And here we are now where the U.S. government is pissed off at this company for not wanting AI to be used for domestic mass surveillance of Americans, and also not wanting to have killer robots that can autonomously — without any human input at all — decide who gets killed.
+
+**Anthropic has staked its entire identity on being a safety-first AI company, and yet it was collaborating with defense and intelligence agencies \\[dating back to at least 2024\\]. Do you think that’s at all contradictory?**
+
+It is contradictory. If I can give a little cynical take on this — yes, Anthropic has been very good at marketing themselves as all about safety. But if you actually look at the facts rather than the claims, what you see is that Anthropic, OpenAI, Google DeepMind and xAI have all talked a lot about how they care about safety. None of them has come out supporting binding safety regulation the way we have in other industries. And all four of these companies have now broken their own promises. First we had Google — this big slogan, ‘Don’t be evil.’ Then they dropped that. Then they dropped another longer commitment that basically said they promised not to do harm with AI. They dropped that so they could sell AI for surveillance and weapons. OpenAI just dropped the word safety from their mission statement. xAI shut down their whole safety team. And now Anthropic, earlier in the week, dropped their most important safety commitment — the promise not to release powerful AI systems until they were sure they weren’t going to cause harm.
+
+**How did companies that made such prominent safety commitments end up in this position?**
+
+All of these companies, especially OpenAI and Google DeepMind but to some extent also Anthropic, have persistently lobbied against regulation of AI, saying, ‘Just trust us, we’re going to regulate ourselves.’ And they’ve successfully lobbied. So we right now have less regulation on AI systems in America than on sandwiches. You know, if you want to open a sandwich shop and the health inspector finds 15 rats in the kitchen, he won’t let you sell any sandwiches until you fix it. But if you say, ‘Don’t worry, I’m not going to sell sandwiches, I’m going to sell AI girlfriends for 11-year-olds, and they’ve been linked to suicides in the past, and then I’m going to release something called superintelligence which might overthrow the U.S. government, but I have a good feeling about mine’ — the inspector has to say, ‘Fine, go ahead, just don’t sell sandwiches.’
+
+**There’s food safety regulation and no AI regulation.**
+
+And this, I feel, all of these companies really share the blame for. Because if they had taken all these promises that they made back in the day for how they were going to be so safe and goody-goody, and gotten together, and then gone to the government and said, ‘Please take our voluntary commitments and turn them into U.S. law that binds even our most sloppy competitors’ — this would have happened instead. We’re in a complete regulatory vacuum. And we know what happens when there’s a complete corporate amnesty: you get [thalidomide](https://www.smithsonianmag.com/science-nature/woman-who-stood-between-america-and-epidemic-birth-defects-180963165/), you get tobacco companies pushing cigarettes on kids, you get asbestos causing lung cancer. So it’s sort of ironic that their own resistance to having laws saying what’s okay and not okay to do with AI is now coming back and biting them.
+
+There is no law right now against building AI to kill Americans, so the government can just suddenly ask for it. If the companies themselves had earlier come out and said, ‘We want this law,’ they wouldn’t be in this pickle. They really shot themselves in the foot.
+
+**The companies’ counter-argument is always the race with China — if American companies don’t do this, Beijing will. Does that argument hold?**
+
+Let’s analyze that. The most common talking point from the lobbyists for the AI companies — they’re now better funded and more numerous than the lobbyists from the fossil fuel industry, the pharma industry and the military-industrial complex combined — is that whenever anyone proposes any kind of regulation, they say, ‘But China.’ So let’s look at that. China is in the process of banning AI girlfriends outright. Not just age limits — they’re looking at banning [all anthropomorphic AI](https://www.cnbc.com/2025/12/29/china-ai-chatbot-rules-emotional-influence-suicide-gambling-zai-minimax-talkie-xingye-zhipu.html). Why? Not because they want to please America but because they feel this is screwing up Chinese youth and making China weak. Obviously, it’s making American youth weak, too.
+
+And when people say we have to race to build superintelligence so we can win against China — when we don’t actually know how to control superintelligence, so that the default outcome is that humanity loses control of Earth to alien machines — guess what? The Chinese Communist Party really likes control. Who in their right mind thinks that Xi Jinping is going to tolerate some Chinese AI company building something that overthrows the Chinese government? No way. It’s clearly really bad for the American government too if it gets overthrown in a coup by the first American company to build superintelligence. This is a national security threat.
+
+**That’s compelling framing — superintelligence as a national security threat, not an asset. Do you see that view gaining traction in Washington?**
+
+I think if people in the national security community listen to Dario Amodei describe his vision — he’s given a famous speech where he says we’ll soon have a [country of geniuses in a data center](https://www.instagram.com/bloombergtv/reel/DU7pjUciTlB/?hl=gu) — they might start thinking: wait, did Dario just use the word ‘country’? Maybe I should put that country of geniuses in a data center on the same threat list I’m keeping tabs on, because that sounds threatening to the U.S. government. And I think fairly soon, enough people in the U.S. national security community are going to realize that uncontrollable superintelligence is a threat, not a tool. This is totally analogous to the Cold War. There was a race for dominance — economic and military — against the Soviet Union. We Americans won that one without ever engaging in the second race, which was to see who could put the most nuclear craters in the other superpower. People realized that was just suicide. No one wins. The same logic applies here.
+
+**What does all of this mean for the pace of AI development more broadly? How close do you think we are to the systems you’re describing?**
+
+Six years ago, almost every expert in AI I knew predicted we were decades away from having AI that could master language and knowledge at human level — maybe 2040, maybe 2050. They were all wrong, because we already have that now. We’ve seen AI progress quite rapidly from high school level to college level to PhD level to university professor level in some areas. Last year, AI won the gold medal at the International Mathematics Olympiad, which is about as difficult as human tasks get. I [wrote a paper](https://arxiv.org/pdf/2510.18212) together with [Yoshua Bengio](https://en.wikipedia.org/wiki/Yoshua_Bengio), [Dan Hendrycks](https://en.wikipedia.org/wiki/Dan_Hendrycks), and other top AI researchers just a few months ago giving a rigorous definition of AGI. According to this, GPT-4 was 27% of the way there. GPT-5 was 57% of the way there. So we’re not there yet, but going from 27% to 57% that quickly suggests it might not be that long.
+
+When I lectured to my students yesterday at MIT, I told them that even if it takes four years, that means when they graduate, they might not be able to get any jobs anymore. It’s certainly not too soon to start preparing for it.
+
+**Anthropic is now blacklisted. I’m curious to see what happens next — will the other AI giants stand with them and say, we won’t do this either? Or does someone like xAI raise their hand and say, Anthropic didn’t want that contract, we’ll take it?** **\\[Editor’s note: Hours after the interview, OpenAI announced its [own deal](https://techcrunch.com/2026/02/28/openais-sam-altman-announces-pentagon-deal-with-technical-safeguards/) with the Pentagon.\\]**
+
+Last night, Sam Altman came out and said he stands with Anthropic and has the same red lines. I admire him for the courage of saying that. Google, as of when we started this interview, had said nothing. If they just stay quiet, I think that’s incredibly embarrassing for them as a company, and a lot of their staff will feel the same. We haven’t heard anything from xAI yet either. So it’ll be interesting to see. Basically, there’s this moment where everybody has to show their true colors.
+
+**Is there a version of this where the outcome is actually good?**
+
+Yes, and this is why I’m actually optimistic in a strange way. There’s such an obvious alternative here. If we just start treating AI companies like any other companies — drop the corporate amnesty — they would clearly have to do something like a clinical trial before they released something this powerful, and demonstrate to independent experts that they know how to control it. Then we get a golden age with all the good stuff from AI, without the existential angst. That’s not the path we’re on right now. But it could be.",
+  "og_image_url": "https://techcrunch.com/wp-content/uploads/2026/02/GettyImages-2261854833.jpg?resize=1200,800",
+  "published_at": "2026-03-01T00:08:58+00:00",
+  "title": "The trap Anthropic built for itself | TechCrunch",
+}
+`;
+
+exports[`ingest E2E (fixture-based snapshot) > Article #3: TechCrunch: Netflix backs down > should match snapshot 1`] = `
+{
+  "author": "Anthony Ha",
+  "body": "Netflix stunned the entertainment world this week when it [declined to raise its bid for Warner Bros. Discovery](https://techcrunch.com/2026/02/26/netflix-warner-bros-discovery-paramount-wbd-bid-studios-hbo-cnn-ellison/), setting the stage for Paramount Skydance to win ownership of the Hollywood studio.
+
+At the time, Netflix co-CEOs Ted Sarandos and Greg Peters said they were being financially disciplined. Now [reporting in Bloomberg](https://www.bloomberg.com/news/articles/2026-02-27/how-david-ellison-outlasted-netflix-in-the-warner-bros-bidding-war) offers more details about why Netflix executives backed down from [a bidding war that it seemed to win back in December](https://techcrunch.com/2026/02/28/warner-bros-netflix-paramount-acquisition-timeline-wbd/). 
+
+For one thing, the streaming giant’s shareholders appeared deeply skeptical that the acquisition was a good deal — Netflix’s share price declined 30% since announcing the deal, while the subsequent news that it was backing down [sent Netflix stock up nearly 14%](https://www.nytimes.com/2026/02/28/business/media/netflix-warner-bros-discovery-analysts.html).
+
+For another, Netflix’s commitment to the deal reportedly wavered after Paramount came in with an increased offer and seemed willing to go several more rounds in a bidding war.
+
+By the time Sarandos met with Trump administration officials on Thursday, he may already have decided to concede. In fact, since President Donald Trump had previously warned him not to overpay, Sarandos reportedly told him, “I took your advice.”
+
+Meanwhile, employees at Warner Bros. now worry about [major studio layoffs](https://www.nytimes.com/2026/02/28/business/warner-bros-paramount-reaction.html) and [conservative political pressure on CNN](https://view.newsletters.cnn.com/messages/17722120321108aa883dc7fda/raw).",
+  "og_image_url": "https://techcrunch.com/wp-content/uploads/2023/02/GettyImages-1240099721.jpeg?resize=1200,800",
+  "published_at": "2026-02-28T22:07:48+00:00",
+  "title": "Why did Netflix back down from its deal to acquire Warner Bros.? | TechCrunch",
+}
+`;
+
+exports[`ingest E2E (fixture-based snapshot) > Article #4: Ars Technica: ChatGPT outbreak > should match snapshot 1`] = `
+{
+  "author": "Beth Mole",
+  "body": "## An AI assist?
+
+The author of the MMWR report, county health official Katherine Houser, noted that the beer-tent workers were hesitant to give details because they didn’t want to get any of their community members in trouble. But one let slip that someone had put leftover food in the cooler overnight at the start of the fair.
+
+The county health officials hypothesized that the cooler had become contaminated with _Salmonella_ that spread to beer cans from which people then drank, allowing for infection. But with the makeshift cooler gone, it would remain only a hypothesis. So, the health investigators then turned to ChatGPT for assurances.
+
+After providing the chatbot with details of the outbreak, health investigators asked it several questions, including: “Will _S._ Agbeni grow in an improperly drained cooler?”; “Are any other sources, other than ice, likely if only canned beverages and no foods were available at this location?’ ; and “What examples of similar outbreaks have been documented in scientific literature?”
+
+Some of the questions are easy enough to answer without a chatbot. [A simple search](https://pubmed.ncbi.nlm.nih.gov/?term=%22salmonella%22+AND+%22ice%22) on PubMed, a federal database of scientific literature, quickly pulls up examples of _Salmonella_ being found in ice, for example. But, the chatbot assured the officials that the cooler was a “credible and likely” source of the outbreak and they stuck with the hypothesis.
+
+In the end, the officials required new cooler sanitation protocols—and concluded that the AI assistance was helpful. “AI was effective in this rural setting for rapid situational awareness,” Houser wrote. However, she also acknowledged the potential concerns of using AI for outbreak investigations: “Given the inherent limitations of generative AI tools, including potential inaccuracies and lack of source transparency, all AI-generated summaries were critically reviewed and validated against primary literature before incorporation,” she wrote.
+
+Overall, the case report has a murky ending. It’s unclear how helpful the chatbot actually was in this case. Critically reviewing AI-generated answers can easily take as much time as simply researching the answer on one’s own. And of course, we’ll never know for certain what was really going on in that makeshift beer cooler—though the new cooler sanitation protocols seem like a good idea, regardless.",
+  "og_image_url": "https://cdn.arstechnica.net/wp-content/uploads/2026/02/GettyImages-1904444791-2560x1440.jpg",
+  "published_at": "2026-02-28T18:17:12+00:00",
+  "title": "In puzzling outbreak, officials look to cold beer, gross ice, and ChatGPT",
+}
+`;
