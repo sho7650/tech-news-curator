@@ -1,9 +1,9 @@
-# 設定ファイル仕様 (.improvement-config.json)
+# Configuration File Spec (.improvement-config.json)
 
-プロジェクトルートに `.improvement-config.json` を配置することで、自律改善ループの挙動をカスタマイズできる。
-ファイルが存在しない場合はすべてデフォルト値で動作する。
+Place `.improvement-config.json` in the project root to customize improvement loop behavior.
+If the file does not exist, all defaults are used.
 
-## スキーマ
+## Schema
 
 ```json
 {
@@ -38,55 +38,53 @@
 }
 ```
 
-## フィールド説明
+## Field Descriptions
 
-### トップレベル
+### Top Level
 
-| フィールド | 型 | デフォルト | 説明 |
-|-----------|------|----------|------|
-| `rounds` | number | 5 | 最大ラウンド数。CLIの `--rounds` で上書き可能 |
-| `focus` | string | "all" | 対象スコープ: "api", "frontend", "all" |
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `rounds` | number | 5 | Maximum round count. Overridable via CLI `--rounds` |
+| `focus` | string | "all" | Target scope: "api", "frontend", "all" |
 
 ### qa
 
-| フィールド | 型 | デフォルト | 説明 |
-|-----------|------|----------|------|
-| `biome` | boolean | true | Biome lintを実行するか |
-| `typecheck` | boolean | true | tsc --noEmitを実行するか |
-| `vitest` | boolean | true | Vitestテストを実行するか（Docker必須） |
-| `playwright` | boolean | false | Playwright E2Eを実行するか（環境依存大） |
-| `claude_review` | boolean | true | Claudeコードレビューを行うか |
-| `severity_filter` | string[] | ["critical","high","medium"] | この重要度以上のissueのみ対応する |
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `biome` | boolean | true | Run Biome lint |
+| `typecheck` | boolean | true | Run tsc --noEmit |
+| `vitest` | boolean | true | Run Vitest tests (requires Docker) |
+| `playwright` | boolean | false | Run Playwright E2E (highly environment-dependent) |
+| `claude_review` | boolean | true | Run Claude code review |
+| `severity_filter` | string[] | ["critical","high","medium"] | Only address issues at or above these severity levels |
 
 ### refactor
 
-| フィールド | 型 | デフォルト | 説明 |
-|-----------|------|----------|------|
-| `enabled` | boolean | true | リファクタリングフェーズを実行するか |
-| `max_per_round` | number | 3 | 1ラウンドあたりの最大リファクタリング数 |
-| `strategies` | string[] | (全パターン) | 許可するリファクタリング戦略 |
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `enabled` | boolean | true | Run the refactoring phase |
+| `max_per_round` | number | 3 | Maximum refactorings per round |
+| `strategies` | string[] | (all patterns) | Allowed refactoring strategies |
 
 ### safety
 
-| フィールド | 型 | デフォルト | 説明 |
-|-----------|------|----------|------|
-| `auto_revert_on_failure` | boolean | true | テスト失敗時に自動revertするか |
-| `test_timeout_ms` | number | 120000 | テスト実行のタイムアウト（ミリ秒） |
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `auto_revert_on_failure` | boolean | true | Auto-revert on test failure |
+| `test_timeout_ms` | number | 120000 | Test execution timeout in milliseconds |
 
 ### self_learning
 
-| フィールド | 型 | デフォルト | 説明 |
-|-----------|------|----------|------|
-| `enabled` | boolean | true | 自己学習フェーズを実行するか |
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `enabled` | boolean | true | Run the self-learning phase |
 
-## .gitignore への追加
-
-以下を `.gitignore` に追加することを推奨:
+## Recommended .gitignore additions
 
 ```
 # Improvement loop state (session-specific)
 .improvement-state/
 
-# Improvement config (optional: team共有したい場合はコミットしてもよい)
+# Improvement config (optional: commit if you want to share with team)
 # .improvement-config.json
 ```

@@ -1,101 +1,101 @@
-# リファクタリングパターン集
+# Refactoring Patterns
 
-このドキュメントは、自律改善ループのPhase 3（Refactor）で参照する安全なリファクタリングパターンを定義する。
+This document defines safe refactoring patterns for Phase 3 (Refactor) of the autonomous improvement loop.
 
-## 基本原則
+## Core Principles
 
-1. **振る舞いを変えない**: リファクタリングは外部から観測可能な振る舞いを変えてはならない
-2. **1コミット1変更**: 各リファクタリングは独立したコミットにする
-3. **テストで検証**: リファクタリング後は必ずテストを実行する
-4. **元に戻せる**: git revertで安全に戻せるサイズに保つ
+1. **Preserve behavior**: Refactoring MUST NOT change externally observable behavior.
+2. **One commit per change**: Each refactoring is an independent commit.
+3. **Verify with tests**: Always run tests after refactoring.
+4. **Keep reversible**: Keep changes small enough to safely `git revert`.
 
-## パターン1: 長い関数の分割 (extract-function)
+## Pattern 1: Extract Function (extract-function)
 
-**適用条件**: 関数が50行を超えている
+**When to apply**: Function exceeds 50 lines.
 
-**手順**:
-1. 関数内のまとまった処理ブロックを特定する
-2. そのブロックを新しいprivate関数として抽出する
-3. 元の関数からは新しい関数を呼び出す
-4. 型情報を正確に引き継ぐ
+**Steps**:
+1. Identify a cohesive block of logic within the function.
+2. Extract it into a new private function.
+3. Call the new function from the original location.
+4. Carry over type information accurately.
 
-**注意**:
-- 副作用のある処理の抽出は慎重に行う
-- クロージャで参照している変数は引数として渡す
-- 抽出後の関数名は処理内容を正確に表す名前にする
+**Warnings**:
+- Be careful when extracting blocks with side effects.
+- Pass closure-captured variables as explicit arguments.
+- Name the extracted function to accurately describe its purpose.
 
-**コミットメッセージ例**: `refactor: extract parseArticleContent from ingest-service [round N]`
+**Commit message example**: `refactor: extract parseArticleContent from ingest-service [round N]`
 
-## パターン2: 条件分岐の簡略化 (simplify-conditional)
+## Pattern 2: Simplify Conditional (simplify-conditional)
 
-**適用条件**: ネストが3段以上、または複雑な条件式
+**When to apply**: Nesting 3+ levels deep, or complex boolean expressions.
 
-**手順**:
-1. ガード句（early return）でネストを減らす
-2. 複雑な条件式を名前付き変数に抽出する
-3. switch文をオブジェクトマップに置き換える（適切な場合）
+**Steps**:
+1. Reduce nesting with guard clauses (early return).
+2. Extract complex conditions into named boolean variables.
+3. Replace switch statements with object maps (when appropriate).
 
-**注意**:
-- else句の削除は既存のロジックを正確に保持すること
-- 条件の順序変更は副作用に注意する
+**Warnings**:
+- Ensure removing else clauses preserves the original logic exactly.
+- Watch for side effects when reordering conditions.
 
-**コミットメッセージ例**: `refactor: simplify error handling conditionals in article-service [round N]`
+**Commit message example**: `refactor: simplify error handling conditionals in article-service [round N]`
 
-## パターン3: 重複コードの共通化 (remove-duplication)
+## Pattern 3: Remove Duplication (remove-duplication)
 
-**適用条件**: 同じまたは非常に似たコードブロックが2箇所以上に存在
+**When to apply**: Same or very similar code blocks exist in 2+ locations.
 
-**手順**:
-1. 重複箇所を特定し、差分を明確にする
-2. 差分をパラメータ化して共通関数を作成する
-3. 元の箇所を共通関数の呼び出しに置き換える
-4. 共通関数は適切なモジュールに配置する（utilsやhelpersに安易に置かない）
+**Steps**:
+1. Identify duplicate sections and clarify their differences.
+2. Parameterize differences and create a shared function.
+3. Replace original locations with calls to the shared function.
+4. Place the shared function in an appropriate module (avoid dumping into generic utils/helpers).
 
-**注意**:
-- 偶然の重複（見た目は同じだが異なる理由で存在する）は共通化しない
-- 共通化により依存関係が複雑にならないか確認する
+**Warnings**:
+- Do NOT deduplicate coincidental duplication (looks the same but exists for different reasons).
+- Verify that deduplication does not create complex dependency chains.
 
-**コミットメッセージ例**: `refactor: extract shared pagination logic from article and source routes [round N]`
+**Commit message example**: `refactor: extract shared pagination logic from article and source routes [round N]`
 
-## パターン4: ファイル分割 (split-file)
+## Pattern 4: Split File (split-file)
 
-**適用条件**: ファイルが300行を超えている
+**When to apply**: File exceeds 300 lines.
 
-**手順**:
-1. ファイル内の責務を分類する
-2. 新しいファイルを作成し、関連するコードを移動する
-3. export/importを整理する
-4. index.tsでre-exportする（必要な場合）
+**Steps**:
+1. Classify responsibilities within the file.
+2. Create new files and move related code.
+3. Update export/import statements.
+4. Add re-exports in index.ts (if needed).
 
-**注意**:
-- 循環依存を作らないこと
-- 既存のimportパスをすべて更新すること
-- テストファイルのimportも更新すること
+**Warnings**:
+- MUST NOT create circular dependencies.
+- Update ALL existing import paths.
+- Update test file imports as well.
 
-**コミットメッセージ例**: `refactor: split article-service into article-query and article-mutation [round N]`
+**Commit message example**: `refactor: split article-service into article-query and article-mutation [round N]`
 
-## パターン5: 型安全性の強化 (strengthen-types)
+## Pattern 5: Strengthen Types (strengthen-types)
 
-**適用条件**: `any` 型の使用、型アサーションの多用、不十分な型ガード
+**When to apply**: Use of `any` type, excessive type assertions, insufficient type guards.
 
-**手順**:
-1. `any` を具体的な型に置き換える
-2. 型アサーション（`as Type`）を型ガード関数に置き換える
-3. Union型に対する網羅性チェック（exhaustive check）を追加する
+**Steps**:
+1. Replace `any` with specific types.
+2. Replace type assertions (`as Type`) with type guard functions.
+3. Add exhaustive checks for union types.
 
-**注意**:
-- 外部ライブラリの型定義が不十分な場合は `// biome-ignore` コメント付きの `any` を許容する
-- 型変更が既存のテストに影響しないか確認する
+**Warnings**:
+- When external library type definitions are insufficient, allow `any` with a `// biome-ignore` comment.
+- Verify that type changes do not break existing tests.
 
-**コミットメッセージ例**: `refactor: replace any types with proper interfaces in ingest-service [round N]`
+**Commit message example**: `refactor: replace any types with proper interfaces in ingest-service [round N]`
 
-## 適用しないパターン
+## Patterns NOT to Apply
 
-以下のリファクタリングは自律改善ループでは**実行しない**（リスクが高いため）:
+The following refactorings are **NOT performed** in the autonomous improvement loop (too risky):
 
-- アーキテクチャの変更（ディレクトリ構造の大幅な変更）
-- データベーススキーマの変更
-- 外部APIインターフェースの変更
-- 依存ライブラリの更新
-- テストフレームワークやビルドツールの変更
-- パフォーマンス最適化（計測なしの最適化は有害）
+- Architecture changes (major directory structure reorganization)
+- Database schema changes
+- External API interface changes
+- Dependency library updates
+- Test framework or build tool changes
+- Performance optimization (optimization without measurement is harmful)
