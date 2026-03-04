@@ -36,7 +36,7 @@ export class SSEBroker {
     this.clients.delete(clientId);
   }
 
-  async broadcast(event: Record<string, unknown>): Promise<void> {
+  broadcast(event: Record<string, unknown>): void {
     for (const [, client] of this.clients) {
       if (client.resolve) {
         // Client is waiting for an event

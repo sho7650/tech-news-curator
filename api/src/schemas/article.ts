@@ -25,6 +25,13 @@ export const articleListQuerySchema = z.object({
   date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .refine(
+      (d) => {
+        const parsed = new Date(`${d}T00:00:00Z`);
+        return parsed.toISOString().startsWith(d);
+      },
+      { message: "Invalid date" },
+    )
     .optional(),
   category: z.string().max(50).optional(),
 });
@@ -60,7 +67,7 @@ export interface ArticleDetail {
   published_at: string | null;
   og_image_url: string | null;
   categories: string[] | null;
-  metadata: unknown | null;
+  metadata: Record<string, unknown> | null; // matches Zod z.record(z.unknown())
   created_at: string;
 }
 

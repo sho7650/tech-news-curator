@@ -73,15 +73,6 @@ articlesRoute.get(
   }),
   async (c) => {
     const { page, per_page, date, category } = c.req.valid("query");
-
-    // Validate date if provided
-    if (date) {
-      const parsed = new Date(`${date}T00:00:00Z`);
-      if (Number.isNaN(parsed.getTime())) {
-        return c.json({ detail: `Invalid date: ${date}` }, 400);
-      }
-    }
-
     const { items, total } = await getArticles(db, page, per_page, date, category);
     return c.json({
       items: items.map(formatArticleListItem),
@@ -130,7 +121,7 @@ function formatArticleDetail(article: Article): ArticleDetail {
     published_at: article.publishedAt?.toISOString() ?? null,
     og_image_url: article.ogImageUrl ?? null,
     categories: article.categories ?? null,
-    metadata: article.metadata ?? null,
+    metadata: (article.metadata as Record<string, unknown>) ?? null,
     created_at: article.createdAt.toISOString(),
   };
 }

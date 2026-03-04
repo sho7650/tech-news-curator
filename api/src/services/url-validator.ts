@@ -10,6 +10,18 @@ export class UnsafeURLError extends Error {
   }
 }
 
+const UNSAFE_IP_RANGES = new Set([
+  "private",
+  "loopback",
+  "linkLocal",
+  "multicast",
+  "reserved",
+  "unspecified",
+  "uniqueLocal",
+  "broadcastAddress",
+  "carrierGradeNat",
+]);
+
 export function isSafeIp(ip: string): boolean {
   let parsed: ipaddr.IPv4 | ipaddr.IPv6;
   try {
@@ -18,40 +30,29 @@ export function isSafeIp(ip: string): boolean {
     return false;
   }
 
-  const range = parsed.range();
-  const unsafeRanges = [
-    "private",
-    "loopback",
-    "linkLocal",
-    "multicast",
-    "reserved",
-    "unspecified",
-    "uniqueLocal",
-    "broadcastAddress",
-    "carrierGradeNat",
-  ];
-
-  return !unsafeRanges.includes(range);
+  return !UNSAFE_IP_RANGES.has(parsed.range());
 }
 
-function dnsTimeout(hostname: string): Promise<never> {
-  return new Promise((_, reject) => {
-    setTimeout(
+function withDnsTimeout<T>(promise: Promise<T>, hostname: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(
       () => reject(new UnsafeURLError(`DNS resolution timed out for ${hostname}`)),
       DNS_TIMEOUT_MS,
     );
   });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer!));
 }
 
 export async function resolveWithTimeout(hostname: string): Promise<string[]> {
   try {
-    return await Promise.race([dns.promises.resolve4(hostname), dnsTimeout(hostname)]);
+    return await withDnsTimeout(dns.promises.resolve4(hostname), hostname);
   } catch {
     // Fallback to IPv6
   }
 
   try {
-    return await Promise.race([dns.promises.resolve6(hostname), dnsTimeout(hostname)]);
+    return await withDnsTimeout(dns.promises.resolve6(hostname), hostname);
   } catch {
     throw new UnsafeURLError(`DNS resolution failed for ${hostname}`);
   }
