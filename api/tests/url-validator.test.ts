@@ -4,12 +4,7 @@ import { UnsafeURLError, validateUrl, isSafeIp } from "../src/services/url-valid
 
 describe("URL Validator (SSRF Protection)", () => {
   it("should allow safe public URL", async () => {
-    vi.spyOn(dns, "resolve").mockImplementation(((
-      hostname: string,
-      callback: (err: NodeJS.ErrnoException | null, addresses: string[]) => void,
-    ) => {
-      callback(null, ["93.184.216.34"]);
-    }) as any);
+    vi.spyOn(dns.promises, "resolve4").mockResolvedValue(["93.184.216.34"]);
 
     const result = await validateUrl("https://example.com");
     expect(result).toBe("https://example.com");
@@ -37,31 +32,19 @@ describe("URL Validator (SSRF Protection)", () => {
   });
 
   it("should block if any resolved IP is private", async () => {
-    vi.spyOn(dns, "resolve").mockImplementation(((
-      hostname: string,
-      callback: (err: NodeJS.ErrnoException | null, addresses: string[]) => void,
-    ) => {
-      callback(null, ["93.184.216.34", "10.0.0.1"]);
-    }) as any);
+    vi.spyOn(dns.promises, "resolve4").mockResolvedValue(["93.184.216.34", "10.0.0.1"]);
 
     await expect(validateUrl("https://example.com")).rejects.toThrow(UnsafeURLError);
     vi.restoreAllMocks();
   });
 
   it("should handle DNS timeout", async () => {
-    vi.spyOn(dns, "resolve").mockImplementation(((
-      hostname: string,
-      callback: (err: NodeJS.ErrnoException | null, addresses: string[]) => void,
-    ) => {
-      // Never call callback to simulate timeout
-    }) as any);
-
-    vi.spyOn(dns, "resolve6").mockImplementation(((
-      hostname: string,
-      callback: (err: NodeJS.ErrnoException | null, addresses: string[]) => void,
-    ) => {
-      // Never call callback
-    }) as any);
+    vi.spyOn(dns.promises, "resolve4").mockImplementation(
+      () => new Promise(() => {}), // never resolves
+    );
+    vi.spyOn(dns.promises, "resolve6").mockImplementation(
+      () => new Promise(() => {}), // never resolves
+    );
 
     await expect(validateUrl("https://slow.example.com")).rejects.toThrow(/timed out/);
     vi.restoreAllMocks();

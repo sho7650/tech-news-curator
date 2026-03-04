@@ -47,13 +47,15 @@ function withDnsTimeout<T>(promise: Promise<T>, hostname: string): Promise<T> {
 export async function resolveWithTimeout(hostname: string): Promise<string[]> {
   try {
     return await withDnsTimeout(dns.promises.resolve4(hostname), hostname);
-  } catch {
+  } catch (err) {
+    if (err instanceof UnsafeURLError && err.message.includes("timed out")) throw err;
     // Fallback to IPv6
   }
 
   try {
     return await withDnsTimeout(dns.promises.resolve6(hostname), hostname);
-  } catch {
+  } catch (err) {
+    if (err instanceof UnsafeURLError && err.message.includes("timed out")) throw err;
     throw new UnsafeURLError(`DNS resolution failed for ${hostname}`);
   }
 }
