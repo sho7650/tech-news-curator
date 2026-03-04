@@ -39,5 +39,8 @@ zap-reports/
 frontend/playwright-report/
 frontend/test-results/
 
+# Improvement loop state (session-specific, not source code)
+.improvement-state/
+
 # OS
 .DS_Store
