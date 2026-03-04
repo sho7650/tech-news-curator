@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.2](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.7.1...tech-news-curator-api-v1.7.2) (2026-03-04)
+
+
+### Bug Fixes
+
+* code quality improvements from autonomous improvement loop ([e3305b4](https://github.com/sho7650/tech-news-curator/commit/e3305b4b8c0ae1137d13c297dadd241e5e5d6ce6))
+* resolve 12 QA issues [round 1] ([7955f52](https://github.com/sho7650/tech-news-curator/commit/7955f524ea9d2eacfd802c1b3d08f28ad6e66c52))
+* resolve 3 QA issues [round 3] ([2a40526](https://github.com/sho7650/tech-news-curator/commit/2a405261eacf3d18003bc81c06624326a64ab475))
+
 ## [1.7.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.7.0...tech-news-curator-api-v1.7.1) (2026-03-04)
 
 
