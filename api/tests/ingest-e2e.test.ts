@@ -53,6 +53,14 @@ const FIXTURE_CASES: FixtureCase[] = [
     noiseAbsent: [],
     authorExpected: "Beth Mole",
   },
+  {
+    id: 5,
+    file: "ingest-e2e-5-techcrunch-openai.html",
+    url: "https://techcrunch.com/2026/03/01/openai-shares-more-details-about-its-agreement-with-the-pentagon/",
+    label: "TechCrunch: OpenAI Pentagon",
+    noiseAbsent: ["You can contact or verify outreach", "[View Bio]"],
+    authorExpected: "Anthony Ha",
+  },
 ];
 
 describe("ingest E2E (fixture-based snapshot)", () => {

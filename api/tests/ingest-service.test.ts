@@ -204,6 +204,48 @@ describe("cleanArticleText", () => {
     expect(result).toBe(input);
   });
 
+  // --- Trailing contact info removal ---
+
+  it("should remove trailing contact line with email", () => {
+    const input =
+      "Article content.\n\nYou can contact Anthony Ha at anthony@example.com or on Signal.";
+    const result = cleanArticleText(input);
+    expect(result).toBe("Article content.");
+  });
+
+  it("should remove trailing [View Bio] link", () => {
+    const input = "Article content.\n\n[View Bio](https://techcrunch.com/author/anthony-ha/)";
+    const result = cleanArticleText(input);
+    expect(result).toBe("Article content.");
+  });
+
+  it("should remove contact line + View Bio together", () => {
+    const input = [
+      "Article content.",
+      "",
+      "You can contact or verify outreach to Anthony Ha via anthony@example.com.",
+      "",
+      "[View Bio](https://techcrunch.com/author/anthony-ha/)",
+    ].join("\n");
+    const result = cleanArticleText(input);
+    expect(result).toBe("Article content.");
+  });
+
+  it("should not remove contact-like text in article body", () => {
+    const input =
+      "First paragraph.\n\nUsers can contact support at help@example.com for assistance.\n\nThird paragraph.\n\nFourth paragraph.\n\nFifth paragraph.";
+    const result = cleanArticleText(input);
+    expect(result).toBe(input);
+  });
+
+  it("should not remove long paragraphs containing email", () => {
+    const longContact = `You can contact the author at author@example.com for more details about this topic. ${"Additional context. ".repeat(10)}End.`;
+    expect(longContact.length).toBeGreaterThan(200);
+    const input = `Article content.\n\n${longContact}`;
+    const result = cleanArticleText(input);
+    expect(result).toBe(input);
+  });
+
   // --- Leading metadata removal (Category C) ---
 
   it("should remove In Brief + Posted + timestamp", () => {
