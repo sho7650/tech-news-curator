@@ -15,6 +15,8 @@ function isPgError(val: unknown): val is PgError {
   );
 }
 
+export const PG_UNIQUE_VIOLATION = "23505";
+
 export function getPgErrorCode(err: unknown): string | undefined {
   // Direct postgres.js error
   if (isPgError(err)) {
@@ -47,8 +49,7 @@ export function errorHandler(err: Error, c: Context): Response {
   const pgCode = getPgErrorCode(err);
 
   if (pgCode) {
-    // PostgreSQL unique constraint violation (23505)
-    if (pgCode === "23505") {
+    if (pgCode === PG_UNIQUE_VIOLATION) {
       return c.json({ detail: "Resource conflict" }, 409);
     }
 

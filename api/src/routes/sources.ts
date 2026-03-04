@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { db } from "../database.js";
 import type { Source } from "../db/schema/index.js";
 import { verifyApiKey } from "../middleware/auth.js";
-import { getPgErrorCode } from "../middleware/error-handler.js";
+import { PG_UNIQUE_VIOLATION, getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
 import {
   type SourceResponse,
@@ -58,7 +58,7 @@ sourcesRoute.post(
       const source = await createSource(db, data);
       return c.json(formatSourceResponse(source), 201);
     } catch (err) {
-      if (getPgErrorCode(err) === "23505") {
+      if (getPgErrorCode(err) === PG_UNIQUE_VIOLATION) {
         return c.json({ detail: "Source with this RSS URL already exists" }, 409);
       }
       throw err;
@@ -90,7 +90,7 @@ sourcesRoute.put(
       }
       return c.json(formatSourceResponse(updated));
     } catch (err) {
-      if (getPgErrorCode(err) === "23505") {
+      if (getPgErrorCode(err) === PG_UNIQUE_VIOLATION) {
         return c.json({ detail: "Source with this RSS URL already exists" }, 409);
       }
       throw err;

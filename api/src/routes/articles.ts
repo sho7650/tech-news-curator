@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { db } from "../database.js";
 import type { Article } from "../db/schema/index.js";
 import { verifyApiKey } from "../middleware/auth.js";
-import { getPgErrorCode } from "../middleware/error-handler.js";
+import { PG_UNIQUE_VIOLATION, getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
 import {
   type ArticleDetail,
@@ -54,7 +54,7 @@ articlesRoute.post(
       const detail = formatArticleDetail(article);
       return c.json(detail, 201);
     } catch (err) {
-      if (getPgErrorCode(err) === "23505") {
+      if (getPgErrorCode(err) === PG_UNIQUE_VIOLATION) {
         return c.json({ detail: "Article with this URL already exists" }, 409);
       }
       throw err;
