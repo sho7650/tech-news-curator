@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.7.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.7.0...tech-news-curator-api-v1.7.1) (2026-03-04)
+
+
+### Bug Fixes
+
+* eliminate any types, add URL validation, fix null assertion [round 1] ([6acef29](https://github.com/sho7650/tech-news-curator/commit/6acef298c4b31cfe03ec8cd492bb779d942f8d7d))
+* extract shared DB type, add server.close() to shutdown [round 3] ([2e2ac9e](https://github.com/sho7650/tech-news-curator/commit/2e2ac9e4a391cd6fb72fe716e0315e2095427070))
+* resolve 8 QA issues [round 2] ([8ec5bb0](https://github.com/sho7650/tech-news-curator/commit/8ec5bb0ed5df33288b81208a78b2d847018ad974))
+* update url-validator tests to match dns.promises refactor ([7248f95](https://github.com/sho7650/tech-news-curator/commit/7248f95ecaf717f27fb9c2d6de3d117cd1f13dcd))
+
 ## [1.7.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.6.0...tech-news-curator-api-v1.7.0) (2026-03-04)
 
 
