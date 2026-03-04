@@ -1,10 +1,7 @@
 import { count, desc, eq } from "drizzle-orm";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type * as schema from "../db/schema/index.js";
+import type { DB } from "../database.js";
 import { digests } from "../db/schema/index.js";
 import type { DigestCreate } from "../schemas/digest.js";
-
-type DB = PostgresJsDatabase<typeof schema>;
 
 export async function createDigest(db: DB, data: DigestCreate) {
   const [digest] = await db

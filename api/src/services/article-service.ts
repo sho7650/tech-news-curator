@@ -1,10 +1,7 @@
 import { and, arrayContains, count, desc, eq, gte, lt } from "drizzle-orm";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type * as schema from "../db/schema/index.js";
+import type { DB } from "../database.js";
 import { articles } from "../db/schema/index.js";
 import type { ArticleCreate } from "../schemas/article.js";
-
-type DB = PostgresJsDatabase<typeof schema>;
 
 const MS_PER_DAY = 86_400_000;
 

@@ -1,7 +1,9 @@
-import { drizzle } from "drizzle-orm/postgres-js";
+import { type PostgresJsDatabase, drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { config } from "./config.js";
 import * as schema from "./db/schema/index.js";
+
+export type DB = PostgresJsDatabase<typeof schema>;
 
 const queryClient = postgres(config.databaseUrl, {
   max: 30,

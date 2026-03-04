@@ -1,10 +1,7 @@
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { Feed } from "feed";
 import { config } from "../config.js";
-import type * as schema from "../db/schema/index.js";
+import type { DB } from "../database.js";
 import { getArticles } from "./article-service.js";
-
-type DB = PostgresJsDatabase<typeof schema>;
 
 export async function generateRssFeed(db: DB): Promise<string> {
   const { items: articleList } = await getArticles(db, 1, 20);

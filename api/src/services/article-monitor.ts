@@ -1,10 +1,7 @@
 import { gt } from "drizzle-orm";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type * as schema from "../db/schema/index.js";
+import type { DB } from "../database.js";
 import { articles } from "../db/schema/index.js";
 import { articleBroker } from "./sse-broker.js";
-
-type DB = PostgresJsDatabase<typeof schema>;
 
 const POLL_INTERVAL_MS = 5000;
 
