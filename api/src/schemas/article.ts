@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQuery } from "./base.js";
 
 export const articleCreateSchema = z
   .object({
@@ -19,9 +20,7 @@ export const articleCreateSchema = z
 
 export type ArticleCreate = z.infer<typeof articleCreateSchema>;
 
-export const articleListQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  per_page: z.coerce.number().int().min(1).max(100).default(20),
+export const articleListQuerySchema = paginationQuery.extend({
   date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
