@@ -5,6 +5,7 @@ import type { Article } from "../db/schema/index.js";
 import { verifyApiKey } from "../middleware/auth.js";
 import { PG_UNIQUE_VIOLATION, getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
+import { validationHook } from "../middleware/validation.js";
 import {
   type ArticleDetail,
   type ArticleListItem,
@@ -42,11 +43,7 @@ articlesRoute.post(
   "/articles",
   createRateLimiter(30),
   verifyApiKey,
-  zValidator("json", articleCreateSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("json", articleCreateSchema, validationHook),
   async (c) => {
     const data = c.req.valid("json");
     try {
@@ -66,11 +63,7 @@ articlesRoute.post(
 articlesRoute.get(
   "/articles",
   createRateLimiter(200),
-  zValidator("query", articleListQuerySchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("query", articleListQuerySchema, validationHook),
   async (c) => {
     const { page, per_page, date, category } = c.req.valid("query");
     const { items, total } = await getArticles(db, page, per_page, date, category);

@@ -5,6 +5,7 @@ import type { Source } from "../db/schema/index.js";
 import { verifyApiKey } from "../middleware/auth.js";
 import { PG_UNIQUE_VIOLATION, getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
+import { validationHook } from "../middleware/validation.js";
 import {
   type SourceResponse,
   sourceCreateSchema,
@@ -25,11 +26,7 @@ const sourcesRoute = new Hono();
 sourcesRoute.get(
   "/sources",
   createRateLimiter(60),
-  zValidator("query", sourceListQuerySchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("query", sourceListQuerySchema, validationHook),
   async (c) => {
     const { page, per_page, active_only } = c.req.valid("query");
     const { items, total } = await getSources(db, page, per_page, active_only);
@@ -47,11 +44,7 @@ sourcesRoute.post(
   "/sources",
   createRateLimiter(10),
   verifyApiKey,
-  zValidator("json", sourceCreateSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("json", sourceCreateSchema, validationHook),
   async (c) => {
     const data = c.req.valid("json");
     try {
@@ -71,11 +64,7 @@ sourcesRoute.put(
   "/sources/:source_id",
   createRateLimiter(10),
   verifyApiKey,
-  zValidator("json", sourceUpdateSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("json", sourceUpdateSchema, validationHook),
   async (c) => {
     const sourceId = c.req.param("source_id");
     const existing = await getSourceById(db, sourceId);

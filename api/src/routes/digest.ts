@@ -5,6 +5,7 @@ import type { Digest } from "../db/schema/index.js";
 import { verifyApiKey } from "../middleware/auth.js";
 import { PG_UNIQUE_VIOLATION, getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
+import { validationHook } from "../middleware/validation.js";
 import {
   type DigestListItem,
   type DigestResponse,
@@ -20,11 +21,7 @@ digestRoute.post(
   "/digest",
   createRateLimiter(5),
   verifyApiKey,
-  zValidator("json", digestCreateSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("json", digestCreateSchema, validationHook),
   async (c) => {
     const data = c.req.valid("json");
     try {
@@ -43,11 +40,7 @@ digestRoute.post(
 digestRoute.get(
   "/digest",
   createRateLimiter(60),
-  zValidator("query", digestListQuerySchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("query", digestListQuerySchema, validationHook),
   async (c) => {
     const { page, per_page } = c.req.valid("query");
     const { items, total } = await getDigests(db, page, per_page);
