@@ -137,3 +137,18 @@ Public API endpoints return `summary_ja` + source link only. `body_original` and
 ## Container Registry
 
 Images push to `${REGISTRY}/news-curator/{api,frontend}:latest`. Set `REGISTRY` in `.env` or `Makefile`.
+
+## Tone & Style
+
+- **Commit messages**: Conventional Commits (`feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `perf`, `ci`)
+- **Code comments**: English, concise, explain "why" not "what"
+- **Naming**: `camelCase` for variables/functions, `PascalCase` for types/interfaces/classes, `UPPER_SNAKE_CASE` for constants
+- **Imports**: Group by: node built-ins → external packages → internal modules, separated by blank lines
+
+## Guardrails
+
+- **Max file length**: 300 lines — split into smaller modules if exceeded
+- **Max function length**: 50 lines — extract helper functions if exceeded
+- **No `any` types**: unless explicitly justified with a `// biome-ignore` comment
+- **No circular dependencies**: between modules — use dependency injection or restructure
+- **No hardcoded secrets**: use environment variables for all credentials and API keys
