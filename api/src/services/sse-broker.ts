@@ -27,7 +27,8 @@ export class SSEBroker {
         `Maximum SSE connections (${MAX_SSE_CONNECTIONS}) exceeded`,
       );
     }
-    const id = this.nextId++;
+    this.nextId = (this.nextId + 1) % Number.MAX_SAFE_INTEGER;
+    const id = this.nextId;
     this.clients.set(id, { id, events: [], resolve: null });
     return id;
   }
@@ -57,7 +58,7 @@ export class SSEBroker {
 
     // Check buffered events first
     if (client.events.length > 0) {
-      return client.events.shift()!;
+      return client.events.shift() ?? null;
     }
 
     // Wait for next event

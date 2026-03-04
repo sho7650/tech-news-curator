@@ -13,6 +13,7 @@ import {
   articleCreateSchema,
   articleListQuerySchema,
 } from "../schemas/article.js";
+import { uuidParamSchema } from "../schemas/base.js";
 import {
   checkArticleExists,
   createArticle,
@@ -77,14 +78,19 @@ articlesRoute.get(
 );
 
 // GET /articles/:article_id
-articlesRoute.get("/articles/:article_id", createRateLimiter(200), async (c) => {
-  const articleId = c.req.param("article_id");
-  const article = await getArticleById(db, articleId);
-  if (!article) {
-    return c.json({ detail: "Article not found" }, 404);
-  }
-  return c.json(formatArticleDetail(article));
-});
+articlesRoute.get(
+  "/articles/:article_id",
+  createRateLimiter(200),
+  zValidator("param", uuidParamSchema, validationHook),
+  async (c) => {
+    const { article_id: articleId } = c.req.valid("param");
+    const article = await getArticleById(db, articleId);
+    if (!article) {
+      return c.json({ detail: "Article not found" }, 404);
+    }
+    return c.json(formatArticleDetail(article));
+  },
+);
 
 function formatArticleListItem(article: Article): ArticleListItem {
   return {

@@ -1,0 +1,30 @@
+{
+  "rounds": 5,
+  "focus": "all",
+  "qa": {
+    "biome": true,
+    "typecheck": true,
+    "vitest": true,
+    "playwright": false,
+    "claude_review": true,
+    "severity_filter": ["critical", "high", "medium"]
+  },
+  "refactor": {
+    "enabled": true,
+    "max_per_round": 3,
+    "strategies": [
+      "extract-function",
+      "simplify-conditional",
+      "remove-duplication",
+      "split-file",
+      "strengthen-types"
+    ]
+  },
+  "safety": {
+    "auto_revert_on_failure": true,
+    "test_timeout_ms": 120000
+  },
+  "self_learning": {
+    "enabled": true
+  }
+}

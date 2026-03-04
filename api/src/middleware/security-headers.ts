@@ -1,4 +1,5 @@
 import type { Context, Next } from "hono";
+import { config } from "../config.js";
 
 const SKIP_CSP_PATHS = new Set(["/docs", "/redoc", "/openapi.json", "/feed/rss"]);
 
@@ -6,7 +7,9 @@ export async function securityHeaders(c: Context, next: Next): Promise<void> {
   await next();
 
   c.header("X-Content-Type-Options", "nosniff");
-  c.header("Strict-Transport-Security", "max-age=63072000; includeSubDomains");
+  if (config.environment === "production") {
+    c.header("Strict-Transport-Security", "max-age=63072000; includeSubDomains");
+  }
   c.header("Cache-Control", "no-store");
   c.header("X-Frame-Options", "DENY");
   c.header("Referrer-Policy", "no-referrer");

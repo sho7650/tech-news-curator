@@ -3,6 +3,15 @@ import type { DB } from "../database.js";
 import { sources } from "../db/schema/index.js";
 import type { SourceCreate, SourceUpdate } from "../schemas/source.js";
 
+// Column-aware type for partial updates — NOT NULL columns exclude null
+interface SourceUpdateData {
+  name?: string;
+  rssUrl?: string;
+  siteUrl?: string | null;
+  category?: string | null;
+  isActive?: boolean;
+}
+
 export async function createSource(db: DB, data: SourceCreate) {
   const [source] = await db
     .insert(sources)
@@ -46,13 +55,16 @@ export async function getSourceById(db: DB, sourceId: string) {
 export async function updateSource(db: DB, sourceId: string, data: SourceUpdate) {
   // Build update object from only defined (sent) fields
   // undefined = not sent, null = explicitly null (rejected by schema for required fields)
-  const updateData: Record<string, unknown> = {};
+  const updateData: SourceUpdateData = {};
 
-  if (data.name !== undefined) updateData.name = data.name;
-  if (data.rss_url !== undefined) updateData.rssUrl = data.rss_url;
-  if (data.site_url !== undefined) updateData.siteUrl = data.site_url;
-  if (data.category !== undefined) updateData.category = data.category;
-  if (data.is_active !== undefined) updateData.isActive = data.is_active;
+  // NOT NULL columns: double-guard null (Zod refine already prevents, this narrows the type)
+  if (data.name != null) updateData.name = data.name;
+  if (data.rss_url != null) updateData.rssUrl = data.rss_url;
+  // Nullable columns: null clears the value
+  if (data.site_url !== undefined) updateData.siteUrl = data.site_url ?? null;
+  if (data.category !== undefined) updateData.category = data.category ?? null;
+  // NOT NULL with default
+  if (data.is_active != null) updateData.isActive = data.is_active;
 
   if (Object.keys(updateData).length === 0) {
     // No fields to update, return existing

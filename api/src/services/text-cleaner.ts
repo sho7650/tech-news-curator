@@ -34,9 +34,9 @@ const NAVIGATION_HEADINGS: RegExp[] = [
 
 const CONTACT_INFO_PATTERNS: RegExp[] = [
   // "You can contact Anthony Ha at..." / "reach out to..." / "send tips to..."
-  /\b(?:contact|reach|verify\s+outreach|get\s+in\s+touch|send\s+(?:tips?|news))\b.*\S+@\S+/i,
+  /\b(?:contact|reach|verify\s+outreach|get\s+in\s+touch|send\s+(?:tips?|news))\b.*?\S+@\S+/i,
   // "[View Bio](https://...)" standalone link
-  /^\[View (?:Bio|Profile)\]\(.*\)\s*$/i,
+  /^\[View (?:Bio|Profile)\]\([^)]*\)\s*$/i,
 ];
 
 const AUTHOR_BIO_INDICATORS: RegExp[] = [

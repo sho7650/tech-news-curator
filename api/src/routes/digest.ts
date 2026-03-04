@@ -6,6 +6,7 @@ import { verifyApiKey } from "../middleware/auth.js";
 import { PG_UNIQUE_VIOLATION, getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
 import { validationHook } from "../middleware/validation.js";
+import { digestDateParamSchema } from "../schemas/base.js";
 import {
   type DigestListItem,
   type DigestResponse,
@@ -54,14 +55,19 @@ digestRoute.get(
 );
 
 // GET /digest/:digest_date
-digestRoute.get("/digest/:digest_date", createRateLimiter(60), async (c) => {
-  const digestDate = c.req.param("digest_date");
-  const digest = await getDigestByDate(db, digestDate);
-  if (!digest) {
-    return c.json({ detail: "Digest not found" }, 404);
-  }
-  return c.json(formatDigestResponse(digest));
-});
+digestRoute.get(
+  "/digest/:digest_date",
+  createRateLimiter(60),
+  zValidator("param", digestDateParamSchema, validationHook),
+  async (c) => {
+    const { digest_date: digestDate } = c.req.valid("param");
+    const digest = await getDigestByDate(db, digestDate);
+    if (!digest) {
+      return c.json({ detail: "Digest not found" }, 404);
+    }
+    return c.json(formatDigestResponse(digest));
+  },
+);
 
 function formatDigestResponse(digest: Digest): DigestResponse {
   return {

@@ -18,6 +18,9 @@ venv/
 # Docker
 postgres_data/
 
+# Node.js
+api/node_modules/
+
 # Next.js
 frontend/.next/
 frontend/node_modules/
@@ -35,6 +38,9 @@ zap-reports/
 # Playwright
 frontend/playwright-report/
 frontend/test-results/
+
+# Improvement loop state (session-specific, not source code)
+.improvement-state/
 
 # OS
 .DS_Store
