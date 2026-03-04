@@ -1,5 +1,7 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
+import { rootLogger } from "../lib/logger.js";
+import type { AppEnv } from "../types.js";
 
 interface PgError {
   code: string;
@@ -41,7 +43,9 @@ function getPgErrorMessage(err: unknown): string | undefined {
   return undefined;
 }
 
-export function errorHandler(err: Error, c: Context): Response {
+export function errorHandler(err: Error, c: Context<AppEnv>): Response {
+  const logger = c.get("logger") ?? rootLogger;
+
   if (err instanceof HTTPException) {
     return c.json({ detail: err.message }, err.status);
   }
@@ -56,11 +60,11 @@ export function errorHandler(err: Error, c: Context): Response {
     // Other PostgreSQL integrity constraint violations — log for debugging
     if (pgCode.startsWith("23")) {
       const pgMessage = getPgErrorMessage(err);
-      console.error(`PostgreSQL constraint error [${pgCode}]:`, pgMessage ?? err.message);
+      logger.error({ pgCode, pgMessage: pgMessage ?? err.message }, "PostgreSQL constraint error");
       return c.json({ detail: "Data integrity error" }, 422);
     }
   }
 
-  console.error("Unhandled error:", err);
+  logger.error({ err }, "unhandled error");
   return c.json({ detail: "Internal server error" }, 500);
 }

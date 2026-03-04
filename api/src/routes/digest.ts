@@ -14,8 +14,9 @@ import {
   digestListQuerySchema,
 } from "../schemas/digest.js";
 import { createDigest, getDigestByDate, getDigests } from "../services/digest-service.js";
+import type { AppEnv } from "../types.js";
 
-const digestRoute = new Hono();
+const digestRoute = new Hono<AppEnv>();
 
 // POST /digest
 digestRoute.post(

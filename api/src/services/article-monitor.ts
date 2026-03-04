@@ -1,9 +1,11 @@
 import { gt } from "drizzle-orm";
 import type { DB } from "../database.js";
 import { articles } from "../db/schema/index.js";
+import { rootLogger } from "../lib/logger.js";
 import { articleBroker } from "./sse-broker.js";
 
 const POLL_INTERVAL_MS = 5000;
+const logger = rootLogger.child({ service: "article-monitor" });
 
 let monitorInterval: ReturnType<typeof setInterval> | null = null;
 let lastChecked = new Date();
@@ -41,7 +43,7 @@ export async function pollNewArticles(db: DB): Promise<void> {
       lastChecked = result[result.length - 1].createdAt;
     }
   } catch (err) {
-    console.error("article_monitor: polling error", err);
+    logger.error({ err }, "polling error");
   }
 }
 
@@ -52,7 +54,7 @@ export function startMonitor(db: DB): void {
   lastChecked = new Date();
   monitorInterval = setInterval(() => {
     pollNewArticles(db).catch((err) => {
-      console.error("article_monitor: polling error", err);
+      logger.error({ err }, "polling error");
     });
   }, POLL_INTERVAL_MS);
 }

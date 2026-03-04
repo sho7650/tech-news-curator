@@ -1,6 +1,8 @@
 import http from "node:http";
 import https from "node:https";
 import ipaddr from "ipaddr.js";
+import type { AppLogger } from "../lib/logger.js";
+import { rootLogger } from "../lib/logger.js";
 import { UnsafeURLError, isSafeIp, resolveWithTimeout } from "./url-validator.js";
 
 const MAX_REDIRECTS = 5;
@@ -100,7 +102,9 @@ function makeRequest(
   });
 }
 
-export async function safeFetch(url: string): Promise<string | null> {
+export async function safeFetch(url: string, logger?: AppLogger): Promise<string | null> {
+  const log =
+    logger?.child({ service: "safe-fetch" }) ?? rootLogger.child({ service: "safe-fetch" });
   let currentUrl = url;
 
   for (let i = 0; i < MAX_REDIRECTS + 1; i++) {
@@ -119,24 +123,34 @@ export async function safeFetch(url: string): Promise<string | null> {
     try {
       response = await makeRequest(currentUrl, resolvedIp);
     } catch (err) {
-      console.warn(
-        `safe-fetch: request failed for ${currentUrl}`,
-        err instanceof Error ? err.message : err,
+      log.warn(
+        { url: currentUrl, error: err instanceof Error ? err.message : String(err) },
+        "request failed",
       );
       return null;
     }
 
     if (REDIRECT_STATUSES.has(response.status)) {
       const location = response.headers.location;
-      if (!location) return null;
-      currentUrl = new URL(location, currentUrl).toString();
+      if (!location) {
+        log.warn({ url: currentUrl, status: response.status }, "redirect without Location header");
+        return null;
+      }
+      const nextUrl = new URL(location, currentUrl).toString();
+      log.debug({ from: currentUrl, to: nextUrl, status: response.status }, "following redirect");
+      currentUrl = nextUrl;
       continue;
     }
 
-    if (response.status !== 200) return null;
+    if (response.status !== 200) {
+      log.warn({ url: currentUrl, status: response.status }, "non-200 response");
+      return null;
+    }
 
+    log.debug({ url: currentUrl, bodyLength: response.body.length }, "fetch successful");
     return response.body;
   }
 
-  return null; // Max redirects exceeded
+  log.warn({ url, maxRedirects: MAX_REDIRECTS }, "max redirects exceeded");
+  return null;
 }

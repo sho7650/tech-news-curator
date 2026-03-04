@@ -1,43 +1,73 @@
-# Ingest E2E Snapshot テスト — 実装ワークフロー
+# Logging System Implementation Workflow
 
-**設計書**: `docs/DESIGN-ingest-e2e-snapshot.md`
-**ブランチ**: `feature/ingest-noise-phase2`（継続）
-**生成日**: 2026-03-01
-**前提**: Phase 2 ノイズ除去（130 tests passing）完了済み
+**Design Doc**: `docs/DESIGN-logging.md` v1.0
+**Branch**: `feat/structured-logging` (from `main`)
 
 ---
 
-## Phase 1: DI パラメータ追加
+## Phase 1: Foundation
 
-- [x] **1.1** `extractArticle()` に `fetcher` DI パラメータ追加
-- [x] **1.2** 既存テスト回帰確認 — 130 tests 全パス、tsc クリーン
-
----
-
-## Phase 2: HTML fixture 取得
-
-- [x] **2.1** `api/tests/fixtures/` ディレクトリ作成
-- [x] **2.2** `api/scripts/capture-fixtures.ts` 作成
-- [x] **2.3** fixture 取得実行 — 4 ファイル取得（合計 822 KB）
+- [x] **1.1** Install `pino` and `pino-pretty`
+- [x] **1.2** Create `api/src/lib/logger.ts` — root Pino logger, AppLogger type
+- [x] **1.3** Create `api/src/types.ts` — `AppEnv` type with `Variables: { logger }`
+- [x] **Checkpoint**: `tsc --noEmit` passes
 
 ---
 
-## Phase 3: E2E テスト作成
+## Phase 2: Infrastructure
 
-- [x] **3.1** `api/tests/ingest-e2e.test.ts` 作成
-- [x] **3.2** snapshot 初回生成 — 8 テスト全パス、4 snapshot 生成
-
----
-
-## Phase 4: 全体検証
-
-- [x] **4.1** 全テスト実行 — 122 passed, 16 skipped (Docker 環境依存の 2 ファイル)
-- [x] **4.2** 品質チェック — tsc クリーン、biome クリーン
-- [x] **4.3** snapshot 内容レビュー — 全記事の 5 フィールド妥当性確認済み
+- [x] **2.1** Create `api/src/middleware/request-logger.ts` — requestId, child logger, timing, X-Request-Id header
+- [x] **2.2** Update `api/src/index.ts` — wire requestLogger middleware, replace console.* → rootLogger
+- [x] **Checkpoint**: `tsc --noEmit` passes
 
 ---
 
-## Phase 5: クリーンアップ & コミット
+## Phase 3: Critical Path — Ingest Bug Fix
 
-- [x] **5.1** capture スクリプト削除
-- [ ] **5.2** コミット
+- [x] **3.1** Update `api/src/services/safe-fetch.ts` — add logger param, log all failure paths
+- [x] **3.2** Update `api/src/services/ingest-service.ts` — add logger param, extraction stage logs
+- [x] **3.3** Update `api/src/routes/ingest.ts` — `Hono<AppEnv>`, pass logger to extractArticle
+
+---
+
+## Phase 4: Remaining Migration
+
+- [x] **4.1** Update `api/src/middleware/error-handler.ts` — structured error logging
+- [x] **4.2** Update all routes with `<AppEnv>` type parameter (articles, sources, digest, feed, health, sse)
+- [x] **4.3** Update background services (article-monitor, sse-broker) — child loggers
+
+---
+
+## Phase 5: Cleanup & Verification
+
+- [x] **5.1** Add `LOG_LEVEL=silent` to test setup
+- [x] **5.2** `tsc --noEmit` — passes
+- [x] **5.3** `biome check src/` — passes (auto-fixed)
+- [x] **5.4** `npm test` — 146 tests pass, 15 files, no log noise
+- [x] **5.5** `grep console.* api/src/` — zero remaining calls
+- [ ] **5.6** Commit
+
+---
+
+## Files Changed
+
+| Action | File |
+|--------|------|
+| **NEW** | `api/src/lib/logger.ts` |
+| **NEW** | `api/src/types.ts` |
+| **NEW** | `api/src/middleware/request-logger.ts` |
+| MODIFY | `api/src/index.ts` |
+| MODIFY | `api/src/middleware/error-handler.ts` |
+| MODIFY | `api/src/routes/ingest.ts` |
+| MODIFY | `api/src/routes/articles.ts` |
+| MODIFY | `api/src/routes/sources.ts` |
+| MODIFY | `api/src/routes/digest.ts` |
+| MODIFY | `api/src/routes/feed.ts` |
+| MODIFY | `api/src/routes/health.ts` |
+| MODIFY | `api/src/routes/sse.ts` |
+| MODIFY | `api/src/services/safe-fetch.ts` |
+| MODIFY | `api/src/services/ingest-service.ts` |
+| MODIFY | `api/src/services/article-monitor.ts` |
+| MODIFY | `api/src/services/sse-broker.ts` |
+| MODIFY | `api/tests/setup.ts` |
+| MODIFY | `api/package.json` |

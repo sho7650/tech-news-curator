@@ -1,3 +1,6 @@
+// Suppress log output during tests
+process.env.LOG_LEVEL = "silent";
+
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";

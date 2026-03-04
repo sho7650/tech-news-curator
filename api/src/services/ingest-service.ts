@@ -1,6 +1,8 @@
 import { Readability } from "@mozilla/readability";
 import { parseHTML } from "linkedom";
 import TurndownService from "turndown";
+import type { AppLogger } from "../lib/logger.js";
+import { rootLogger } from "../lib/logger.js";
 import type { IngestResponse } from "../schemas/ingest.js";
 import { safeFetch } from "./safe-fetch.js";
 import { cleanArticleText } from "./text-cleaner.js";
@@ -59,16 +61,27 @@ export { cleanArticleText } from "./text-cleaner.js";
 
 export async function extractArticle(
   url: string,
-  fetcher: (url: string) => Promise<string | null> = safeFetch,
+  fetcher: (url: string, logger?: AppLogger) => Promise<string | null> = safeFetch,
+  logger?: AppLogger,
 ): Promise<IngestResponse | null> {
-  const html = await fetcher(url);
-  if (!html) return null;
+  const log = logger?.child({ service: "ingest" }) ?? rootLogger.child({ service: "ingest" });
+
+  log.info({ url }, "extraction started");
+
+  const html = await fetcher(url, log);
+  if (!html) {
+    log.warn({ url }, "failed to fetch HTML");
+    return null;
+  }
 
   const { document } = parseHTML(html);
   const reader = new Readability(document);
   const article = reader.parse();
 
-  if (!article) return null;
+  if (!article) {
+    log.warn({ url, htmlLength: html.length }, "Readability failed to parse article");
+    return null;
+  }
 
   const rawMd = article.content ? htmlToMarkdown(article.content) : null;
   const body = rawMd ? cleanArticleText(rawMd, { byline: article.byline ?? null }) : null;
@@ -82,6 +95,8 @@ export async function extractArticle(
     document.querySelector('meta[property="article:published_time"]')?.getAttribute("content") ??
     document.querySelector('meta[name="date"]')?.getAttribute("content") ??
     null;
+
+  log.info({ url, title: article.title }, "extraction successful");
 
   return {
     title: article.title ?? null,

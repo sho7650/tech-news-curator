@@ -3,7 +3,9 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { config, validateProduction } from "./config.js";
 import { db, queryClient } from "./database.js";
+import { rootLogger } from "./lib/logger.js";
 import { errorHandler } from "./middleware/error-handler.js";
+import { requestLogger } from "./middleware/request-logger.js";
 import { securityHeaders } from "./middleware/security-headers.js";
 import {
   articlesRoute,
@@ -15,11 +17,12 @@ import {
   sseRoute,
 } from "./routes/index.js";
 import { startMonitor, stopMonitor } from "./services/article-monitor.js";
+import type { AppEnv } from "./types.js";
 
 // Validate production config
 validateProduction(config);
 
-const app = new Hono();
+const app = new Hono<AppEnv>();
 
 // Global error handler
 app.onError(errorHandler);
@@ -34,6 +37,7 @@ app.use(
   }),
 );
 app.use("*", securityHeaders);
+app.use("*", requestLogger);
 
 // Routes (order matters: SSE before articles to avoid :article_id catching "stream")
 app.route("", health);
@@ -54,17 +58,17 @@ const server = serve({
   port,
 });
 
-console.log(`Tech News Curator API running on port ${port}`);
+rootLogger.info({ port }, "Tech News Curator API started");
 
 // Graceful shutdown
 function shutdown() {
-  console.log("Shutting down...");
+  rootLogger.info("Shutting down...");
   stopMonitor();
   server.close(async () => {
     try {
       await queryClient.end();
     } catch (err) {
-      console.error("Error closing database connection:", err);
+      rootLogger.error({ err }, "Error closing database connection");
     } finally {
       process.exit(0);
     }
