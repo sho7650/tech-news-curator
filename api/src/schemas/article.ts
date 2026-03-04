@@ -12,7 +12,7 @@ export const articleCreateSchema = z
     summary_ja: z.string().max(5000).nullish(),
     author: z.string().max(200).nullish(),
     published_at: z.string().datetime({ offset: true }).nullish(),
-    og_image_url: z.string().max(2083).nullish(),
+    og_image_url: z.string().url().max(2083).nullish(),
     categories: z.array(z.string().max(50)).max(20).nullish(),
     metadata: z.record(z.unknown()).nullish(),
   })

@@ -46,6 +46,9 @@ export async function pollNewArticles(db: DB): Promise<void> {
 }
 
 export function startMonitor(db: DB): void {
+  if (monitorInterval) {
+    clearInterval(monitorInterval);
+  }
   lastChecked = new Date();
   monitorInterval = setInterval(() => {
     pollNewArticles(db).catch((err) => {

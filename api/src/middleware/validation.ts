@@ -6,6 +6,6 @@ export function validationHook(
   c: Context,
 ): Response | undefined {
   if (!result.success) {
-    return c.json({ detail: result.error!.errors }, 422);
+    return c.json({ detail: result.error?.errors ?? [] }, 422);
   }
 }

@@ -6,6 +6,7 @@ import { verifyApiKey } from "../middleware/auth.js";
 import { PG_UNIQUE_VIOLATION, getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
 import { validationHook } from "../middleware/validation.js";
+import { sourceIdParamSchema } from "../schemas/base.js";
 import {
   type SourceResponse,
   sourceCreateSchema,
@@ -64,9 +65,10 @@ sourcesRoute.put(
   "/sources/:source_id",
   createRateLimiter(10),
   verifyApiKey,
+  zValidator("param", sourceIdParamSchema, validationHook),
   zValidator("json", sourceUpdateSchema, validationHook),
   async (c) => {
-    const sourceId = c.req.param("source_id");
+    const { source_id: sourceId } = c.req.valid("param");
     const existing = await getSourceById(db, sourceId);
     if (!existing) {
       return c.json({ detail: "Source not found" }, 404);
@@ -88,15 +90,24 @@ sourcesRoute.put(
 );
 
 // DELETE /sources/:source_id
-sourcesRoute.delete("/sources/:source_id", createRateLimiter(10), verifyApiKey, async (c) => {
-  const sourceId = c.req.param("source_id");
-  const existing = await getSourceById(db, sourceId);
-  if (!existing) {
-    return c.json({ detail: "Source not found" }, 404);
-  }
-  const deactivated = await deactivateSource(db, sourceId);
-  return c.json(formatSourceResponse(deactivated));
-});
+sourcesRoute.delete(
+  "/sources/:source_id",
+  createRateLimiter(10),
+  verifyApiKey,
+  zValidator("param", sourceIdParamSchema, validationHook),
+  async (c) => {
+    const { source_id: sourceId } = c.req.valid("param");
+    const existing = await getSourceById(db, sourceId);
+    if (!existing) {
+      return c.json({ detail: "Source not found" }, 404);
+    }
+    const deactivated = await deactivateSource(db, sourceId);
+    if (!deactivated) {
+      return c.json({ detail: "Source not found" }, 404);
+    }
+    return c.json(formatSourceResponse(deactivated));
+  },
+);
 
 function formatSourceResponse(source: Source): SourceResponse {
   return {

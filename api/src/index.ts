@@ -60,10 +60,14 @@ console.log(`Tech News Curator API running on port ${port}`);
 function shutdown() {
   console.log("Shutting down...");
   stopMonitor();
-  server.close(() => {
-    queryClient.end().then(() => {
+  server.close(async () => {
+    try {
+      await queryClient.end();
+    } catch (err) {
+      console.error("Error closing database connection:", err);
+    } finally {
       process.exit(0);
-    });
+    }
   });
 }
 

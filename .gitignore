@@ -18,6 +18,9 @@ venv/
 # Docker
 postgres_data/
 
+# Node.js
+api/node_modules/
+
 # Next.js
 frontend/.next/
 frontend/node_modules/
