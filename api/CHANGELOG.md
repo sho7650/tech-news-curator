@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.7.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.6.0...tech-news-curator-api-v1.7.0) (2026-03-04)
+
+
+### Features
+
+* add trailing contact info removal to ingest pipeline ([127dfd5](https://github.com/sho7650/tech-news-curator/commit/127dfd54ca4bb0bd6395195be75eee8a39a1a310))
+* add trailing contact info removal to ingest pipeline ([a3e13a5](https://github.com/sho7650/tech-news-curator/commit/a3e13a5290bea64901729bfb2fc90acfb927487e))
+
 ## [1.6.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.5.0...tech-news-curator-api-v1.6.0) (2026-03-01)
 
 
