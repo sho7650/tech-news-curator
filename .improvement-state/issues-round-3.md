@@ -1,46 +1,24 @@
-# Issues - Round 3
+# Issues - Round 3 (Session 3)
 
-**Found**: 6 issues | **Severity**: CRITICAL=0, HIGH=0, MEDIUM=1, LOW=5
+**Found**: 3 issues | **Severity**: CRITICAL=0, HIGH=0, MEDIUM=3, LOW=0
+**Note**: Biome clean, TypeScript clean, Vitest 146/146 passed.
 
 ## Issues
 
-### [MEDIUM] H4 reclassified: validateUrl() is dead code
-- **File**: `api/src/services/url-validator.ts:61-99`
-- **Source**: review
-- **Detail**: `validateUrl()` is exported but never imported anywhere. resolveAndValidate() in safe-fetch.ts handles all validation.
-- **Suggestion**: Remove the unused function
-- **Status**: open
+### [MEDIUM] #1 ReDoS risk in CONTACT_INFO_PATTERNS regex
+- **File**: `src/services/text-cleaner.ts:37`
+- **Source**: code-analysis
+- **Detail**: Greedy `.*` in `/\b(?:contact|reach|...)\b.*\S+@\S+/i` can cause backtracking on long input. Input is capped at 200 chars by caller, limiting practical risk, but `.*?` is strictly better.
+- **Suggestion**: Replace `.*` with `.*?` (non-greedy)
 
-### [LOW] L1: HealthResponse interface unused
-- **File**: `api/src/schemas/health.ts`
-- **Source**: review
-- **Detail**: Never imported. Health route uses inline object.
+### [MEDIUM] #2 ReDoS risk in View Bio/Profile regex
+- **File**: `src/services/text-cleaner.ts:39`
+- **Source**: code-analysis
+- **Detail**: Greedy `.*` in `/^\[View (?:Bio|Profile)\]\(.*\)\s*$/i` backtracks when `)` is absent. Use `[^)]*` instead.
+- **Suggestion**: Replace `.*` with `[^)]*` for bounded match
+
+### [MEDIUM] #3 Empty types/env.ts — dead file
+- **File**: `src/types/env.ts`
+- **Source**: code-analysis
+- **Detail**: File is 0 bytes, no exports, no imports reference it. Dead code from previous cleanup.
 - **Suggestion**: Delete file
-- **Status**: open
-
-### [LOW] L3: shutdown() doesn't close HTTP server
-- **File**: `api/src/index.ts:60-66`
-- **Source**: review
-- **Detail**: server.close() not called before process.exit
-- **Suggestion**: Close server in shutdown function
-- **Status**: open
-
-### [LOW] L5: DB type duplicated across 5 service files
-- **File**: `article-service.ts`, `source-service.ts`, `digest-service.ts`, `article-monitor.ts`, `rss-service.ts`
-- **Source**: review
-- **Detail**: Each file independently defines `type DB = PostgresJsDatabase<typeof schema>`
-- **Suggestion**: Export from database.ts
-- **Status**: open
-
-### [LOW] L8: AppEnv type unused
-- **File**: `api/src/types/env.ts`
-- **Source**: review
-- **Detail**: Never imported anywhere
-- **Suggestion**: Delete file
-- **Status**: open
-
-### [LOW] M3 reclassified: Duplicate unique-violation handling (intentional)
-- **File**: `articles.ts`, `digest.ts`, `sources.ts`
-- **Source**: review
-- **Detail**: Each route provides entity-specific error message. Global handler is fallback. This is intentional design.
-- **Status**: wont-fix (by design)
