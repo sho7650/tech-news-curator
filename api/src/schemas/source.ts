@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQuery } from "./base.js";
 
 export const sourceCreateSchema = z
   .object({
@@ -32,9 +33,7 @@ export const sourceUpdateSchema = z
 
 export type SourceUpdate = z.infer<typeof sourceUpdateSchema>;
 
-export const sourceListQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  per_page: z.coerce.number().int().min(1).max(100).default(20),
+export const sourceListQuerySchema = paginationQuery.extend({
   active_only: z
     .string()
     .transform((v) => v === "true")

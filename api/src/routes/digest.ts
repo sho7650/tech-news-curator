@@ -1,9 +1,11 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { db } from "../database.js";
+import type { Digest } from "../db/schema/index.js";
 import { verifyApiKey } from "../middleware/auth.js";
-import { getPgErrorCode } from "../middleware/error-handler.js";
+import { PG_UNIQUE_VIOLATION, getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
+import { validationHook } from "../middleware/validation.js";
 import {
   type DigestListItem,
   type DigestResponse,
@@ -19,18 +21,14 @@ digestRoute.post(
   "/digest",
   createRateLimiter(5),
   verifyApiKey,
-  zValidator("json", digestCreateSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("json", digestCreateSchema, validationHook),
   async (c) => {
     const data = c.req.valid("json");
     try {
       const digest = await createDigest(db, data);
       return c.json(formatDigestResponse(digest), 201);
     } catch (err) {
-      if (getPgErrorCode(err) === "23505") {
+      if (getPgErrorCode(err) === PG_UNIQUE_VIOLATION) {
         return c.json({ detail: "Digest for this date already exists" }, 409);
       }
       throw err;
@@ -42,11 +40,7 @@ digestRoute.post(
 digestRoute.get(
   "/digest",
   createRateLimiter(60),
-  zValidator("query", digestListQuerySchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("query", digestListQuerySchema, validationHook),
   async (c) => {
     const { page, per_page } = c.req.valid("query");
     const { items, total } = await getDigests(db, page, per_page);
@@ -69,7 +63,7 @@ digestRoute.get("/digest/:digest_date", createRateLimiter(60), async (c) => {
   return c.json(formatDigestResponse(digest));
 });
 
-function formatDigestResponse(digest: any): DigestResponse {
+function formatDigestResponse(digest: Digest): DigestResponse {
   return {
     id: digest.id,
     digest_date: digest.digestDate,
@@ -81,7 +75,7 @@ function formatDigestResponse(digest: any): DigestResponse {
   };
 }
 
-function formatDigestListItem(digest: any): DigestListItem {
+function formatDigestListItem(digest: Digest): DigestListItem {
   return {
     id: digest.id,
     digest_date: digest.digestDate,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQuery } from "./base.js";
 
 export const articleCreateSchema = z
   .object({
@@ -19,12 +20,17 @@ export const articleCreateSchema = z
 
 export type ArticleCreate = z.infer<typeof articleCreateSchema>;
 
-export const articleListQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  per_page: z.coerce.number().int().min(1).max(100).default(20),
+export const articleListQuerySchema = paginationQuery.extend({
   date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .refine(
+      (d) => {
+        const parsed = new Date(`${d}T00:00:00Z`);
+        return parsed.toISOString().startsWith(d);
+      },
+      { message: "Invalid date" },
+    )
     .optional(),
   category: z.string().max(50).optional(),
 });
@@ -32,7 +38,7 @@ export const articleListQuerySchema = z.object({
 export type ArticleListQuery = z.infer<typeof articleListQuerySchema>;
 
 export const articleCheckQuerySchema = z.object({
-  url: z.string(),
+  url: z.string().url(),
 });
 
 export interface ArticleListItem {
@@ -60,7 +66,7 @@ export interface ArticleDetail {
   published_at: string | null;
   og_image_url: string | null;
   categories: string[] | null;
-  metadata: unknown | null;
+  metadata: Record<string, unknown> | null; // matches Zod z.record(z.unknown())
   created_at: string;
 }
 

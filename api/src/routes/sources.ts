@@ -1,9 +1,11 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { db } from "../database.js";
+import type { Source } from "../db/schema/index.js";
 import { verifyApiKey } from "../middleware/auth.js";
-import { getPgErrorCode } from "../middleware/error-handler.js";
+import { PG_UNIQUE_VIOLATION, getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
+import { validationHook } from "../middleware/validation.js";
 import {
   type SourceResponse,
   sourceCreateSchema,
@@ -24,11 +26,7 @@ const sourcesRoute = new Hono();
 sourcesRoute.get(
   "/sources",
   createRateLimiter(60),
-  zValidator("query", sourceListQuerySchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("query", sourceListQuerySchema, validationHook),
   async (c) => {
     const { page, per_page, active_only } = c.req.valid("query");
     const { items, total } = await getSources(db, page, per_page, active_only);
@@ -46,18 +44,14 @@ sourcesRoute.post(
   "/sources",
   createRateLimiter(10),
   verifyApiKey,
-  zValidator("json", sourceCreateSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("json", sourceCreateSchema, validationHook),
   async (c) => {
     const data = c.req.valid("json");
     try {
       const source = await createSource(db, data);
       return c.json(formatSourceResponse(source), 201);
     } catch (err) {
-      if (getPgErrorCode(err) === "23505") {
+      if (getPgErrorCode(err) === PG_UNIQUE_VIOLATION) {
         return c.json({ detail: "Source with this RSS URL already exists" }, 409);
       }
       throw err;
@@ -70,11 +64,7 @@ sourcesRoute.put(
   "/sources/:source_id",
   createRateLimiter(10),
   verifyApiKey,
-  zValidator("json", sourceUpdateSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("json", sourceUpdateSchema, validationHook),
   async (c) => {
     const sourceId = c.req.param("source_id");
     const existing = await getSourceById(db, sourceId);
@@ -84,9 +74,12 @@ sourcesRoute.put(
     const data = c.req.valid("json");
     try {
       const updated = await updateSource(db, sourceId, data);
-      return c.json(formatSourceResponse(updated!));
+      if (!updated) {
+        return c.json({ detail: "Source not found" }, 404);
+      }
+      return c.json(formatSourceResponse(updated));
     } catch (err) {
-      if (getPgErrorCode(err) === "23505") {
+      if (getPgErrorCode(err) === PG_UNIQUE_VIOLATION) {
         return c.json({ detail: "Source with this RSS URL already exists" }, 409);
       }
       throw err;
@@ -105,7 +98,7 @@ sourcesRoute.delete("/sources/:source_id", createRateLimiter(10), verifyApiKey, 
   return c.json(formatSourceResponse(deactivated));
 });
 
-function formatSourceResponse(source: any): SourceResponse {
+function formatSourceResponse(source: Source): SourceResponse {
   return {
     id: source.id,
     name: source.name ?? null,

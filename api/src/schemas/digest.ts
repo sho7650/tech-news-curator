@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQuery } from "./base.js";
 
 export const digestCreateSchema = z
   .object({
@@ -12,10 +13,7 @@ export const digestCreateSchema = z
 
 export type DigestCreate = z.infer<typeof digestCreateSchema>;
 
-export const digestListQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  per_page: z.coerce.number().int().min(1).max(100).default(20),
-});
+export const digestListQuerySchema = paginationQuery;
 
 export interface DigestResponse {
   id: string;

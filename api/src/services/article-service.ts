@@ -1,10 +1,9 @@
-import { and, arrayContains, count, desc, eq, gte, lt, sql } from "drizzle-orm";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type * as schema from "../db/schema/index.js";
+import { and, arrayContains, count, desc, eq, gte, lt } from "drizzle-orm";
+import type { DB } from "../database.js";
 import { articles } from "../db/schema/index.js";
 import type { ArticleCreate } from "../schemas/article.js";
 
-type DB = PostgresJsDatabase<typeof schema>;
+const MS_PER_DAY = 86_400_000;
 
 export async function checkArticleExists(db: DB, url: string): Promise<boolean> {
   const result = await db
@@ -46,7 +45,7 @@ export async function getArticles(
 
   if (dateFilter) {
     const start = new Date(`${dateFilter}T00:00:00Z`);
-    const end = new Date(start.getTime() + 86400000); // +1 day
+    const end = new Date(start.getTime() + MS_PER_DAY);
     conditions.push(gte(articles.publishedAt, start));
     conditions.push(lt(articles.publishedAt, end));
   }

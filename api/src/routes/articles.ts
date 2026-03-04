@@ -1,9 +1,11 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { db } from "../database.js";
+import type { Article } from "../db/schema/index.js";
 import { verifyApiKey } from "../middleware/auth.js";
-import { getPgErrorCode } from "../middleware/error-handler.js";
+import { PG_UNIQUE_VIOLATION, getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
+import { validationHook } from "../middleware/validation.js";
 import {
   type ArticleDetail,
   type ArticleListItem,
@@ -41,11 +43,7 @@ articlesRoute.post(
   "/articles",
   createRateLimiter(30),
   verifyApiKey,
-  zValidator("json", articleCreateSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("json", articleCreateSchema, validationHook),
   async (c) => {
     const data = c.req.valid("json");
     try {
@@ -53,7 +51,7 @@ articlesRoute.post(
       const detail = formatArticleDetail(article);
       return c.json(detail, 201);
     } catch (err) {
-      if (getPgErrorCode(err) === "23505") {
+      if (getPgErrorCode(err) === PG_UNIQUE_VIOLATION) {
         return c.json({ detail: "Article with this URL already exists" }, 409);
       }
       throw err;
@@ -65,22 +63,9 @@ articlesRoute.post(
 articlesRoute.get(
   "/articles",
   createRateLimiter(200),
-  zValidator("query", articleListQuerySchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ detail: result.error.errors }, 422);
-    }
-  }),
+  zValidator("query", articleListQuerySchema, validationHook),
   async (c) => {
     const { page, per_page, date, category } = c.req.valid("query");
-
-    // Validate date if provided
-    if (date) {
-      const parsed = new Date(`${date}T00:00:00Z`);
-      if (Number.isNaN(parsed.getTime())) {
-        return c.json({ detail: `Invalid date: ${date}` }, 400);
-      }
-    }
-
     const { items, total } = await getArticles(db, page, per_page, date, category);
     return c.json({
       items: items.map(formatArticleListItem),
@@ -101,7 +86,7 @@ articlesRoute.get("/articles/:article_id", createRateLimiter(200), async (c) => 
   return c.json(formatArticleDetail(article));
 });
 
-function formatArticleListItem(article: any): ArticleListItem {
+function formatArticleListItem(article: Article): ArticleListItem {
   return {
     id: article.id,
     source_url: article.sourceUrl,
@@ -116,7 +101,7 @@ function formatArticleListItem(article: any): ArticleListItem {
   };
 }
 
-function formatArticleDetail(article: any): ArticleDetail {
+function formatArticleDetail(article: Article): ArticleDetail {
   return {
     id: article.id,
     source_url: article.sourceUrl,
@@ -129,7 +114,7 @@ function formatArticleDetail(article: any): ArticleDetail {
     published_at: article.publishedAt?.toISOString() ?? null,
     og_image_url: article.ogImageUrl ?? null,
     categories: article.categories ?? null,
-    metadata: article.metadata ?? null,
+    metadata: (article.metadata as Record<string, unknown>) ?? null,
     created_at: article.createdAt.toISOString(),
   };
 }

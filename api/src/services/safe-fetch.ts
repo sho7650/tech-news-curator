@@ -118,7 +118,11 @@ export async function safeFetch(url: string): Promise<string | null> {
     let response: { status: number; headers: http.IncomingHttpHeaders; body: string };
     try {
       response = await makeRequest(currentUrl, resolvedIp);
-    } catch {
+    } catch (err) {
+      console.warn(
+        `safe-fetch: request failed for ${currentUrl}`,
+        err instanceof Error ? err.message : err,
+      );
       return null;
     }
 

@@ -10,6 +10,18 @@ export class UnsafeURLError extends Error {
   }
 }
 
+const UNSAFE_IP_RANGES = new Set([
+  "private",
+  "loopback",
+  "linkLocal",
+  "multicast",
+  "reserved",
+  "unspecified",
+  "uniqueLocal",
+  "broadcastAddress",
+  "carrierGradeNat",
+]);
+
 export function isSafeIp(ip: string): boolean {
   let parsed: ipaddr.IPv4 | ipaddr.IPv6;
   try {
@@ -18,44 +30,34 @@ export function isSafeIp(ip: string): boolean {
     return false;
   }
 
-  const range = parsed.range();
-  const unsafeRanges = [
-    "private",
-    "loopback",
-    "linkLocal",
-    "multicast",
-    "reserved",
-    "unspecified",
-    "uniqueLocal",
-    "broadcastAddress",
-    "carrierGradeNat",
-  ];
-
-  return !unsafeRanges.includes(range);
+  return !UNSAFE_IP_RANGES.has(parsed.range());
 }
 
-export function resolveWithTimeout(hostname: string): Promise<string[]> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new UnsafeURLError(`DNS resolution timed out for ${hostname}`));
-    }, DNS_TIMEOUT_MS);
-
-    dns.resolve(hostname, (err, addresses) => {
-      clearTimeout(timer);
-      if (err) {
-        // Try resolve6 as fallback
-        dns.resolve6(hostname, (err6, addresses6) => {
-          if (err6) {
-            reject(new UnsafeURLError(`DNS resolution failed for ${hostname}`));
-          } else {
-            resolve(addresses6);
-          }
-        });
-      } else {
-        resolve(addresses);
-      }
-    });
+function withDnsTimeout<T>(promise: Promise<T>, hostname: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new UnsafeURLError(`DNS resolution timed out for ${hostname}`)),
+      DNS_TIMEOUT_MS,
+    );
   });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer!));
+}
+
+export async function resolveWithTimeout(hostname: string): Promise<string[]> {
+  try {
+    return await withDnsTimeout(dns.promises.resolve4(hostname), hostname);
+  } catch (err) {
+    if (err instanceof UnsafeURLError && err.message.includes("timed out")) throw err;
+    // Fallback to IPv6
+  }
+
+  try {
+    return await withDnsTimeout(dns.promises.resolve6(hostname), hostname);
+  } catch (err) {
+    if (err instanceof UnsafeURLError && err.message.includes("timed out")) throw err;
+    throw new UnsafeURLError(`DNS resolution failed for ${hostname}`);
+  }
 }
 
 export async function validateUrl(url: string): Promise<string> {

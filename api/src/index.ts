@@ -60,8 +60,10 @@ console.log(`Tech News Curator API running on port ${port}`);
 function shutdown() {
   console.log("Shutting down...");
   stopMonitor();
-  queryClient.end().then(() => {
-    process.exit(0);
+  server.close(() => {
+    queryClient.end().then(() => {
+      process.exit(0);
+    });
   });
 }
 

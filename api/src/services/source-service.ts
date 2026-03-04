@@ -1,10 +1,7 @@
 import { count, desc, eq } from "drizzle-orm";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type * as schema from "../db/schema/index.js";
+import type { DB } from "../database.js";
 import { sources } from "../db/schema/index.js";
 import type { SourceCreate, SourceUpdate } from "../schemas/source.js";
-
-type DB = PostgresJsDatabase<typeof schema>;
 
 export async function createSource(db: DB, data: SourceCreate) {
   const [source] = await db

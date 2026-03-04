@@ -21,7 +21,6 @@ sseRoute.get("/articles/stream", async (c) => {
 
       stream.onAbort(() => {
         running = false;
-        articleBroker.unsubscribe(clientId);
       });
 
       // Send initial ping
