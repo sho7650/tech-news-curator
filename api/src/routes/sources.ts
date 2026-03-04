@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { db } from "../database.js";
+import type { Source } from "../db/schema/index.js";
 import { verifyApiKey } from "../middleware/auth.js";
 import { getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
@@ -84,7 +85,10 @@ sourcesRoute.put(
     const data = c.req.valid("json");
     try {
       const updated = await updateSource(db, sourceId, data);
-      return c.json(formatSourceResponse(updated!));
+      if (!updated) {
+        return c.json({ detail: "Source not found" }, 404);
+      }
+      return c.json(formatSourceResponse(updated));
     } catch (err) {
       if (getPgErrorCode(err) === "23505") {
         return c.json({ detail: "Source with this RSS URL already exists" }, 409);
@@ -105,7 +109,7 @@ sourcesRoute.delete("/sources/:source_id", createRateLimiter(10), verifyApiKey, 
   return c.json(formatSourceResponse(deactivated));
 });
 
-function formatSourceResponse(source: any): SourceResponse {
+function formatSourceResponse(source: Source): SourceResponse {
   return {
     id: source.id,
     name: source.name ?? null,

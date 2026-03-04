@@ -1,15 +1,29 @@
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 
+interface PgError {
+  code: string;
+  message?: string;
+}
+
+function isPgError(val: unknown): val is PgError {
+  return (
+    val !== null &&
+    typeof val === "object" &&
+    "code" in val &&
+    typeof (val as Record<string, unknown>).code === "string"
+  );
+}
+
 export function getPgErrorCode(err: unknown): string | undefined {
   // Direct postgres.js error
-  if (err && typeof err === "object" && "code" in err && typeof (err as any).code === "string") {
-    return (err as any).code;
+  if (isPgError(err)) {
+    return err.code;
   }
   // Drizzle wraps postgres.js errors in cause
   if (err && typeof err === "object" && "cause" in err) {
-    const cause = (err as any).cause;
-    if (cause && typeof cause === "object" && "code" in cause && typeof cause.code === "string") {
+    const cause = (err as Record<string, unknown>).cause;
+    if (isPgError(cause)) {
       return cause.code;
     }
   }
@@ -17,9 +31,10 @@ export function getPgErrorCode(err: unknown): string | undefined {
 }
 
 function getPgErrorMessage(err: unknown): string | undefined {
-  const inner = err && typeof err === "object" && "cause" in err ? (err as any).cause : err;
+  const inner =
+    err && typeof err === "object" && "cause" in err ? (err as Record<string, unknown>).cause : err;
   if (inner && typeof inner === "object" && "message" in inner) {
-    return (inner as any).message;
+    return (inner as Record<string, unknown>).message as string;
   }
   return undefined;
 }

@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { db } from "../database.js";
+import type { Article } from "../db/schema/index.js";
 import { verifyApiKey } from "../middleware/auth.js";
 import { getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
@@ -101,7 +102,7 @@ articlesRoute.get("/articles/:article_id", createRateLimiter(200), async (c) => 
   return c.json(formatArticleDetail(article));
 });
 
-function formatArticleListItem(article: any): ArticleListItem {
+function formatArticleListItem(article: Article): ArticleListItem {
   return {
     id: article.id,
     source_url: article.sourceUrl,
@@ -116,7 +117,7 @@ function formatArticleListItem(article: any): ArticleListItem {
   };
 }
 
-function formatArticleDetail(article: any): ArticleDetail {
+function formatArticleDetail(article: Article): ArticleDetail {
   return {
     id: article.id,
     source_url: article.sourceUrl,

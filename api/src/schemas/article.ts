@@ -32,7 +32,7 @@ export const articleListQuerySchema = z.object({
 export type ArticleListQuery = z.infer<typeof articleListQuerySchema>;
 
 export const articleCheckQuerySchema = z.object({
-  url: z.string(),
+  url: z.string().url(),
 });
 
 export interface ArticleListItem {

@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { db } from "../database.js";
+import type { Digest } from "../db/schema/index.js";
 import { verifyApiKey } from "../middleware/auth.js";
 import { getPgErrorCode } from "../middleware/error-handler.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
@@ -69,7 +70,7 @@ digestRoute.get("/digest/:digest_date", createRateLimiter(60), async (c) => {
   return c.json(formatDigestResponse(digest));
 });
 
-function formatDigestResponse(digest: any): DigestResponse {
+function formatDigestResponse(digest: Digest): DigestResponse {
   return {
     id: digest.id,
     digest_date: digest.digestDate,
@@ -81,7 +82,7 @@ function formatDigestResponse(digest: any): DigestResponse {
   };
 }
 
-function formatDigestListItem(digest: any): DigestListItem {
+function formatDigestListItem(digest: Digest): DigestListItem {
   return {
     id: digest.id,
     digest_date: digest.digestDate,

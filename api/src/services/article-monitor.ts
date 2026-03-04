@@ -1,13 +1,17 @@
 import { gt } from "drizzle-orm";
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import type * as schema from "../db/schema/index.js";
 import { articles } from "../db/schema/index.js";
 import { articleBroker } from "./sse-broker.js";
+
+type DB = PostgresJsDatabase<typeof schema>;
 
 const POLL_INTERVAL_MS = 5000;
 
 let monitorInterval: ReturnType<typeof setInterval> | null = null;
 let lastChecked = new Date();
 
-export async function pollNewArticles(db: { select: Function; from?: Function }): Promise<void> {
+export async function pollNewArticles(db: DB): Promise<void> {
   if (articleBroker.clientCount === 0) {
     // No clients connected: advance lastChecked to prevent flooding
     lastChecked = new Date();
@@ -15,8 +19,7 @@ export async function pollNewArticles(db: { select: Function; from?: Function })
   }
 
   try {
-    // Use raw SQL query approach compatible with Drizzle
-    const result = await (db as any)
+    const result = await db
       .select()
       .from(articles)
       .where(gt(articles.createdAt, lastChecked))
@@ -45,10 +48,12 @@ export async function pollNewArticles(db: { select: Function; from?: Function })
   }
 }
 
-export function startMonitor(db: any): void {
+export function startMonitor(db: DB): void {
   lastChecked = new Date();
   monitorInterval = setInterval(() => {
-    pollNewArticles(db);
+    pollNewArticles(db).catch((err) => {
+      console.error("article_monitor: polling error", err);
+    });
   }, POLL_INTERVAL_MS);
 }
 
