@@ -87,6 +87,13 @@ const NAVIGATION_HEADINGS: RegExp[] = [
   /^#{1,3}\s+subscribe\s*$/i,
 ];
 
+const CONTACT_INFO_PATTERNS: RegExp[] = [
+  // "You can contact Anthony Ha at..." / "reach out to..." / "send tips to..."
+  /\b(?:contact|reach|verify\s+outreach|get\s+in\s+touch|send\s+(?:tips?|news))\b.*\S+@\S+/i,
+  // "[View Bio](https://...)" standalone link
+  /^\[View (?:Bio|Profile)\]\(.*\)\s*$/i,
+];
+
 const AUTHOR_BIO_INDICATORS: RegExp[] = [
   /\bis an?\b/i,
   /\breporter\b/i,
@@ -249,6 +256,24 @@ function removeTrailingAuthorBio(text: string, byline: string | null): string {
   return paragraphs.join("\n\n");
 }
 
+function removeTrailingContactInfo(text: string): string {
+  const paragraphs = text.split("\n\n");
+  const startIdx = Math.max(0, paragraphs.length - 3);
+
+  for (let i = paragraphs.length - 1; i >= startIdx; i--) {
+    const para = paragraphs[i].trim();
+    if (para.length === 0) continue;
+    if (para.length > 200) continue;
+
+    if (CONTACT_INFO_PATTERNS.some((re) => re.test(para))) {
+      paragraphs.splice(i, 1);
+      // Don't break — contact line + View Bio may be consecutive
+    }
+  }
+
+  return paragraphs.join("\n\n");
+}
+
 export function cleanArticleText(text: string, options: CleanArticleOptions = {}): string {
   let cleaned = text;
 
@@ -275,7 +300,10 @@ export function cleanArticleText(text: string, options: CleanArticleOptions = {}
   // 7. Remove trailing author bio
   cleaned = removeTrailingAuthorBio(cleaned, options.byline ?? null);
 
-  // 8. Final whitespace normalization
+  // 8. Remove trailing contact info (e.g., "You can contact..." + "[View Bio]")
+  cleaned = removeTrailingContactInfo(cleaned);
+
+  // 9. Final whitespace normalization
   cleaned = cleaned.replace(/\n{3,}/g, "\n\n").trim();
 
   return cleaned;
