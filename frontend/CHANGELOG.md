@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.5.0...tech-news-curator-frontend-v0.5.1) (2026-03-05)
+
+
+### Bug Fixes
+
+* frontend type cleanup and auth security hardening ([19b8cbc](https://github.com/sho7650/tech-news-curator/commit/19b8cbc83f20a6bf8d0792d7d400984e7d18e938))
+* remove stale body_translated from frontend types and page ([f47cab1](https://github.com/sho7650/tech-news-curator/commit/f47cab1af17f278fe37d4e78f1ba497d56b1225c))
+
 ## [0.5.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.4.0...tech-news-curator-frontend-v0.5.0) (2026-02-15)
 
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.3](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.2...tech-news-curator-api-v1.8.3) (2026-03-05)
+
+
+### Bug Fixes
+
+* add metadata type guard and eliminate timing leak in auth ([a814946](https://github.com/sho7650/tech-news-curator/commit/a814946d49c2754dcf6dc26811f185e4d1a533e3))
+* frontend type cleanup and auth security hardening ([19b8cbc](https://github.com/sho7650/tech-news-curator/commit/19b8cbc83f20a6bf8d0792d7d400984e7d18e938))
+
 ## [1.8.2](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.1...tech-news-curator-api-v1.8.2) (2026-03-05)
 
 
