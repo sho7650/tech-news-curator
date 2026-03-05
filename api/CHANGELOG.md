@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.8.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.0...tech-news-curator-api-v1.8.1) (2026-03-05)
+
+
+### Bug Fixes
+
+* **ingest:** use realistic browser headers and refactor safe-fetch ([a63af67](https://github.com/sho7650/tech-news-curator/commit/a63af67691fb10423ffa911d73238f79041db89f))
+* **ingest:** use realistic browser headers in safe-fetch to avoid 403 ([cd3e026](https://github.com/sho7650/tech-news-curator/commit/cd3e02679d800ac3e359e39de262550b150372c3))
+* remove await on void broadcast() in article-monitor ([8b312e5](https://github.com/sho7650/tech-news-curator/commit/8b312e562c4de5bcfa8eceaa48957278364ac484))
+
 ## [1.8.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.7.2...tech-news-curator-api-v1.8.0) (2026-03-05)
 
 
