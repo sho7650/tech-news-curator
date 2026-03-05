@@ -1,4 +1,4 @@
-import { and, arrayContains, count, desc, eq, gte, lt } from "drizzle-orm";
+import { and, arrayContains, count, desc, eq, gte, lt, sql } from "drizzle-orm";
 import type { DB } from "../database.js";
 import { articles } from "../db/schema/index.js";
 import type { ArticleCreate } from "../schemas/article.js";
@@ -34,13 +34,15 @@ export async function createArticle(db: DB, data: ArticleCreate) {
   return article;
 }
 
+type ArticleListRow = Omit<typeof articles.$inferSelect, "bodyOriginal" | "bodyTranslated">;
+
 export async function getArticles(
   db: DB,
   page = 1,
   perPage = 20,
   dateFilter?: string,
   categoryFilter?: string,
-): Promise<{ items: (typeof articles.$inferSelect)[]; total: number }> {
+): Promise<{ items: ArticleListRow[]; total: number }> {
   const conditions = [];
 
   if (dateFilter) {
@@ -60,10 +62,23 @@ export async function getArticles(
   const total = totalResult.count;
 
   const items = await db
-    .select()
+    .select({
+      id: articles.id,
+      sourceUrl: articles.sourceUrl,
+      sourceName: articles.sourceName,
+      titleOriginal: articles.titleOriginal,
+      titleJa: articles.titleJa,
+      summaryJa: articles.summaryJa,
+      author: articles.author,
+      publishedAt: articles.publishedAt,
+      ogImageUrl: articles.ogImageUrl,
+      categories: articles.categories,
+      metadata: articles.metadata,
+      createdAt: articles.createdAt,
+    })
     .from(articles)
     .where(whereClause)
-    .orderBy(desc(articles.publishedAt))
+    .orderBy(sql`${articles.publishedAt} DESC NULLS LAST`)
     .offset((page - 1) * perPage)
     .limit(perPage);
 

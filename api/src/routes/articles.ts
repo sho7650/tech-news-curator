@@ -93,7 +93,9 @@ articlesRoute.get(
   },
 );
 
-function formatArticleListItem(article: Article): ArticleListItem {
+function formatArticleListItem(
+  article: Omit<Article, "bodyOriginal" | "bodyTranslated">,
+): ArticleListItem {
   return {
     id: article.id,
     source_url: article.sourceUrl,

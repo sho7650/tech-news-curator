@@ -19,7 +19,18 @@ export async function pollNewArticles(db: DB): Promise<void> {
 
   try {
     const result = await db
-      .select()
+      .select({
+        id: articles.id,
+        sourceUrl: articles.sourceUrl,
+        sourceName: articles.sourceName,
+        titleJa: articles.titleJa,
+        summaryJa: articles.summaryJa,
+        author: articles.author,
+        publishedAt: articles.publishedAt,
+        ogImageUrl: articles.ogImageUrl,
+        categories: articles.categories,
+        createdAt: articles.createdAt,
+      })
       .from(articles)
       .where(gt(articles.createdAt, lastChecked))
       .orderBy(articles.createdAt);
