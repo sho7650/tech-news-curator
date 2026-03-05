@@ -6,9 +6,9 @@ import * as schema from "./db/schema/index.js";
 export type DB = PostgresJsDatabase<typeof schema>;
 
 const queryClient = postgres(config.databaseUrl, {
-  max: 30,
-  idle_timeout: 20,
-  connect_timeout: 10,
+  max: Number.parseInt(process.env.DB_POOL_MAX ?? "30", 10),
+  idle_timeout: Number.parseInt(process.env.DB_IDLE_TIMEOUT ?? "20", 10),
+  connect_timeout: Number.parseInt(process.env.DB_CONNECT_TIMEOUT ?? "10", 10),
 });
 
 export const db = drizzle(queryClient, { schema });

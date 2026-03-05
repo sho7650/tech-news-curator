@@ -28,13 +28,13 @@ export async function pollNewArticles(db: DB): Promise<void> {
       articleBroker.broadcast({
         id: article.id,
         source_url: article.sourceUrl,
-        source_name: article.sourceName,
-        title_ja: article.titleJa,
-        summary_ja: article.summaryJa,
-        author: article.author,
+        source_name: article.sourceName ?? null,
+        title_ja: article.titleJa ?? null,
+        summary_ja: article.summaryJa ?? null,
+        author: article.author ?? null,
         published_at: article.publishedAt?.toISOString() ?? null,
-        og_image_url: article.ogImageUrl,
-        categories: article.categories,
+        og_image_url: article.ogImageUrl ?? null,
+        categories: article.categories ?? null,
         created_at: article.createdAt.toISOString(),
       });
     }

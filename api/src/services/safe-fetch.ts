@@ -10,6 +10,7 @@ const MAX_REDIRECTS = 5;
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const CONNECT_TIMEOUT = 5000;
 const READ_TIMEOUT = 30000;
+const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10 MB
 
 async function resolveAndValidate(hostname: string): Promise<string> {
   // IP literal
@@ -85,12 +86,22 @@ function makeRequest(
     const client = isHttps ? https : http;
     const req = client.request(options, (res) => {
       const chunks: Buffer[] = [];
+      let totalBytes = 0;
       const readTimer = setTimeout(() => {
         req.destroy();
         reject(new Error("Read timeout"));
       }, READ_TIMEOUT);
 
-      res.on("data", (chunk: Buffer) => chunks.push(chunk));
+      res.on("data", (chunk: Buffer) => {
+        totalBytes += chunk.length;
+        if (totalBytes > MAX_BODY_SIZE) {
+          clearTimeout(readTimer);
+          req.destroy();
+          reject(new Error(`Response body too large (>${MAX_BODY_SIZE} bytes)`));
+          return;
+        }
+        chunks.push(chunk);
+      });
       res.on("end", () => {
         clearTimeout(readTimer);
         resolve({

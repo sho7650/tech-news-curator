@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { paginationQuery } from "./base.js";
+import { dateString, paginationQuery } from "./base.js";
 
 export const digestCreateSchema = z
   .object({
-    digest_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    digest_date: dateString,
     title: z.string().max(500).nullish(),
     content: z.string().max(100000).nullish(),
     article_count: z.number().int().min(0).max(10000).nullish(),
