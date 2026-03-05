@@ -50,7 +50,6 @@ export interface ArticleDetail {
   source_name: string | null;
   title_original: string | null;
   title_ja: string | null;
-  body_translated: string | null;
   summary_ja: string | null;
   author: string | null;
   published_at: string | null;
