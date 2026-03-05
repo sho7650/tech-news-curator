@@ -39,36 +39,45 @@ async function resolveAndValidate(hostname: string): Promise<string> {
   return safeIp;
 }
 
+function buildRequestOptions(
+  url: string,
+  resolvedIp: string,
+): { options: http.RequestOptions | https.RequestOptions; isHttps: boolean } {
+  const parsed = new URL(url);
+  const isHttps = parsed.protocol === "https:";
+  const defaultPort = isHttps ? 443 : 80;
+  const port = parsed.port ? Number.parseInt(parsed.port, 10) : defaultPort;
+  const path = parsed.pathname + parsed.search;
+
+  // Host header: include port only if non-default
+  const hostHeader = parsed.port ? `${parsed.hostname}:${parsed.port}` : parsed.hostname;
+
+  const options: http.RequestOptions | https.RequestOptions = {
+    hostname: resolvedIp,
+    port,
+    path,
+    method: "GET",
+    headers: {
+      Host: hostHeader,
+      "User-Agent": USER_AGENT,
+    },
+    timeout: CONNECT_TIMEOUT,
+  };
+
+  if (isHttps) {
+    (options as https.RequestOptions).servername = parsed.hostname;
+    (options as https.RequestOptions).rejectUnauthorized = true;
+  }
+
+  return { options, isHttps };
+}
+
 function makeRequest(
   url: string,
   resolvedIp: string,
 ): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: string }> {
   return new Promise((resolve, reject) => {
-    const parsed = new URL(url);
-    const isHttps = parsed.protocol === "https:";
-    const defaultPort = isHttps ? 443 : 80;
-    const port = parsed.port ? Number.parseInt(parsed.port, 10) : defaultPort;
-    const path = parsed.pathname + parsed.search;
-
-    // Host header: include port only if non-default
-    const hostHeader = parsed.port ? `${parsed.hostname}:${parsed.port}` : parsed.hostname;
-
-    const options: http.RequestOptions | https.RequestOptions = {
-      hostname: resolvedIp,
-      port,
-      path,
-      method: "GET",
-      headers: {
-        Host: hostHeader,
-        "User-Agent": USER_AGENT,
-      },
-      timeout: CONNECT_TIMEOUT,
-    };
-
-    if (isHttps) {
-      (options as https.RequestOptions).servername = parsed.hostname;
-      (options as https.RequestOptions).rejectUnauthorized = true;
-    }
+    const { options, isHttps } = buildRequestOptions(url, resolvedIp);
 
     const client = isHttps ? https : http;
     const req = client.request(options, (res) => {
