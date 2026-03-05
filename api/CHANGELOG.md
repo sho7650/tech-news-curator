@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.7.2...tech-news-curator-api-v1.8.0) (2026-03-05)
+
+
+### Features
+
+* **api:** add structured logging with Pino ([9b881d3](https://github.com/sho7650/tech-news-curator/commit/9b881d3ad489bd417ba5fbf396b483c1276c84ed))
+* **api:** add structured logging with Pino ([f4a61f0](https://github.com/sho7650/tech-news-curator/commit/f4a61f0fa6c1b1d9d38ca773070e93006299d2c3))
+
+
+### Bug Fixes
+
+* **api:** update hono and @hono/node-server to fix high severity CVEs ([6c949c8](https://github.com/sho7650/tech-news-curator/commit/6c949c843615f048968cb603cf423262e73ef240))
+
 ## [1.7.2](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.7.1...tech-news-curator-api-v1.7.2) (2026-03-04)
 
 
