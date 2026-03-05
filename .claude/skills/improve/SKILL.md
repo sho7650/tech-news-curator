@@ -36,7 +36,7 @@ This skill combines the following tools:
 - `serena` — Phase 1/3: Semantic code understanding, dependency graph analysis
 - `sequential-thinking` — Phase 1/6: Multi-step reasoning for complex problems
 - `context7` — Phase 2: Official documentation for Hono, Drizzle, Vitest, etc.
-- `playwright` — Phase 4: Browser-based E2E test execution
+- `playwright` — Phase 1/4: Browser-based E2E test execution (via `make test-e2e`)
 - `tavily` — Phase 6: Web research for best practices
 
 **Fallback rule:** If any MCP server or `/sc:` command is unavailable, log a warning and continue without it. MCPs and SuperClaude enhance the loop but are NOT required.
@@ -97,14 +97,19 @@ Action required: {what the user should do}
    echo "Parameters: rounds={{rounds}}, focus={{focus}}, dry-run={{dry-run}}" >> .improvement-state/run.log
    ```
 7. Load `.improvement-config.json` if it exists. Otherwise use default values.
-8. **Capture test baseline** — run the full test suite and record the initial state:
+8. **Capture test baseline** — run unit tests and E2E tests to record the initial state:
    ```bash
+   # Unit tests
    cd api && timeout --kill-after=10s ${TEST_TIMEOUT:-120}s npm test 2>&1 | tee .improvement-state/test-baseline.log
-   BASELINE_EXIT=$?
+   BASELINE_UNIT_EXIT=$?
+
+   # E2E tests
+   cd $(git rev-parse --show-toplevel) && timeout --kill-after=30s ${E2E_TIMEOUT:-300}s make test-e2e 2>&1 | tee .improvement-state/e2e-baseline.log
+   BASELINE_E2E_EXIT=$?
    ```
-   Extract baseline test count from the summary line (see "Reading Test Output" section).
-   Record: `BASELINE_TEST_COUNT={number}`, `BASELINE_FAIL_COUNT={number}`.
-   This baseline is used throughout the loop to detect test count regressions.
+   Extract baseline test counts from both outputs (see "Reading Test Output" section).
+   Record: `BASELINE_UNIT_TEST_COUNT`, `BASELINE_UNIT_FAIL_COUNT`, `BASELINE_E2E_EXIT`.
+   These baselines are used throughout the loop to detect regressions.
 9. **Use serena MCP to understand project structure** — Query serena for module structure, dependency graph, and key entry points. This improves analysis accuracy in subsequent phases.
 
 ## Reading Test Output
@@ -176,10 +181,11 @@ Scope: {{focus}}
 git tag "savepoint-round-$ROUND_NUM"
 ```
 
-If agent teams are available (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`), run QA checks in parallel using 3 agent teams:
+If agent teams are available (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`), run QA checks in parallel using 4 agent teams:
 - **Team A**: Static analysis (1-1 Biome + 1-2 TypeScript)
-- **Team B**: Test execution (1-3 Vitest)
-- **Team C**: Code analysis (1-5 /sc:analyze + serena + sequential-thinking)
+- **Team B**: Unit test execution (1-3 Vitest)
+- **Team C**: E2E test execution (1-4 make test-e2e)
+- **Team D**: Code analysis (1-5 /sc:analyze + serena + sequential-thinking)
 
 Otherwise, run sequentially.
 
@@ -204,17 +210,23 @@ Record type errors as issues (severity: HIGH — type errors mean compilation fa
 Run tests using the standardized procedure in "Reading Test Output" section.
 File each failure as a separate issue.
 
-#### 1-4. Playwright E2E (when {{focus}} is frontend or all)
+#### 1-4. E2E Tests
 
-Only run if `qa.playwright` is `true` in `.improvement-config.json` (default: false).
+Run the full E2E test suite. `make test-e2e` handles environment startup, test execution, and cleanup automatically.
 
-**Pre-check**: Verify the frontend is running before attempting E2E:
 ```bash
-curl -s --max-time 5 http://localhost:3100 >/dev/null 2>&1
+cd $(git rev-parse --show-toplevel) && timeout --kill-after=30s ${E2E_TIMEOUT:-300}s make test-e2e 2>&1 | tee /tmp/e2e-output.log
+E2E_EXIT=$?
 ```
-If not reachable, skip Playwright and log: "Frontend not running on port 3100, skipping E2E."
 
-When running, use **playwright MCP** for browser-based testing. Same failure detection rules as Vitest: each failure is a separate HIGH-severity issue.
+Apply the same "Reading Test Output" procedure to E2E output:
+- If `E2E_EXIT=124`: timeout. Log as `[HIGH] E2E test execution timeout`.
+- If `E2E_EXIT` is non-zero: parse output for failure patterns. File each E2E failure as a separate issue with `Source: e2e` and severity: HIGH.
+- If `E2E_EXIT=0`: no E2E issues.
+
+**E2E regression check**: If `BASELINE_E2E_EXIT` was 0 (E2E passed at baseline) but `E2E_EXIT` is now non-zero, mark these failures as regressions introduced by previous rounds.
+
+If `make test-e2e` fails due to infrastructure (Docker not running, port conflicts), log as "E2E infrastructure failure" and continue with other QA checks. Do NOT file test issues for infrastructure failures.
 
 #### 1-5. Code Analysis with /sc:analyze
 
@@ -252,7 +264,7 @@ Save all QA results to `.improvement-state/issues-round-N.md` in this format:
 
 ### [SEVERITY] Short description
 - **File**: `path/to/file.ts:line`
-- **Source**: lint | typecheck | vitest | playwright | sc:analyze | serena
+- **Source**: lint | typecheck | vitest | e2e | sc:analyze | serena
 - **Detail**: Description of the problem
 - **Suggestion**: Proposed fix (if any)
 ```
@@ -390,16 +402,27 @@ git commit -m "refactor: {specific description} [round $ROUND_NUM]"
 
 Only run if refactoring was performed in Phase 3.
 
+Run both unit tests and E2E tests. Both MUST pass for the round to be considered safe.
+
 ```bash
-cd api && timeout --kill-after=10s ${TEST_TIMEOUT:-120}s npm test 2>&1 | tee /tmp/safety-output.log
-SAFETY_EXIT=$?
+# Unit tests
+cd api && timeout --kill-after=10s ${TEST_TIMEOUT:-120}s npm test 2>&1 | tee /tmp/safety-unit-output.log
+SAFETY_UNIT_EXIT=$?
+
+# E2E tests
+cd $(git rev-parse --show-toplevel) && timeout --kill-after=30s ${E2E_TIMEOUT:-300}s make test-e2e 2>&1 | tee /tmp/safety-e2e-output.log
+SAFETY_E2E_EXIT=$?
 ```
 
-Also run the test count regression check (current total >= BASELINE_TEST_COUNT).
+Run the unit test count regression check (current total >= BASELINE_UNIT_TEST_COUNT).
 
-#### On test success
+#### On both tests passing (SAFETY_UNIT_EXIT=0 AND SAFETY_E2E_EXIT=0)
 
 Proceed to Phase 5. Reset `CONSECUTIVE_REVERT_COUNT` to 0.
+
+#### On either test failing — Auto-Revert
+
+If E2E passed at baseline but fails now, the refactoring broke end-to-end behavior — auto-revert is required even if unit tests pass.
 
 #### On test failure — Auto-Revert
 
@@ -440,7 +463,7 @@ cd api && timeout --kill-after=10s ${TEST_TIMEOUT:-120}s npm test 2>&1
 
 ```
 /sc:reflect "Improvement Loop Round $ROUND_NUM retrospective:
-- QA found X issues (sources: lint, typecheck, vitest, sc:analyze, serena)
+- QA found X issues (sources: lint, typecheck, vitest, e2e, sc:analyze, serena)
 - Fixed Y issues (auto-fix: p, troubleshoot: q)
 - Refactored Z files (reverted: W)
 - E2E Safety: PASSED/REVERTED/SKIPPED
@@ -550,7 +573,8 @@ After all rounds complete (or early termination):
 
 | Situation | Action |
 |-----------|--------|
-| Docker not running (testcontainers fail) | Skip Vitest, continue QA with lint + sc:analyze only |
+| Docker not running (testcontainers fail) | Skip Vitest and E2E, continue QA with lint + sc:analyze only |
+| `make test-e2e` infrastructure failure | Log warning, continue without E2E. Do NOT file test issues |
 | Biome not found | Skip lint if `npx biome` is unavailable |
 | Git conflict | **ABORT** the loop (abort condition #1) |
 | Test timeout (exit code 124) | Treat as HIGH-severity issue. If 3+ timeouts in one run, ABORT |
