@@ -125,22 +125,24 @@ function makeRequest(
   });
 }
 
+async function validateAndResolve(url: string): Promise<string> {
+  const parsed = new URL(url);
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new UnsafeURLError(`Unsupported scheme: ${parsed.protocol.replace(":", "")}`);
+  }
+  if (!parsed.hostname) {
+    throw new UnsafeURLError("No hostname in URL");
+  }
+  return resolveAndValidate(parsed.hostname);
+}
+
 export async function safeFetch(url: string, logger?: AppLogger): Promise<string | null> {
   const log =
     logger?.child({ service: "safe-fetch" }) ?? rootLogger.child({ service: "safe-fetch" });
   let currentUrl = url;
 
   for (let i = 0; i < MAX_REDIRECTS + 1; i++) {
-    const parsed = new URL(currentUrl);
-
-    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-      throw new UnsafeURLError(`Unsupported scheme: ${parsed.protocol.replace(":", "")}`);
-    }
-    if (!parsed.hostname) {
-      throw new UnsafeURLError("No hostname in URL");
-    }
-
-    const resolvedIp = await resolveAndValidate(parsed.hostname);
+    const resolvedIp = await validateAndResolve(currentUrl);
 
     let response: { status: number; headers: http.IncomingHttpHeaders; body: string };
     try {
