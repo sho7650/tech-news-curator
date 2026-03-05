@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import { getArticleById } from '@/lib/api'
 import ReadingTime from '@/components/ReadingTime'
 import ScrollProgress from '@/components/ScrollProgress'
+import TableOfContents from '@/components/TableOfContents'
 
 export default async function ArticlePage({
   params,
@@ -19,7 +20,7 @@ export default async function ArticlePage({
     notFound()
   }
 
-  const bodyText = article.summary_ja || ''
+  const bodyText = article.body_translated || article.summary_ja || ''
 
   return (
     <>
@@ -89,14 +90,39 @@ export default async function ArticlePage({
         </div>
       )}
 
-      {/* Summary */}
-      {article.summary_ja && (
-        <div className="mb-6 rounded-lg border border-border bg-bg-secondary p-4 text-sm text-text-secondary">
-          <p className="mb-1 font-semibold text-text-muted">要約</p>
-          {/* react-markdown v10+ はデフォルトで raw HTML を描画しない（rehype-raw 不使用で安全） */}
-          <ReactMarkdown>{article.summary_ja}</ReactMarkdown>
+      {/* Mobile TOC */}
+      {article.body_translated && (
+        <div className="lg:hidden">
+          <TableOfContents contentId="article-content" />
         </div>
       )}
+
+      {/* Content area with TOC sidebar */}
+      <div className="flex gap-8">
+        {/* Main content */}
+        <div className="min-w-0 flex-1">
+          {article.summary_ja && (
+            <div className="mb-6 rounded-lg border border-border bg-bg-secondary p-4 text-sm text-text-secondary">
+              <p className="mb-1 font-semibold text-text-muted">要約</p>
+              {/* react-markdown v10+ はデフォルトで raw HTML を描画しない（rehype-raw 不使用で安全） */}
+              <ReactMarkdown>{article.summary_ja}</ReactMarkdown>
+            </div>
+          )}
+
+          {article.body_translated && (
+            <div id="article-content" className="markdown-body mx-auto max-w-prose">
+              <ReactMarkdown>{article.body_translated}</ReactMarkdown>
+            </div>
+          )}
+        </div>
+
+        {/* TOC sidebar (desktop only) */}
+        {article.body_translated && (
+          <div className="hidden w-56 shrink-0 lg:block">
+            <TableOfContents contentId="article-content" />
+          </div>
+        )}
+      </div>
     </>
   )
 }

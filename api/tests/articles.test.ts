@@ -49,13 +49,13 @@ function formatArticleListItem(article: any): ArticleListItem {
 }
 
 function formatArticleDetail(article: any): ArticleDetail {
-  // body_translated excluded from public response (copyright compliance)
   return {
     id: article.id,
     source_url: article.sourceUrl,
     source_name: article.sourceName ?? null,
     title_original: article.titleOriginal ?? null,
     title_ja: article.titleJa ?? null,
+    body_translated: article.bodyTranslated ?? null,
     summary_ja: article.summaryJa ?? null,
     author: article.author ?? null,
     published_at: article.publishedAt?.toISOString() ?? null,
@@ -279,7 +279,7 @@ describe("Articles API", () => {
     expect(data).not.toHaveProperty("body_original");
   });
 
-  it("should exclude body_translated from detail response (copyright compliance)", async () => {
+  it("should include body_translated in detail response", async () => {
     const app = buildApp();
     const createRes = await app.request("/articles", {
       method: "POST",
@@ -291,7 +291,7 @@ describe("Articles API", () => {
     const res = await app.request(`/articles/${id}`);
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data).not.toHaveProperty("body_translated");
+    expect(data).toHaveProperty("body_translated", "翻訳本文");
   });
 
   it("should reject without API key", async () => {
