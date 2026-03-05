@@ -61,10 +61,22 @@ const server = serve({
 rootLogger.info({ port }, "Tech News Curator API started");
 
 // Graceful shutdown
+let shuttingDown = false;
 function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
+
   rootLogger.info("Shutting down...");
   stopMonitor();
+
+  const forceTimer = setTimeout(() => {
+    rootLogger.error("Forced shutdown after timeout");
+    process.exit(1);
+  }, 10_000);
+  forceTimer.unref();
+
   server.close(async () => {
+    clearTimeout(forceTimer);
     try {
       await queryClient.end();
     } catch (err) {

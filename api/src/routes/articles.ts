@@ -93,7 +93,9 @@ articlesRoute.get(
   },
 );
 
-function formatArticleListItem(article: Article): ArticleListItem {
+function formatArticleListItem(
+  article: Omit<Article, "bodyOriginal" | "bodyTranslated">,
+): ArticleListItem {
   return {
     id: article.id,
     source_url: article.sourceUrl,
@@ -109,13 +111,13 @@ function formatArticleListItem(article: Article): ArticleListItem {
 }
 
 function formatArticleDetail(article: Article): ArticleDetail {
+  // body_translated excluded from public response (copyright compliance)
   return {
     id: article.id,
     source_url: article.sourceUrl,
     source_name: article.sourceName ?? null,
     title_original: article.titleOriginal ?? null,
     title_ja: article.titleJa ?? null,
-    body_translated: article.bodyTranslated ?? null,
     summary_ja: article.summaryJa ?? null,
     author: article.author ?? null,
     published_at: article.publishedAt?.toISOString() ?? null,

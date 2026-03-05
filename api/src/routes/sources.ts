@@ -16,7 +16,6 @@ import {
 import {
   createSource,
   deactivateSource,
-  getSourceById,
   getSources,
   updateSource,
 } from "../services/source-service.js";
@@ -70,10 +69,6 @@ sourcesRoute.put(
   zValidator("json", sourceUpdateSchema, validationHook),
   async (c) => {
     const { source_id: sourceId } = c.req.valid("param");
-    const existing = await getSourceById(db, sourceId);
-    if (!existing) {
-      return c.json({ detail: "Source not found" }, 404);
-    }
     const data = c.req.valid("json");
     try {
       const updated = await updateSource(db, sourceId, data);
@@ -98,10 +93,6 @@ sourcesRoute.delete(
   zValidator("param", sourceIdParamSchema, validationHook),
   async (c) => {
     const { source_id: sourceId } = c.req.valid("param");
-    const existing = await getSourceById(db, sourceId);
-    if (!existing) {
-      return c.json({ detail: "Source not found" }, 404);
-    }
     const deactivated = await deactivateSource(db, sourceId);
     if (!deactivated) {
       return c.json({ detail: "Source not found" }, 404);

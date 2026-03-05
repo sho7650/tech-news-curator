@@ -30,7 +30,10 @@ If the file does not exist, all defaults are used.
   },
   "safety": {
     "auto_revert_on_failure": true,
-    "test_timeout_ms": 120000
+    "test_timeout_s": 120,
+    "max_fix_attempts_per_test": 3,
+    "max_consecutive_reverts": 2,
+    "max_consecutive_regressions": 2
   },
   "self_learning": {
     "enabled": true
@@ -55,7 +58,7 @@ If the file does not exist, all defaults are used.
 | `typecheck` | boolean | true | Run tsc --noEmit |
 | `vitest` | boolean | true | Run Vitest tests (requires Docker) |
 | `playwright` | boolean | false | Run Playwright E2E (highly environment-dependent) |
-| `claude_review` | boolean | true | Run Claude code review |
+| `claude_review` | boolean | true | Run Claude code review via /sc:analyze |
 | `severity_filter` | string[] | ["critical","high","medium"] | Only address issues at or above these severity levels |
 
 ### refactor
@@ -70,8 +73,11 @@ If the file does not exist, all defaults are used.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `auto_revert_on_failure` | boolean | true | Auto-revert on test failure |
-| `test_timeout_ms` | number | 120000 | Test execution timeout in milliseconds |
+| `auto_revert_on_failure` | boolean | true | Auto-revert refactoring on test failure |
+| `test_timeout_s` | number | 120 | Test execution timeout in seconds (used with `timeout` command) |
+| `max_fix_attempts_per_test` | number | 3 | Max attempts to fix a single failing test before giving up |
+| `max_consecutive_reverts` | number | 2 | Abort loop if this many consecutive Phase 4 reverts occur |
+| `max_consecutive_regressions` | number | 2 | Abort loop if issue count increases this many consecutive rounds |
 
 ### self_learning
 
@@ -79,10 +85,23 @@ If the file does not exist, all defaults are used.
 |-------|------|---------|-------------|
 | `enabled` | boolean | true | Run the self-learning phase |
 
+## State Files
+
+The loop creates these files in `.improvement-state/`:
+
+| File | Purpose |
+|------|---------|
+| `run.log` | High-level audit log with timestamps for each phase |
+| `issues-round-N.md` | Issues found in round N |
+| `test-baseline.log` | Initial test output before any modifications |
+| `reflection-log.md` | Retrospective notes appended after each round |
+| `self-learning-suggestions.md` | Generated after the final round |
+| `refactor-blocklist.json` | Files/strategies that caused reverts (persists across runs) |
+
 ## Recommended .gitignore additions
 
 ```
-# Improvement loop state (session-specific)
+# Improvement loop state (session-specific, except blocklist)
 .improvement-state/
 
 # Improvement config (optional: commit if you want to share with team)

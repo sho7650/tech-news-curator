@@ -86,15 +86,18 @@ export async function extractArticle(
   const rawMd = article.content ? htmlToMarkdown(article.content) : null;
   const body = rawMd ? cleanArticleText(rawMd, { byline: article.byline ?? null }) : null;
 
-  // Extract og:image from meta tags
-  const ogImage =
+  // Extract og:image from meta tags (only allow http(s) URLs)
+  const rawOgImage =
     document.querySelector('meta[property="og:image"]')?.getAttribute("content") ?? null;
+  const ogImage = rawOgImage && /^https?:\/\//i.test(rawOgImage) ? rawOgImage : null;
 
-  // Extract published date from meta tags
-  const publishedAt =
+  // Extract published date from meta tags (validate as parseable date)
+  const rawPublishedAt =
     document.querySelector('meta[property="article:published_time"]')?.getAttribute("content") ??
     document.querySelector('meta[name="date"]')?.getAttribute("content") ??
     null;
+  const publishedAt =
+    rawPublishedAt && !Number.isNaN(new Date(rawPublishedAt).getTime()) ? rawPublishedAt : null;
 
   log.info({ url, title: article.title }, "extraction successful");
 

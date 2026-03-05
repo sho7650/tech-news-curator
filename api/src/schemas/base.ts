@@ -15,15 +15,17 @@ export const sourceIdParamSchema = z.object({
   source_id: z.string().uuid(),
 });
 
+export const dateString = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD format")
+  .refine(
+    (d) => {
+      const parsed = new Date(`${d}T00:00:00Z`);
+      return parsed.toISOString().startsWith(d);
+    },
+    { message: "Invalid date" },
+  );
+
 export const digestDateParamSchema = z.object({
-  digest_date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD format")
-    .refine(
-      (d) => {
-        const parsed = new Date(`${d}T00:00:00Z`);
-        return parsed.toISOString().startsWith(d);
-      },
-      { message: "Invalid date" },
-    ),
+  digest_date: dateString,
 });
