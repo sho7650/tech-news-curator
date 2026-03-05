@@ -1,13 +1,13 @@
 import http from "node:http";
 import https from "node:https";
 import ipaddr from "ipaddr.js";
+import { config } from "../config.js";
 import type { AppLogger } from "../lib/logger.js";
 import { rootLogger } from "../lib/logger.js";
 import { UnsafeURLError, isSafeIp, resolveWithTimeout } from "./url-validator.js";
 
 const MAX_REDIRECTS = 5;
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
-const USER_AGENT = "Mozilla/5.0 (compatible; TechNewsCurator/1.0)";
 const CONNECT_TIMEOUT = 5000;
 const READ_TIMEOUT = 30000;
 
@@ -60,7 +60,10 @@ function makeRequest(
       method: "GET",
       headers: {
         Host: hostHeader,
-        "User-Agent": USER_AGENT,
+        "User-Agent": config.fetchUserAgent,
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "identity",
       },
       timeout: CONNECT_TIMEOUT,
     };
