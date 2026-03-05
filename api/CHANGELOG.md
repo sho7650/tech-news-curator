@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.4](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.3...tech-news-curator-api-v1.8.4) (2026-03-05)
+
+
+### Bug Fixes
+
+* restore body_translated in article detail API and frontend ([ff0c467](https://github.com/sho7650/tech-news-curator/commit/ff0c4676ee57eb1b836d0ff1671bcb4049435b75))
+
 ## [1.8.3](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.2...tech-news-curator-api-v1.8.3) (2026-03-05)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.2](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.5.1...tech-news-curator-frontend-v0.5.2) (2026-03-05)
+
+
+### Bug Fixes
+
+* restore body_translated in article detail API and frontend ([ff0c467](https://github.com/sho7650/tech-news-curator/commit/ff0c4676ee57eb1b836d0ff1671bcb4049435b75))
+
 ## [0.5.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.5.0...tech-news-curator-frontend-v0.5.1) (2026-03-05)
 
 
