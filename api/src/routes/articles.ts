@@ -111,14 +111,13 @@ function formatArticleListItem(
 }
 
 function formatArticleDetail(article: Article): ArticleDetail {
-  // body_original excluded (copyright: raw source text not exposed)
-  // body_translated included for frontend rendering (internal network only)
   return {
     id: article.id,
     source_url: article.sourceUrl,
     source_name: article.sourceName ?? null,
     title_original: article.titleOriginal ?? null,
     title_ja: article.titleJa ?? null,
+    body_original: article.bodyOriginal ?? null,
     body_translated: article.bodyTranslated ?? null,
     summary_ja: article.summaryJa ?? null,
     author: article.author ?? null,

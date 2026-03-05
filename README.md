@@ -148,6 +148,10 @@ frontend/src/
 | `ENVIRONMENT` | news-api | `development` or `production` |
 | `API_URL` | news-frontend | Internal API URL (e.g. `http://news-api:8100`) |
 
+## Content Usage Notice
+
+This system is designed for **personal / household use only** (個人的又は家庭内利用). Article content fetched, stored, and translated by this system is covered under Japanese Copyright Law Article 30 (私的使用のための複製) and Article 47-6 (翻訳等による利用). **Do not deploy this system on a publicly accessible network** without obtaining appropriate content licenses from the original publishers.
+
 ## License
 
 MIT License - sho kisaragi
