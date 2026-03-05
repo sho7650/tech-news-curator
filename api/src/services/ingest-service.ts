@@ -89,8 +89,7 @@ export async function extractArticle(
   // Extract og:image from meta tags (only allow http(s) URLs)
   const rawOgImage =
     document.querySelector('meta[property="og:image"]')?.getAttribute("content") ?? null;
-  const ogImage =
-    rawOgImage && /^https?:\/\//i.test(rawOgImage) ? rawOgImage : null;
+  const ogImage = rawOgImage && /^https?:\/\//i.test(rawOgImage) ? rawOgImage : null;
 
   // Extract published date from meta tags (validate as parseable date)
   const rawPublishedAt =
