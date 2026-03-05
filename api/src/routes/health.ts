@@ -1,8 +1,9 @@
 import { sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { db } from "../database.js";
+import type { AppEnv } from "../types.js";
 
-const health = new Hono();
+const health = new Hono<AppEnv>();
 
 health.get("/health", async (c) => {
   try {

@@ -20,8 +20,9 @@ import {
   getArticleById,
   getArticles,
 } from "../services/article-service.js";
+import type { AppEnv } from "../types.js";
 
-const articlesRoute = new Hono();
+const articlesRoute = new Hono<AppEnv>();
 
 // GET /articles/check
 articlesRoute.get(

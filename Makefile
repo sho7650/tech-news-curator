@@ -49,12 +49,14 @@ push:
 lint:
 	cd api && npx biome check src/
 
-# E2E tests
+# E2E tests (extracts first API key from .env for authentication)
 test-e2e:
-	cd frontend && npx playwright test
+	$(eval API_KEY := $(shell grep '^API_KEYS=' .env 2>/dev/null | cut -d= -f2 | cut -d, -f1))
+	cd frontend && TEST_API_KEY=$(API_KEY) npx playwright test
 
 test-e2e-ui:
-	cd frontend && npx playwright test --ui
+	$(eval API_KEY := $(shell grep '^API_KEYS=' .env 2>/dev/null | cut -d= -f2 | cut -d, -f1))
+	cd frontend && TEST_API_KEY=$(API_KEY) npx playwright test --ui
 
 # OWASP ZAP scan
 zap-scan:

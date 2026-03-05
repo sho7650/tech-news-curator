@@ -1,4 +1,7 @@
 import { EventEmitter } from "node:events";
+import { rootLogger } from "../lib/logger.js";
+
+const logger = rootLogger.child({ service: "sse-broker" });
 
 const CLIENT_QUEUE_MAXSIZE = 64;
 const MAX_SSE_CONNECTIONS = 20;
@@ -47,7 +50,7 @@ export class SSEBroker {
       } else if (client.events.length < CLIENT_QUEUE_MAXSIZE) {
         client.events.push(event);
       } else {
-        console.warn("SSE client queue full, dropping event");
+        logger.warn("SSE client queue full, dropping event");
       }
     }
   }

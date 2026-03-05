@@ -20,8 +20,9 @@ import {
   getSources,
   updateSource,
 } from "../services/source-service.js";
+import type { AppEnv } from "../types.js";
 
-const sourcesRoute = new Hono();
+const sourcesRoute = new Hono<AppEnv>();
 
 // GET /sources
 sourcesRoute.get(

@@ -1,8 +1,9 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { ConnectionLimitExceeded, articleBroker } from "../services/sse-broker.js";
+import type { AppEnv } from "../types.js";
 
-const sseRoute = new Hono();
+const sseRoute = new Hono<AppEnv>();
 
 sseRoute.get("/articles/stream", async (c) => {
   let clientId: number;
