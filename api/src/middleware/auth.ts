@@ -4,11 +4,14 @@ import { HTTPException } from "hono/http-exception";
 import { config } from "../config.js";
 
 function constantTimeMatch(keys: string[], candidate: string): boolean {
-  const candidateBuf = Buffer.from(candidate);
+  // HMAC both sides so timingSafeEqual always compares equal-length buffers,
+  // preventing length-based timing leaks
+  const hmacKey = "api-key-compare";
+  const candidateHash = crypto.createHmac("sha256", hmacKey).update(candidate).digest();
   let found = false;
   for (const key of keys) {
-    const keyBuf = Buffer.from(key);
-    if (keyBuf.length === candidateBuf.length && crypto.timingSafeEqual(keyBuf, candidateBuf)) {
+    const keyHash = crypto.createHmac("sha256", hmacKey).update(key).digest();
+    if (crypto.timingSafeEqual(keyHash, candidateHash)) {
       found = true;
     }
   }
