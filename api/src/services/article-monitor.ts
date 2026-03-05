@@ -25,7 +25,7 @@ export async function pollNewArticles(db: DB): Promise<void> {
       .orderBy(articles.createdAt);
 
     for (const article of result) {
-      await articleBroker.broadcast({
+      articleBroker.broadcast({
         id: article.id,
         source_url: article.sourceUrl,
         source_name: article.sourceName,
