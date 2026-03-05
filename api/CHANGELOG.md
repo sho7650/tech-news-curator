@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.8.2](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.1...tech-news-curator-api-v1.8.2) (2026-03-05)
+
+
+### Bug Fixes
+
+* resolve 4 QA issues [round 1] ([114622b](https://github.com/sho7650/tech-news-curator/commit/114622b532c6a99706cda7df146be036e5e56ba0))
+* resolve 4 QA issues [round 3] ([8d4481e](https://github.com/sho7650/tech-news-curator/commit/8d4481ef061974c048810b6b5cebd8e4e4e83800))
+* resolve 6 QA issues [round 2] ([42fb530](https://github.com/sho7650/tech-news-curator/commit/42fb5306a88d6c7271277e2af16645f2dd81c4b5))
+
+
+### Performance
+
+* optimize article queries and fix NULL ordering [round 4] ([08e8d60](https://github.com/sho7650/tech-news-curator/commit/08e8d6063deb26c7f9039a56c051ce7b7660cfcd))
+
 ## [1.8.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.0...tech-news-curator-api-v1.8.1) (2026-03-05)
 
 
