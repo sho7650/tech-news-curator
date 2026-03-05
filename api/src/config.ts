@@ -15,15 +15,24 @@ function parseCsv(value: string): string[] {
     .filter(Boolean);
 }
 
+const VALID_ENVIRONMENTS = new Set(["development", "production", "test", "staging"]);
+
 export function loadConfig(): Config {
   const corsOriginsRaw = process.env.CORS_ORIGINS ?? "http://localhost:3100,http://localhost:3000";
   const apiKeysRaw = process.env.API_KEYS ?? "";
+  const environment = process.env.ENVIRONMENT ?? "development";
+
+  if (!VALID_ENVIRONMENTS.has(environment)) {
+    throw new Error(
+      `Invalid ENVIRONMENT "${environment}". Must be one of: ${[...VALID_ENVIRONMENTS].join(", ")}`,
+    );
+  }
 
   return {
     databaseUrl:
       process.env.DATABASE_URL ?? "postgresql://news:CHANGEME@localhost:5432/news_curator",
     databaseAdminUrl: process.env.DATABASE_ADMIN_URL ?? "",
-    environment: process.env.ENVIRONMENT ?? "development",
+    environment,
     corsOrigins: parseCsv(corsOriginsRaw),
     apiKeys: parseCsv(apiKeysRaw),
     publicUrl: process.env.PUBLIC_URL ?? "http://localhost:3100",

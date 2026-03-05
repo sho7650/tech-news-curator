@@ -10,11 +10,16 @@ export async function securityHeaders(c: Context, next: Next): Promise<void> {
   if (config.environment === "production") {
     c.header("Strict-Transport-Security", "max-age=63072000; includeSubDomains");
   }
-  c.header("Cache-Control", "no-store");
   c.header("X-Frame-Options", "DENY");
   c.header("Referrer-Policy", "no-referrer");
   c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
   c.header("X-XSS-Protection", "0");
+
+  if (c.req.path === "/feed/rss") {
+    c.header("Cache-Control", "public, max-age=300");
+  } else {
+    c.header("Cache-Control", "no-store");
+  }
 
   if (!SKIP_CSP_PATHS.has(c.req.path)) {
     c.header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'");

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { paginationQuery } from "./base.js";
+import { dateString, paginationQuery } from "./base.js";
 
 export const articleCreateSchema = z
   .object({
@@ -21,17 +21,7 @@ export const articleCreateSchema = z
 export type ArticleCreate = z.infer<typeof articleCreateSchema>;
 
 export const articleListQuerySchema = paginationQuery.extend({
-  date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .refine(
-      (d) => {
-        const parsed = new Date(`${d}T00:00:00Z`);
-        return parsed.toISOString().startsWith(d);
-      },
-      { message: "Invalid date" },
-    )
-    .optional(),
+  date: dateString.optional(),
   category: z.string().max(50).optional(),
 });
 
