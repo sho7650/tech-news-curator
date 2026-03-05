@@ -44,3 +44,5 @@ frontend/test-results/
 
 # OS
 .DS_Store
+.serena/
+api/dist/
