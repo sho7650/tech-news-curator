@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.5](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.4...tech-news-curator-api-v1.8.5) (2026-03-06)
+
+
+### Bug Fixes
+
+* remove unnecessary copyright restriction on article detail API ([acf2ea7](https://github.com/sho7650/tech-news-curator/commit/acf2ea7a1093ed311db444057e78549033bf6f21))
+* remove unnecessary copyright restriction on article detail API ([8249123](https://github.com/sho7650/tech-news-curator/commit/8249123b56a4958b01adf1129c5ea1152367242e))
+
 ## [1.8.4](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.3...tech-news-curator-api-v1.8.4) (2026-03-05)
 
 
