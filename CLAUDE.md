@@ -130,9 +130,9 @@ All pages are Server Components. Data fetching happens server-side via `API_URL`
 
 Tests use real PostgreSQL via `@testcontainers/postgresql` (Docker required). The container is created once per test run; tables are cleaned via `TRUNCATE` before each test. Each test file creates its own Hono app with route handlers wired to the shared test DB. Rate limiting is disabled in tests. API key `test-key-for-testing` is injected.
 
-## Copyright Constraint
+## Content Access
 
-Public API endpoints return `summary_ja` + source link only. `body_original` and `body_translated` are stored but excluded from public responses (copyright compliance). Full-text access is Phase 2+ with authentication.
+This is a private, local-only news aggregation system for personal use. Under Japanese Copyright Law Article 30 (私的使用のための複製) and Article 47-6 (翻訳等による利用), private copying and translation are permitted. The article detail API returns all stored fields including `body_original` and `body_translated`. The list API and RSS feed return summaries only (for payload size, not legal reasons). If this system is ever made publicly accessible, content licensing must be revisited.
 
 ## Container Registry
 

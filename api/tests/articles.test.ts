@@ -55,6 +55,7 @@ function formatArticleDetail(article: any): ArticleDetail {
     source_name: article.sourceName ?? null,
     title_original: article.titleOriginal ?? null,
     title_ja: article.titleJa ?? null,
+    body_original: article.bodyOriginal ?? null,
     body_translated: article.bodyTranslated ?? null,
     summary_ja: article.summaryJa ?? null,
     author: article.author ?? null,
@@ -264,7 +265,7 @@ describe("Articles API", () => {
     expect(item).not.toHaveProperty("body_original");
   });
 
-  it("should exclude body_original from detail response", async () => {
+  it("should include body_original in detail response", async () => {
     const app = buildApp();
     const createRes = await app.request("/articles", {
       method: "POST",
@@ -276,7 +277,7 @@ describe("Articles API", () => {
     const res = await app.request(`/articles/${id}`);
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data).not.toHaveProperty("body_original");
+    expect(data).toHaveProperty("body_original", "Original body");
   });
 
   it("should include body_translated in detail response", async () => {
