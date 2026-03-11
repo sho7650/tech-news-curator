@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.5...tech-news-curator-api-v1.9.0) (2026-03-11)
+
+
+### Features
+
+* **api:** add GET /articles/:id/neighbors endpoint ([9e4367d](https://github.com/sho7650/tech-news-curator/commit/9e4367dd10431e0415241e4be08898e6bc650edb))
+* improve news layout with wider grid, sticky title, related articles, and prev/next navigation ([1f5f1d3](https://github.com/sho7650/tech-news-curator/commit/1f5f1d3183c5b93b7e15e180ae68791bac29cc4b))
+
 ## [1.8.5](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.4...tech-news-curator-api-v1.8.5) (2026-03-06)
 
 

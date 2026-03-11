@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.5.2...tech-news-curator-frontend-v0.6.0) (2026-03-11)
+
+
+### Features
+
+* **frontend:** add prev/next article navigation ([5560e1e](https://github.com/sho7650/tech-news-curator/commit/5560e1e40aa5455093c84982069677f7f1415075))
+* **frontend:** add related articles to sidebar ([6fb38b9](https://github.com/sho7650/tech-news-curator/commit/6fb38b920272bf7bc67571a485ef5e71ff9f643f))
+* **frontend:** add sticky article title on scroll ([4d7017c](https://github.com/sho7650/tech-news-curator/commit/4d7017c9cfa1678d56de15806ed1945a3bd892f6))
+* **frontend:** integrate layout improvements into article page ([1b5bae3](https://github.com/sho7650/tech-news-curator/commit/1b5bae37c21ed728e242b04f21c39453834227aa))
+* **frontend:** widen layout to max-w-7xl with 4-column grid ([1d40f9f](https://github.com/sho7650/tech-news-curator/commit/1d40f9f809f4623f5e1dd8811713cefefac4c420))
+* improve news layout with wider grid, sticky title, related articles, and prev/next navigation ([1f5f1d3](https://github.com/sho7650/tech-news-curator/commit/1f5f1d3183c5b93b7e15e180ae68791bac29cc4b))
+
 ## [0.5.2](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.5.1...tech-news-curator-frontend-v0.5.2) (2026-03-05)
 
 
