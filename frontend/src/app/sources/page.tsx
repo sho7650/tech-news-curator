@@ -36,7 +36,7 @@ export default async function SourcesPage() {
               <p className="mt-2 truncate text-sm text-text-muted">
                 {source.rss_url}
               </p>
-              {source.site_url && (
+              {source.site_url && /^https?:\/\//.test(source.site_url) && (
                 <a
                   href={source.site_url}
                   target="_blank"

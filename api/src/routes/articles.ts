@@ -143,7 +143,9 @@ function formatArticleDetail(article: Article): ArticleDetail {
     og_image_url: article.ogImageUrl ?? null,
     categories: article.categories ?? null,
     metadata:
-      typeof article.metadata === "object" && !Array.isArray(article.metadata)
+      article.metadata !== null &&
+      typeof article.metadata === "object" &&
+      !Array.isArray(article.metadata)
         ? (article.metadata as Record<string, unknown>)
         : null,
     created_at: article.createdAt.toISOString(),
