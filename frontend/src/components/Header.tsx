@@ -17,7 +17,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 border-b border-border bg-bg-primary/80 backdrop-blur-md">
       <nav
         aria-label="メインナビゲーション"
-        className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4"
+        className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4"
       >
         <Link href="/" className="text-xl font-bold text-text-primary">
           Tech News Curator

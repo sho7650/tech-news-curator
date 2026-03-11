@@ -15,8 +15,8 @@ interface Props {
 
 function LoadingIndicator() {
   return (
-    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {[...Array(3)].map((_, i) => (
+    <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {[...Array(4)].map((_, i) => (
         <div
           key={i}
           className="animate-pulse rounded-xl border border-border bg-bg-card"
