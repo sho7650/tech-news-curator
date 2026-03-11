@@ -89,6 +89,60 @@ This document defines safe refactoring patterns for Phase 3 (Refactor) of the au
 
 **Commit message example**: `refactor: replace any types with proper interfaces in ingest-service [round N]`
 
+## Rollback Patterns
+
+When refactoring causes test failures, the loop auto-reverts using these strategies. Understanding the rollback flow helps avoid patterns that are hard to revert cleanly.
+
+### Individual Commit Revert
+
+The primary rollback strategy. Each refactoring is committed individually, so a failing refactoring can be reverted without affecting other changes in the same round.
+
+**How it works**:
+1. Phase 3 commits each refactoring as a separate commit with a `refactor:` prefix.
+2. Phase 4 runs the full test suite after all refactorings.
+3. If tests fail, the loop collects all refactoring commit SHAs from the current round using the savepoint tag.
+4. Each commit is reverted individually (newest first) using `git revert --no-edit`.
+5. If a revert causes a merge conflict, the loop aborts entirely (abort condition #1).
+
+**Why individual commits matter**: If multiple refactorings were squashed into one commit, you could not revert just one problematic change. The one-commit-per-refactoring rule makes selective rollback possible.
+
+### Savepoint-Based Full Revert
+
+The fallback strategy when individual reverts are insufficient.
+
+**When used**: After reverting all refactoring commits, if tests still fail (meaning Phase 2 fixes also have problems), the loop reverts everything back to the savepoint tag created at the start of the round.
+
+**How it works**:
+1. At the start of each round, a git tag `savepoint-round-N` is created.
+2. If full revert is needed: `git revert --no-edit "savepoint-round-N"..HEAD`
+3. This reverts ALL changes made during the round (both fixes and refactorings).
+
+### Blocklist Accumulation
+
+A learning mechanism that prevents repeated failures.
+
+**How it works**:
+1. When a file/strategy combination causes a revert, it is added to `.improvement-state/refactor-blocklist.json`.
+2. In subsequent rounds, Phase 3 skips any file/strategy that appears in the blocklist.
+3. The blocklist persists across loop runs, so previously problematic patterns are not retried.
+
+**Format**:
+```json
+[
+  { "file": "src/services/article-service.ts", "strategy": "split-file", "round": 2, "reason": "circular dependency after split" }
+]
+```
+
+### Pre-condition Gate
+
+A preventive measure that avoids refactoring when tests are already unstable.
+
+**How it works**:
+1. Before Phase 3 starts, the full test suite is run.
+2. If any test fails, the loop attempts to fix it (max 2 attempts).
+3. If tests remain unstable, Phase 3 is skipped entirely for that round.
+4. This prevents refactoring on an unstable codebase, which would make it impossible to determine whether a test failure was caused by the refactoring or a pre-existing issue.
+
 ## Patterns NOT to Apply
 
 The following refactorings are **NOT performed** in the autonomous improvement loop (too risky):

@@ -2,12 +2,28 @@
   "rounds": 5,
   "focus": "all",
   "qa": {
-    "biome": true,
-    "typecheck": true,
-    "vitest": true,
-    "playwright": false,
+    "lint": {
+      "enabled": true,
+      "tool": "Biome"
+    },
+    "typecheck": {
+      "enabled": true,
+      "tool": "tsc"
+    },
+    "unit_test": {
+      "enabled": true,
+      "tool": "Vitest"
+    },
+    "e2e": {
+      "enabled": true,
+      "tool": "Playwright"
+    },
     "claude_review": true,
-    "severity_filter": ["critical", "high", "medium"]
+    "severity_filter": [
+      "critical",
+      "high",
+      "medium"
+    ]
   },
   "refactor": {
     "enabled": true,
@@ -27,7 +43,16 @@
     "max_consecutive_reverts": 2,
     "max_consecutive_regressions": 2
   },
+  "quality_gates": {
+    "max_critical_issues": 0,
+    "max_high_issues": null,
+    "min_test_pass_rate": null
+  },
   "self_learning": {
     "enabled": true
+  },
+  "logging": {
+    "level": "INFO",
+    "include_commands": true
   }
 }
