@@ -9,15 +9,20 @@
 cd api && npx biome check src/ 2>&1
 ```
 
+**Parsing rules**:
+- Format: `filepath:line:col category` = 1 issue
+- Severity mapping: error → HIGH, warning → MEDIUM, info → LOW
+
 **Example output**:
 ```
 api/src/services/article-service.ts:45:3 lint/suspicious/noExplicitAny ━━━━━━━━
   ✖ Unexpected any. Specify a different type.
 ```
 
-**Parsing rules**:
-- Format: `filepath:line:col category` = 1 issue
-- Severity mapping: error → HIGH, warning → MEDIUM, info → LOW
+
+
+
+
 
 ### TypeScript Type Check
 
@@ -26,80 +31,61 @@ api/src/services/article-service.ts:45:3 lint/suspicious/noExplicitAny ━━━
 cd api && npx tsc --noEmit 2>&1
 ```
 
+**Parsing rules**:
+- Format: `filepath(line,col): error TSxxxx: message`
+- Severity: always HIGH (type errors mean compilation failure)
+
 **Example output**:
 ```
 src/services/digest-service.ts(23,5): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
 ```
 
-**Parsing rules**:
-- Format: `filepath(line,col): error TSxxxx: message`
-- Severity: always HIGH (type errors mean compilation failure)
 
-### Vitest
+
+
+### Vitest (Unit Tests)
 
 **Command**:
 ```bash
 cd api && npm test 2>&1
 ```
 
-**Example output**:
-```
- FAIL  tests/articles.test.ts > GET /articles > should return articles
-AssertionError: expected 200 to be 404
-```
+Look for these failure indicators in test output:
+- Lines containing `FAIL` (test file failures)
+- `error TS[0-9]` (TypeScript compilation errors)
+- `SyntaxError`, `ParseError`, `Cannot find module` (code errors)
+- `beforeAll`/`beforeEach` errors in stack traces (setup failures)
 
-**Parsing rules**:
-- Extract test file and test name from `FAIL` lines
-- Extract failure reason from the error message
-- Severity: always HIGH (test failure = regression bug)
+Summary line format: `Tests  N failed | M passed (T)` or `Test Files  N failed | M passed (T)`
 
-### Playwright
+When tests fail, extract:
+1. The failing test file path
+2. The test name/description
+3. The assertion error or exception message
+4. The stack trace pointing to source code
 
-**Command**:
-```bash
-cd frontend && npx playwright test 2>&1
-```
+### Severity Classification
 
-**Example output**:
-```
-  1) [chromium] › e2e/home.spec.ts:5:3 › home page › should display header
-     Timeout of 30000ms exceeded.
-```
+- CRITICAL: Security vulnerability (injection, SSRF, auth bypass, etc.)
+- HIGH: Likely bug, lack of type safety, test failure, compilation error
+- MEDIUM: Coding convention violation, readability issue
+- LOW: Style improvement suggestion, performance hint
 
-**Parsing rules**:
-- Lines starting with `number)` indicate failing tests
-- Extract browser name, test file, test name, and error reason
-- Severity: always HIGH
+## Code Review Checklist
 
-### Claude Code Review
-
-**Review target selection**:
-
-Round 1:
-1. `api/src/services/*.ts` — business logic
-2. `api/src/routes/*.ts` — API endpoints
-3. `api/src/middleware/*.ts` — middleware
-
-Round 2+:
-1. Files modified in the previous round
-2. Files not yet reviewed (rotate each round)
-
-**Review checklist**:
-- [ ] No unjustified use of `any` type
-- [ ] Async functions have try-catch or error handling
-- [ ] External input validated with Zod schemas
+- [ ] No unjustified use of unsafe types (any, unknown casts, etc.)
+- [ ] Error handling: async operations have proper error handling
+- [ ] External input is validated
 - [ ] No hardcoded magic numbers or strings
 - [ ] Functions are within 50 lines
 - [ ] Files are within 300 lines
-- [ ] No circular imports
-- [ ] SSRF protection (external URL fetching uses safe-fetch.ts)
-- [ ] Copyright compliance (body_original/body_translated not included in public responses)
-
-**Severity classification**:
-- CRITICAL: Security vulnerability (SSRF, injection, etc.)
-- HIGH: Likely bug, lack of type safety, test failure
-- MEDIUM: Coding convention violation, readability issue
-- LOW: Style improvement suggestion, performance hint
+- [ ] No circular imports/dependencies
+- [ ] No unjustified `any` type
+- [ ] SSRF protection for external URL fetching
+- [ ] Input validation on all endpoints
+- [ ] Proper auth middleware
+- [ ] No secrets in client-side code
+- [ ] XSS prevention
 
 ## Issue Aggregation Template
 
@@ -108,21 +94,14 @@ Round 2+:
 
 **Date**: YYYY-MM-DD HH:MM
 **Found**: X issues | **Severity**: CRITICAL=0, HIGH=0, MEDIUM=0, LOW=0
-**Sources**: lint=a, typecheck=b, vitest=c, playwright=d, review=e
+**Sources**: lint=a, typecheck=b, unit-test=c, e2e=d, review=e
 
 ## Issues
 
-### [HIGH] Missing error handling in digest-service
-- **File**: `api/src/services/digest-service.ts:45`
-- **Source**: review
-- **Detail**: generateDigest() calls external API without try-catch
-- **Suggestion**: Add try-catch + error logging
-- **Status**: open
-
-### [MEDIUM] Unused import
-- **File**: `api/src/routes/articles.ts:3`
-- **Source**: lint
-- **Detail**: 'zValidator' is imported but never used
-- **Suggestion**: Remove import (auto-fixable with biome --write)
+### [HIGH] Example issue title
+- **File**: `path/to/file:line`
+- **Source**: lint | typecheck | unit-test | e2e | review
+- **Detail**: Description of the problem
+- **Suggestion**: Proposed fix (if any)
 - **Status**: open
 ```
