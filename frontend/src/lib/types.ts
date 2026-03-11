@@ -75,3 +75,15 @@ export interface SourceListResponse {
   page: number
   per_page: number
 }
+
+export interface ArticleNeighborItem {
+  id: string
+  title_ja: string | null
+  og_image_url: string | null
+  published_at: string | null
+}
+
+export interface ArticleNeighborsResponse {
+  prev: ArticleNeighborItem | null
+  next: ArticleNeighborItem | null
+}
