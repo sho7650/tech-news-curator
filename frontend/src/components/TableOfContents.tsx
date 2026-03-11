@@ -74,7 +74,7 @@ export default function TableOfContents({ contentId }: { contentId: string }) {
       {/* Desktop: sticky sidebar */}
       <nav
         aria-label="目次"
-        className="hidden lg:block lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto"
+        className="hidden lg:block"
       >
         <h2 className="mb-3 text-sm font-bold text-text-primary">目次</h2>
         <ul className="space-y-1 border-l border-border">

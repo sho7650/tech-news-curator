@@ -88,7 +88,7 @@ export default function HeroSection({ articles }: HeroSectionProps) {
 
   return (
     <section aria-label="注目記事">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {articles.map((article, index) => (
           <HeroCard key={article.id} article={article} large={index === 0} />
         ))}

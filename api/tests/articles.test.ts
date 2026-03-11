@@ -15,6 +15,7 @@ import {
   checkArticleExists,
   createArticle,
   getArticleById,
+  getArticleNeighbors,
   getArticles,
 } from "../src/services/article-service.js";
 
@@ -120,6 +121,20 @@ function buildApp() {
       return c.json({ items: items.map(formatArticleListItem), total, page, per_page });
     },
   );
+
+  app.get("/articles/:article_id/neighbors", async (c) => {
+    const articleId = c.req.param("article_id");
+    const neighbors = await getArticleNeighbors(db, articleId);
+    if (!neighbors) return c.json({ detail: "Article not found" }, 404);
+    return c.json({
+      prev: neighbors.prev
+        ? { id: neighbors.prev.id, title_ja: neighbors.prev.titleJa, og_image_url: neighbors.prev.ogImageUrl, published_at: neighbors.prev.publishedAt?.toISOString() ?? null }
+        : null,
+      next: neighbors.next
+        ? { id: neighbors.next.id, title_ja: neighbors.next.titleJa, og_image_url: neighbors.next.ogImageUrl, published_at: neighbors.next.publishedAt?.toISOString() ?? null }
+        : null,
+    });
+  });
 
   app.get("/articles/:article_id", async (c) => {
     const articleId = c.req.param("article_id");
@@ -360,5 +375,118 @@ describe("Articles API", () => {
     const data = await res.json();
     expect(data.total).toBe(1);
     expect(data.items[0].source_url).toBe("https://example.com/ai-jan15");
+  });
+});
+
+describe("Article Neighbors API", () => {
+  it("should return prev and next neighbors", async () => {
+    const app = buildApp();
+    const a1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n1", published_at: "2026-01-10T10:00:00Z" };
+    const a2 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n2", published_at: "2026-01-11T10:00:00Z" };
+    const a3 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n3", published_at: "2026-01-12T10:00:00Z" };
+
+    const r1 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
+    const r2 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a2) });
+    const r3 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a3) });
+    const { id: id1 } = await r1.json();
+    const { id: id2 } = await r2.json();
+    const { id: id3 } = await r3.json();
+
+    const res = await app.request(`/articles/${id2}/neighbors`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.prev.id).toBe(id1);
+    expect(data.next.id).toBe(id3);
+    expect(data.prev.title_ja).toBe(SAMPLE_ARTICLE.title_ja);
+  });
+
+  it("should return null next for newest article", async () => {
+    const app = buildApp();
+    const a1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n1", published_at: "2026-01-10T10:00:00Z" };
+    const a2 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n2", published_at: "2026-01-11T10:00:00Z" };
+
+    await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
+    const r2 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a2) });
+    const { id: id2 } = await r2.json();
+
+    const res = await app.request(`/articles/${id2}/neighbors`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.prev).not.toBeNull();
+    expect(data.next).toBeNull();
+  });
+
+  it("should return null prev for oldest article", async () => {
+    const app = buildApp();
+    const a1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n1", published_at: "2026-01-10T10:00:00Z" };
+    const a2 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n2", published_at: "2026-01-11T10:00:00Z" };
+
+    const r1 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
+    await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a2) });
+    const { id: id1 } = await r1.json();
+
+    const res = await app.request(`/articles/${id1}/neighbors`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.prev).toBeNull();
+    expect(data.next).not.toBeNull();
+  });
+
+  it("should return 404 for non-existent article", async () => {
+    const app = buildApp();
+    const fakeId = "00000000-0000-0000-0000-000000000000";
+    const res = await app.request(`/articles/${fakeId}/neighbors`);
+    expect(res.status).toBe(404);
+  });
+
+  it("should return both null when published_at is null", async () => {
+    const app = buildApp();
+    const a1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n1", published_at: undefined };
+
+    const r1 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
+    const { id: id1 } = await r1.json();
+
+    const res = await app.request(`/articles/${id1}/neighbors`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.prev).toBeNull();
+    expect(data.next).toBeNull();
+  });
+
+  it("should return both null when only one article exists", async () => {
+    const app = buildApp();
+    const a1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n1", published_at: "2026-01-10T10:00:00Z" };
+
+    const r1 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
+    const { id: id1 } = await r1.json();
+
+    const res = await app.request(`/articles/${id1}/neighbors`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.prev).toBeNull();
+    expect(data.next).toBeNull();
+  });
+
+  it("should use created_at as tiebreaker for same published_at", async () => {
+    const app = buildApp();
+    const sameTime = "2026-01-10T10:00:00Z";
+    // Articles created in order: a1 first, a2 second, a3 third (all same published_at)
+    const a1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/t1", published_at: sameTime };
+    const a2 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/t2", published_at: sameTime };
+    const a3 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/t3", published_at: sameTime };
+
+    const r1 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
+    const r2 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a2) });
+    const r3 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a3) });
+    const { id: id1 } = await r1.json();
+    const { id: id2 } = await r2.json();
+    const { id: id3 } = await r3.json();
+
+    // Middle article (a2) should have a1 as prev and a3 as next
+    const res = await app.request(`/articles/${id2}/neighbors`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.prev.id).toBe(id1);
+    expect(data.next.id).toBe(id3);
   });
 });

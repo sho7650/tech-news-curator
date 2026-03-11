@@ -2,10 +2,13 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import ReactMarkdown from 'react-markdown'
-import { getArticleById } from '@/lib/api'
+import { getArticleById, getArticleNeighbors, getArticles } from '@/lib/api'
 import ReadingTime from '@/components/ReadingTime'
 import ScrollProgress from '@/components/ScrollProgress'
+import StickyArticleTitle from '@/components/StickyArticleTitle'
 import TableOfContents from '@/components/TableOfContents'
+import RelatedArticles from '@/components/RelatedArticles'
+import ArticleNavigation from '@/components/ArticleNavigation'
 
 export default async function ArticlePage({
   params,
@@ -20,11 +23,26 @@ export default async function ArticlePage({
     notFound()
   }
 
+  const firstCategory = article.categories?.[0]
+  const [relatedData, neighbors] = await Promise.all([
+    firstCategory ? getArticles(1, firstCategory) : Promise.resolve(null),
+    getArticleNeighbors(article.id),
+  ])
+  const relatedArticles = relatedData
+    ? relatedData.items.filter((a) => a.id !== article.id).slice(0, 5)
+    : []
+
   const bodyText = article.body_translated || article.summary_ja || ''
+  const triggerId = article.og_image_url ? 'hero-image' : 'article-meta'
 
   return (
     <>
       <ScrollProgress />
+      <StickyArticleTitle
+        title={article.title_ja || article.title_original || '(タイトルなし)'}
+        imageUrl={article.og_image_url}
+        triggerId={triggerId}
+      />
 
       <div className="mb-6">
         <Link href="/articles" className="inline-flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-accent">
@@ -37,7 +55,7 @@ export default async function ArticlePage({
 
       {/* Lead image */}
       {article.og_image_url && (
-        <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-xl">
+        <div id="hero-image" className="relative mb-6 aspect-video w-full overflow-hidden rounded-xl">
           <Image
             src={article.og_image_url}
             alt={article.title_ja || 'article image'}
@@ -81,7 +99,7 @@ export default async function ArticlePage({
 
       {/* Categories */}
       {article.categories && article.categories.length > 0 && (
-        <div className="mb-6 flex flex-wrap gap-2">
+        <div id="article-meta" className="mb-6 flex flex-wrap gap-2">
           {article.categories.map((cat) => (
             <span key={cat} className="rounded bg-badge-bg px-2 py-1 text-xs text-badge-text">
               {cat}
@@ -97,14 +115,13 @@ export default async function ArticlePage({
         </div>
       )}
 
-      {/* Content area with TOC sidebar */}
+      {/* Content area with sidebar */}
       <div className="flex gap-8">
         {/* Main content */}
         <div className="min-w-0 flex-1">
           {article.summary_ja && (
             <div className="mb-6 rounded-lg border border-border bg-bg-secondary p-4 text-sm text-text-secondary">
               <p className="mb-1 font-semibold text-text-muted">要約</p>
-              {/* react-markdown v10+ はデフォルトで raw HTML を描画しない（rehype-raw 不使用で安全） */}
               <ReactMarkdown>{article.summary_ja}</ReactMarkdown>
             </div>
           )}
@@ -114,13 +131,24 @@ export default async function ArticlePage({
               <ReactMarkdown>{article.body_translated}</ReactMarkdown>
             </div>
           )}
+
+          {/* Prev/Next navigation */}
+          <ArticleNavigation prev={neighbors.prev} next={neighbors.next} />
+
+          {/* Mobile related articles */}
+          <div className="mt-8 lg:hidden">
+            <RelatedArticles articles={relatedArticles} />
+          </div>
         </div>
 
-        {/* TOC sidebar (desktop only) */}
+        {/* Sidebar (desktop only) */}
         {article.body_translated && (
-          <div className="hidden w-56 shrink-0 lg:block">
-            <TableOfContents contentId="article-content" />
-          </div>
+          <aside className="hidden w-72 shrink-0 lg:block">
+            <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+              <TableOfContents contentId="article-content" />
+              <RelatedArticles articles={relatedArticles} />
+            </div>
+          </aside>
         )}
       </div>
     </>

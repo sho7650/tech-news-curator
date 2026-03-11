@@ -9,6 +9,8 @@ import { validationHook } from "../middleware/validation.js";
 import {
   type ArticleDetail,
   type ArticleListItem,
+  type ArticleNeighborItem,
+  type ArticleNeighborsResponse,
   articleCheckQuerySchema,
   articleCreateSchema,
   articleListQuerySchema,
@@ -18,6 +20,7 @@ import {
   checkArticleExists,
   createArticle,
   getArticleById,
+  getArticleNeighbors,
   getArticles,
 } from "../services/article-service.js";
 import type { AppEnv } from "../types.js";
@@ -78,6 +81,21 @@ articlesRoute.get(
   },
 );
 
+// GET /articles/:article_id/neighbors
+articlesRoute.get(
+  "/articles/:article_id/neighbors",
+  createRateLimiter(200),
+  zValidator("param", uuidParamSchema, validationHook),
+  async (c) => {
+    const { article_id: articleId } = c.req.valid("param");
+    const neighbors = await getArticleNeighbors(db, articleId);
+    if (!neighbors) {
+      return c.json({ detail: "Article not found" }, 404);
+    }
+    return c.json(formatNeighborsResponse(neighbors));
+  },
+);
+
 // GET /articles/:article_id
 articlesRoute.get(
   "/articles/:article_id",
@@ -129,6 +147,40 @@ function formatArticleDetail(article: Article): ArticleDetail {
         ? (article.metadata as Record<string, unknown>)
         : null,
     created_at: article.createdAt.toISOString(),
+  };
+}
+
+function formatNeighborItem(neighbor: {
+  id: string;
+  titleJa: string | null;
+  ogImageUrl: string | null;
+  publishedAt: Date | null;
+}): ArticleNeighborItem {
+  return {
+    id: neighbor.id,
+    title_ja: neighbor.titleJa ?? null,
+    og_image_url: neighbor.ogImageUrl ?? null,
+    published_at: neighbor.publishedAt?.toISOString() ?? null,
+  };
+}
+
+function formatNeighborsResponse(neighbors: {
+  prev: {
+    id: string;
+    titleJa: string | null;
+    ogImageUrl: string | null;
+    publishedAt: Date | null;
+  } | null;
+  next: {
+    id: string;
+    titleJa: string | null;
+    ogImageUrl: string | null;
+    publishedAt: Date | null;
+  } | null;
+}): ArticleNeighborsResponse {
+  return {
+    prev: neighbors.prev ? formatNeighborItem(neighbors.prev) : null,
+    next: neighbors.next ? formatNeighborItem(neighbors.next) : null,
   };
 }
 

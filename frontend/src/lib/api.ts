@@ -3,6 +3,7 @@ import 'server-only'
 import type {
   ArticleDetail,
   ArticleListResponse,
+  ArticleNeighborsResponse,
   DigestListResponse,
   DigestResponse,
   SourceListResponse,
@@ -30,6 +31,17 @@ export async function getArticleById(id: string): Promise<ArticleDetail> {
     signal: AbortSignal.timeout(10_000),
   })
   if (!res.ok) throw new Error(`Failed to fetch article: ${id}`)
+  return res.json()
+}
+
+export async function getArticleNeighbors(
+  id: string,
+): Promise<ArticleNeighborsResponse> {
+  const res = await fetch(`${API_BASE}/articles/${id}/neighbors`, {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(10_000),
+  })
+  if (!res.ok) return { prev: null, next: null }
   return res.json()
 }
 
