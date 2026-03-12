@@ -87,14 +87,16 @@ export default async function ArticlePage({
             <ReadingTime text={bodyText} />
           </>
         )}
-        <a
-          href={article.source_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-accent transition-colors hover:text-accent-hover"
-        >
-          元記事を読む
-        </a>
+        {/^https?:\/\//.test(article.source_url) && (
+          <a
+            href={article.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-accent transition-colors hover:text-accent-hover"
+          >
+            元記事を読む
+          </a>
+        )}
       </div>
 
       {/* Categories */}
