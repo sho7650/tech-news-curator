@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.9.0...tech-news-curator-api-v1.9.1) (2026-03-12)
+
+
+### Bug Fixes
+
+* add URL protocol validation and null guard for metadata ([c8010e2](https://github.com/sho7650/tech-news-curator/commit/c8010e24f27c8d9a14dfe59300ac42cb9c75ed45))
+* add URL protocol validation and null guard for metadata ([959f39f](https://github.com/sho7650/tech-news-curator/commit/959f39fc2a8974f4e0988f48f05a24941a1087a9))
+
 ## [1.9.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.8.5...tech-news-curator-api-v1.9.0) (2026-03-11)
 
 
