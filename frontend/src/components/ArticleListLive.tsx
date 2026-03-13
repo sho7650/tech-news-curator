@@ -153,7 +153,13 @@ export default function ArticleListLive({
       esRef.current = es
 
       es.addEventListener('new_article', (e: MessageEvent) => {
-        const article: ArticleListItem = JSON.parse(e.data)
+        let article: ArticleListItem
+        try {
+          article = JSON.parse(e.data)
+        } catch {
+          console.error('Failed to parse SSE article data')
+          return
+        }
         if (knownIds.current.has(article.id)) return
 
         // カテゴリフィルタ適用中の場合、一致しない記事は無視
