@@ -4,7 +4,7 @@ description: |
   Autonomous improvement loop — repeatedly runs QA, Fix, and Refactor cycles to continuously improve code quality.
   Each round runs tests and auto-reverts refactoring commits that break tests.
   Leverages SuperClaude commands for enhanced analysis.
-  Uses MCP servers (context7,playwright,tavily) for semantic analysis, documentation lookup, and multi-step reasoning.
+  Uses MCP servers (serena, sequential-thinking, context7, playwright, tavily) for semantic analysis, documentation lookup, and multi-step reasoning.
 arguments:
   - name: rounds
     description: Maximum number of improvement rounds (early termination if 0 issues found)
@@ -33,6 +33,8 @@ This skill uses the following tools:
 - `/sc:reflect` — Phase 5: Structured retrospective
 
 **MCP servers:**
+- `serena` — Phase 1/3: Semantic code understanding, dependency graph analysis
+- `sequential-thinking` — Phase 1/6: Multi-step reasoning for complex problems
 - `context7` — Phase 2: Official documentation lookup for Hono and related tools
 - `playwright` — Phase 1/4: Browser-based E2E test execution
 - `tavily` — Phase 6: Web research for best practices
@@ -137,7 +139,7 @@ Action required: {what the user should do}
 10. **Capture test baseline** — run unit tests to record the initial state:
    ```bash
    cd api
-   cd api && npm test 2>&1 2>&1 | tee "$(git rev-parse --show-toplevel)/.improvement-state/test-baseline.log"
+   cd api && npx vitest run 2>&1 2>&1 | tee "$(git rev-parse --show-toplevel)/.improvement-state/test-baseline.log"
    BASELINE_UNIT_EXIT=$?
    cd $(git rev-parse --show-toplevel)
    ```
@@ -162,12 +164,12 @@ Whenever this skill says "run tests", follow this procedure:
 1. **Run with timeout** (if available — detected in Phase 0):
    ```bash
    [ -f .improvement-state/timeout-env.sh ] && source .improvement-state/timeout-env.sh
-   ${TIMEOUT_CMD:-} ${TEST_TIMEOUT:-120}s cd api && npm test 2>&1 2>&1 | tee /tmp/test-output.log
+   ${TIMEOUT_CMD:-} ${TEST_TIMEOUT:-120}s cd api && npx vitest run 2>&1 2>&1 | tee /tmp/test-output.log
    TEST_EXIT=${PIPESTATUS[0]}
    ```
    If timeout is not available, run directly:
    ```bash
-   cd api && npm test 2>&1 2>&1 | tee /tmp/test-output.log
+   cd api && npx vitest run 2>&1 2>&1 | tee /tmp/test-output.log
    TEST_EXIT=$?
    ```
 2. **Classify exit code**: 124=timeout (HIGH issue), infrastructure failure patterns (Docker, port, disk) → NOT a test failure, else → actual test failure.
@@ -223,7 +225,7 @@ Record type errors as issues (severity: HIGH — type errors mean compilation fa
 
 ```bash
 cd api
-cd api && npm test 2>&1 2>&1 | tee /tmp/test-output.log
+cd api && npx vitest run 2>&1 2>&1 | tee /tmp/test-output.log
 UNIT_TEST_EXIT=${PIPESTATUS[0]}
 cd $(git rev-parse --show-toplevel)
 ```
@@ -260,12 +262,14 @@ Use `/sc:analyze` for structural analysis:
 ```
 
 **MCP-enhanced analysis**: Use available MCP servers for deeper code understanding:
+Use serena for semantic analysis: check module dependency issues, unused exports, and circular call graphs.
+Use sequential-thinking for complex architectural problems: multi-step reasoning to identify root causes at the design level.
 Use context7 to look up official documentation for Hono APIs before flagging potential misuse.
 
 #### Code Review (Claude)
 
 If no SuperClaude `/sc:analyze` is available, perform manual code review:
-- Read source files in api,frontend
+- Read source files in api, frontend
 - Check for: type safety, error handling, file/function size limits, input validation, hardcoded values, circular dependencies
 - Classify findings by severity: CRITICAL, HIGH, MEDIUM, LOW
 
@@ -313,7 +317,7 @@ Skip this phase if {{dry-run}} is true.
 Apply lint auto-fixes first:
 ```bash
 cd api
-cd api && npx biome check --write src/ 2>&1 | tee /tmp/lint-fix-output.log
+cd api && npx biome check --write src/ 2>&1 2>&1 | tee /tmp/lint-fix-output.log
 cd $(git rev-parse --show-toplevel)
 ```
 
@@ -338,7 +342,7 @@ Fix procedure:
 4. **Verify the fix** by re-running only that test file:
    ```bash
    cd api
-   cd api && npx vitest run {testfile} 2>&1 | tee /tmp/single-test-output.log
+   cd api && npx vitest run {testfile} 2>&1 2>&1 | tee /tmp/single-test-output.log
    SINGLE_TEST_EXIT=$?
    cd $(git rev-parse --show-toplevel)
    ```
@@ -361,7 +365,7 @@ After committing Phase 2 fixes, run the full test suite:
 
 ```bash
 cd api
-cd api && npm test 2>&1 2>&1 | tee /tmp/postfix-output.log
+cd api && npx vitest run 2>&1 2>&1 | tee /tmp/postfix-output.log
 POSTFIX_EXIT=${PIPESTATUS[0]}
 cd $(git rev-parse --show-toplevel)
 ```
@@ -385,7 +389,7 @@ Skip this phase if {{dry-run}} is true.
 Run the full test suite:
 ```bash
 cd api
-cd api && npm test 2>&1 2>&1 | tee /tmp/phase3-precheck-output.log
+cd api && npx vitest run 2>&1 2>&1 | tee /tmp/phase3-precheck-output.log
 PHASE3_PRECHECK_EXIT=${PIPESTATUS[0]}
 cd $(git rev-parse --show-toplevel)
 ```
@@ -432,7 +436,7 @@ Both unit tests and E2E tests MUST pass for the round to be considered safe.
 
 ```bash
 cd api
-cd api && npm test 2>&1 2>&1 | tee /tmp/safety-unit-output.log
+cd api && npx vitest run 2>&1 2>&1 | tee /tmp/safety-unit-output.log
 SAFETY_UNIT_EXIT=${PIPESTATUS[0]}
 cd $(git rev-parse --show-toplevel)
 ```
@@ -469,7 +473,7 @@ done
 After revert, re-run tests:
 ```bash
 cd api
-cd api && npm test 2>&1 2>&1 | tee /tmp/post-revert-output.log
+cd api && npx vitest run 2>&1 2>&1 | tee /tmp/post-revert-output.log
 POST_REVERT_EXIT=${PIPESTATUS[0]}
 cd $(git rev-parse --show-toplevel)
 ```
