@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.2](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.6.1...tech-news-curator-frontend-v0.6.2) (2026-03-13)
+
+
+### Bug Fixes
+
+* add try-catch around JSON.parse in SSE event handler ([e51a69a](https://github.com/sho7650/tech-news-curator/commit/e51a69a0951d2fec637660ad2bd124d8df3d30e9))
+* add try-catch around JSON.parse in SSE event handler [round 1] ([86b3db8](https://github.com/sho7650/tech-news-curator/commit/86b3db84ebb6b8a2b2a5f37eb229aa0028feacab))
+
 ## [0.6.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.6.0...tech-news-curator-frontend-v0.6.1) (2026-03-12)
 
 
