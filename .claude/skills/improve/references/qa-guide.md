@@ -47,22 +47,17 @@ src/services/digest-service.ts(23,5): error TS2345: Argument of type 'string' is
 
 **Command**:
 ```bash
-cd api && npm test 2>&1
+cd api && npx vitest run 2>&1
 ```
 
-Look for these failure indicators in test output:
-- Lines containing `FAIL` (test file failures)
+Look for these failure indicators in Vitest output:
+- Lines containing `FAIL` (failed test files)
 - `error TS[0-9]` (TypeScript compilation errors)
-- `SyntaxError`, `ParseError`, `Cannot find module` (code errors)
+- `SyntaxError`, `ParseError`, `Cannot find module` (syntax/import errors)
 - `beforeAll`/`beforeEach` errors in stack traces (setup failures)
-
-Summary line format: `Tests  N failed | M passed (T)` or `Test Files  N failed | M passed (T)`
-
-When tests fail, extract:
-1. The failing test file path
-2. The test name/description
-3. The assertion error or exception message
-4. The stack trace pointing to source code
+- Summary line: `Tests  N failed | M passed (T)` or `Test Files  N failed | M passed (T)`
+- Extract the specific test file and test name from `FAIL` lines
+- Extract the error message and expected vs received values from assertion failures
 
 ### Severity Classification
 
