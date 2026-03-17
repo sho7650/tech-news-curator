@@ -5,7 +5,7 @@ export const paginationQuery = z.object({
   per_page: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-export type PaginationQuery = z.infer<typeof paginationQuery>;
+type PaginationQuery = z.infer<typeof paginationQuery>;
 
 export const uuidParamSchema = z.object({
   article_id: z.string().uuid(),

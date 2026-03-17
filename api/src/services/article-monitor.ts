@@ -10,7 +10,7 @@ const logger = rootLogger.child({ service: "article-monitor" });
 let monitorInterval: ReturnType<typeof setInterval> | null = null;
 let lastChecked = new Date();
 
-export async function pollNewArticles(db: DB): Promise<void> {
+async function pollNewArticles(db: DB): Promise<void> {
   if (articleBroker.clientCount === 0) {
     // No clients connected: advance lastChecked to prevent flooding
     lastChecked = new Date();

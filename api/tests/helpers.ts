@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { config } from "../src/config.js";
 import { errorHandler } from "../src/middleware/error-handler.js";
-import { securityHeaders } from "../src/middleware/security-headers.js";
 import { setRateLimitEnabled } from "../src/middleware/rate-limit.js";
+import { securityHeaders } from "../src/middleware/security-headers.js";
 
 // Disable rate limiting in tests
 setRateLimitEnabled(false);
@@ -26,10 +26,6 @@ export function createTestApp(): Hono {
   );
   app.use("*", securityHeaders);
   return app;
-}
-
-export function authHeaders(): Record<string, string> {
-  return { "X-API-Key": TEST_API_KEY };
 }
 
 export function jsonHeaders(): Record<string, string> {

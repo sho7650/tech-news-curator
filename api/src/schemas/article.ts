@@ -25,7 +25,7 @@ export const articleListQuerySchema = paginationQuery.extend({
   category: z.string().max(50).optional(),
 });
 
-export type ArticleListQuery = z.infer<typeof articleListQuerySchema>;
+type ArticleListQuery = z.infer<typeof articleListQuerySchema>;
 
 export const articleCheckQuerySchema = z.object({
   url: z.string().url(),
@@ -61,7 +61,7 @@ export interface ArticleDetail {
   created_at: string;
 }
 
-export interface ArticleListResponse {
+interface ArticleListResponse {
   items: ArticleListItem[];
   total: number;
   page: number;

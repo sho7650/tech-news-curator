@@ -1,4 +1,4 @@
-export function estimateReadingTime(text: string): number {
+function estimateReadingTime(text: string): number {
   const jaChars = (text.match(/[\u3000-\u9fff\uff00-\uffef]/g) || []).length
   const enWords = text.replace(/[\u3000-\u9fff\uff00-\uffef]/g, ' ')
     .split(/\s+/).filter(Boolean).length
