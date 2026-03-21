@@ -62,7 +62,7 @@ Initially, a deal with Netflix was expected to lead to a stockholder vote around
 Stay tuned…",
   "og_image_url": "https://techcrunch.com/wp-content/uploads/2024/10/GettyImages-1574594892.jpg?resize=1200,800",
   "published_at": "2026-02-28T21:28:06+00:00",
-  "title": "What to know about the landmark Warner Bros. Discovery sale | TechCrunch",
+  "title": "What to know about the landmark Warner Bros. Discovery sale",
 }
 `;
 
@@ -122,14 +122,16 @@ Last night, Sam Altman came out and said he stands with Anthropic and has the sa
 Yes, and this is why I’m actually optimistic in a strange way. There’s such an obvious alternative here. If we just start treating AI companies like any other companies — drop the corporate amnesty — they would clearly have to do something like a clinical trial before they released something this powerful, and demonstrate to independent experts that they know how to control it. Then we get a golden age with all the good stuff from AI, without the existential angst. That’s not the path we’re on right now. But it could be.",
   "og_image_url": "https://techcrunch.com/wp-content/uploads/2026/02/GettyImages-2261854833.jpg?resize=1200,800",
   "published_at": "2026-03-01T00:08:58+00:00",
-  "title": "The trap Anthropic built for itself | TechCrunch",
+  "title": "The trap Anthropic built for itself",
 }
 `;
 
 exports[`ingest E2E (fixture-based snapshot) > Article #3: TechCrunch: Netflix backs down > should match snapshot 1`] = `
 {
   "author": "Anthony Ha",
-  "body": "Netflix stunned the entertainment world this week when it [declined to raise its bid for Warner Bros. Discovery](https://techcrunch.com/2026/02/26/netflix-warner-bros-discovery-paramount-wbd-bid-studios-hbo-cnn-ellison/), setting the stage for Paramount Skydance to win ownership of the Hollywood studio.
+  "body": "-   
+
+Netflix stunned the entertainment world this week when it [declined to raise its bid for Warner Bros. Discovery](https://techcrunch.com/2026/02/26/netflix-warner-bros-discovery-paramount-wbd-bid-studios-hbo-cnn-ellison/), setting the stage for Paramount Skydance to win ownership of the Hollywood studio.
 
 At the time, Netflix co-CEOs Ted Sarandos and Greg Peters said they were being financially disciplined. Now [reporting in Bloomberg](https://www.bloomberg.com/news/articles/2026-02-27/how-david-ellison-outlasted-netflix-in-the-warner-bros-bidding-war) offers more details about why Netflix executives backed down from [a bidding war that it seemed to win back in December](https://techcrunch.com/2026/02/28/warner-bros-netflix-paramount-acquisition-timeline-wbd/). 
 
@@ -142,7 +144,7 @@ By the time Sarandos met with Trump administration officials on Thursday, he may
 Meanwhile, employees at Warner Bros. now worry about [major studio layoffs](https://www.nytimes.com/2026/02/28/business/warner-bros-paramount-reaction.html) and [conservative political pressure on CNN](https://view.newsletters.cnn.com/messages/17722120321108aa883dc7fda/raw).",
   "og_image_url": "https://techcrunch.com/wp-content/uploads/2023/02/GettyImages-1240099721.jpeg?resize=1200,800",
   "published_at": "2026-02-28T22:07:48+00:00",
-  "title": "Why did Netflix back down from its deal to acquire Warner Bros.? | TechCrunch",
+  "title": "Why did Netflix back down from its deal to acquire Warner Bros.?",
 }
 `;
 
@@ -198,6 +200,6 @@ Altman also fielded questions about the deal on X, where he [admitted it had bee
 “We really wanted to de-escalate things, and we thought the deal on offer was good,” Altman said. “If we are right and this does lead to a de-escalation between the DoW and the industry, we will look like geniuses, and a company that took on a lot of pain to do things to help the industry. If not, we will continue to be characterized as \\[…\\] rushed and uncareful.”",
   "og_image_url": "https://techcrunch.com/wp-content/uploads/2025/01/GettyImages-2170386424.jpg?w=1024",
   "published_at": "2026-03-01T16:30:10+00:00",
-  "title": "OpenAI reveals more details about its agreement with the Pentagon | TechCrunch",
+  "title": "OpenAI reveals more details about its agreement with the Pentagon",
 }
 `;
