@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.2](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.9.1...tech-news-curator-api-v1.9.2) (2026-03-21)
+
+
+### Bug Fixes
+
+* upgrade vulnerable dependencies to resolve npm audit failures ([43b28a4](https://github.com/sho7650/tech-news-curator/commit/43b28a418730c97b816896b8cc71992d346dbd7a))
+
 ## [1.9.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.9.0...tech-news-curator-api-v1.9.1) (2026-03-12)
 
 
