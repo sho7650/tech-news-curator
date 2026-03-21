@@ -1,6 +1,6 @@
 import { rateLimiter } from "hono-rate-limiter";
 
-export let rateLimitEnabled = true;
+let rateLimitEnabled = true;
 
 export function setRateLimitEnabled(enabled: boolean): void {
   rateLimitEnabled = enabled;

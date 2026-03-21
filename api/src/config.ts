@@ -1,4 +1,4 @@
-export interface Config {
+interface Config {
   databaseUrl: string;
   databaseAdminUrl: string;
   environment: string;
@@ -17,7 +17,7 @@ function parseCsv(value: string): string[] {
 
 const VALID_ENVIRONMENTS = new Set(["development", "production", "test", "staging"]);
 
-export function loadConfig(): Config {
+function loadConfig(): Config {
   const corsOriginsRaw = process.env.CORS_ORIGINS ?? "http://localhost:3100,http://localhost:3000";
   const apiKeysRaw = process.env.API_KEYS ?? "";
   const environment = process.env.ENVIRONMENT ?? "development";

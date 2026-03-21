@@ -222,6 +222,9 @@ function removeTrailingContactInfo(text: string): string {
 export function cleanArticleText(text: string, options: CleanArticleOptions = {}): string {
   let cleaned = text;
 
+  // 0. Strip leading list-item remnants (e.g., "-   " from Readability)
+  cleaned = cleaned.replace(/^[\s\-*•]+\n/, "");
+
   // 1. Remove leading article metadata (timestamps, "In Brief")
   cleaned = removeLeadingMetadata(cleaned);
 

@@ -6,7 +6,7 @@ export const ingestRequestSchema = z
   })
   .strict();
 
-export type IngestRequest = z.infer<typeof ingestRequestSchema>;
+type IngestRequest = z.infer<typeof ingestRequestSchema>;
 
 export interface IngestResponse {
   title: string | null;
