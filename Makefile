@@ -29,15 +29,15 @@ test:
 migrate:
 	cd api && npx drizzle-kit generate
 
-# Apply migrations (inside news-api container)
+# Apply migrations (inside news-api container, uses drizzle-orm only)
 migrate-up:
-	docker compose exec news-api npx drizzle-kit push
+	docker compose exec news-api node dist/run-migrate.js
 
 # Deploy (migration -> start in order)
 deploy:
 	$(COMPOSE_PROD) up -d news-db
 	$(COMPOSE_PROD) up -d news-api
-	$(COMPOSE_PROD) exec news-api npx drizzle-kit push
+	$(COMPOSE_PROD) exec news-api node dist/run-migrate.js
 	$(COMPOSE_PROD) up -d news-frontend
 
 # Push to registry
