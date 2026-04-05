@@ -11,6 +11,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder /app/dist ./dist
+COPY src/db/migrations/ ./src/db/migrations/
 RUN adduser --disabled-password --gecos "" --no-create-home --uid 10001 appuser
 USER appuser
 EXPOSE 8100
