@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.10.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.9.2...tech-news-curator-api-v1.10.0) (2026-04-05)
+
+
+### Features
+
+* add drizzle-orm migration system ([9be2355](https://github.com/sho7650/tech-news-curator/commit/9be2355cd5492051f68d79a4a5e7b81792a1404f))
+* add drizzle-orm migration system for production-safe schema management ([8a93f80](https://github.com/sho7650/tech-news-curator/commit/8a93f800f59af0fdb7a4d56035a720cc0174712c))
+
+
+### Bug Fixes
+
+* upgrade vulnerable dependencies (lodash, picomatch, brace-expansion, yaml) ([ad2c0a7](https://github.com/sho7650/tech-news-curator/commit/ad2c0a7b947641775601efc2128b3e591b35d1a5))
+
 ## [1.9.2](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.9.1...tech-news-curator-api-v1.9.2) (2026-03-21)
 
 
