@@ -44,6 +44,11 @@ cd frontend && npx playwright test
 make build
 ```
 
+This builds three images:
+- `${REGISTRY}/news-curator/db:latest` (postgres + init scripts + SSL)
+- `${REGISTRY}/news-curator/api:latest`
+- `${REGISTRY}/news-curator/frontend:latest`
+
 ### 3. Push to Registry
 
 ```bash
@@ -51,16 +56,37 @@ make build
 make push
 ```
 
-This pushes:
-- `${REGISTRY}/news-curator/api:latest`
-- `${REGISTRY}/news-curator/frontend:latest`
-
 ### 4. Deploy
+
+There are two deployment patterns.
+
+#### 4a. Local deployment (source tree present)
 
 ```bash
 # Full deployment (DB → API → migrations → frontend)
 make deploy
 ```
+
+#### 4b. Remote deployment from registry (no source code on host)
+
+On the deploy host, place only:
+- `docker-compose.deploy.yml`
+- `.env` (with `REGISTRY`, `POSTGRES_PASSWORD`, `NEWS_APP_PASSWORD`, `API_KEYS`, `CORS_ORIGINS`)
+
+Then:
+```bash
+make deploy-pull   # pull latest images from registry
+make deploy-up     # start: db → migration (one-shot) → api → frontend
+```
+
+The compose file chains startup via `depends_on` conditions:
+- `news-db` healthcheck must pass
+- `news-migrate` runs `node dist/run-migrate.js` and exits successfully
+- `news-api` waits for both, then starts
+- `news-frontend` waits for `news-api` healthcheck
+
+Updates are zero-touch — re-running `make deploy-pull && make deploy-up` re-pulls
+`:latest` images (`pull_policy: always`) and recreates only changed services.
 
 ## Component Versions
 

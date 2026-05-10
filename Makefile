@@ -1,8 +1,9 @@
 REGISTRY ?= ghcr.io/your-org
-COMPOSE_DEV  = docker compose -f docker-compose.yml -f docker-compose.dev.yml
-COMPOSE_PROD = docker compose -f docker-compose.yml -f docker-compose.prod.yml
+COMPOSE_DEV    = docker compose -f docker-compose.yml -f docker-compose.dev.yml
+COMPOSE_PROD   = docker compose -f docker-compose.yml -f docker-compose.prod.yml
+COMPOSE_DEPLOY = docker compose -f docker-compose.deploy.yml
 
-.PHONY: dev up down build test migrate migrate-up deploy push lint sast audit security test-e2e test-e2e-ui zap-scan
+.PHONY: dev up down build build-db test migrate migrate-up deploy deploy-pull deploy-up deploy-down push lint sast audit security test-e2e test-e2e-ui zap-scan
 
 # Development environment
 # -V renews anonymous volumes (node_modules) so new dependencies are picked up
@@ -17,9 +18,13 @@ up:
 down:
 	docker compose down
 
-# Build
-build:
+# Build all images (api, frontend via compose; db via dedicated Dockerfile)
+build: build-db
 	$(COMPOSE_PROD) build
+
+# Build the custom postgres image (init scripts + SSL baked in)
+build-db:
+	docker build -t $(REGISTRY)/news-curator/db:latest ./db
 
 # Run tests (Docker required: testcontainers auto-starts PostgreSQL)
 test:
@@ -42,8 +47,19 @@ deploy:
 
 # Push to registry
 push:
+	docker push $(REGISTRY)/news-curator/db:latest
 	docker push $(REGISTRY)/news-curator/api:latest
 	docker push $(REGISTRY)/news-curator/frontend:latest
+
+# Deploy host targets — pull images and start the unified compose
+deploy-pull:
+	$(COMPOSE_DEPLOY) pull
+
+deploy-up:
+	$(COMPOSE_DEPLOY) up -d
+
+deploy-down:
+	$(COMPOSE_DEPLOY) down
 
 # Security scanning
 lint:

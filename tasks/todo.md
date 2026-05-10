@@ -1,51 +1,41 @@
-# Logging System Implementation Workflow
+# Deploy From Registry — Single-File Compose
 
-**Design Doc**: `docs/DESIGN-logging.md` v1.0
-**Branch**: `feat/structured-logging` (from `main`)
-
----
-
-## Phase 1: Foundation
-
-- [x] **1.1** Install `pino` and `pino-pretty`
-- [x] **1.2** Create `api/src/lib/logger.ts` — root Pino logger, AppLogger type
-- [x] **1.3** Create `api/src/types.ts` — `AppEnv` type with `Variables: { logger }`
-- [x] **Checkpoint**: `tsc --noEmit` passes
+**Branch**: `feat/deploy-from-registry` (from `main`)
+**Goal**: dev ホストにソースコードを置かず、registry から pull した image だけで `docker compose up -d` 一発起動できる構成を追加する
 
 ---
 
-## Phase 2: Infrastructure
+## Phase 1: DB image の独立化
 
-- [x] **2.1** Create `api/src/middleware/request-logger.ts` — requestId, child logger, timing, X-Request-Id header
-- [x] **2.2** Update `api/src/index.ts` — wire requestLogger middleware, replace console.* → rootLogger
-- [x] **Checkpoint**: `tsc --noEmit` passes
+- [x] **1.1** `db/.dockerignore` 作成 — `ca.key`, `generate-certs.sh` を除外
+- [x] **1.2** `db/Dockerfile` 作成 — postgres:16.11 ベース、init scripts と SSL 証明書を焼き込み
 
----
+## Phase 2: 単一 deploy compose
 
-## Phase 3: Critical Path — Ingest Bug Fix
+- [x] **2.1** `docker-compose.deploy.yml` 作成
+  - 全 service を `image:` 参照のみ（build 無し）
+  - `pull_policy: always`
+  - `news-migrate` を one-shot サービスとして追加
+  - `depends_on` で db→migrate→api→frontend をチェーン
+  - prod 相当の resource limit / port mapping を内包
 
-- [x] **3.1** Update `api/src/services/safe-fetch.ts` — add logger param, log all failure paths
-- [x] **3.2** Update `api/src/services/ingest-service.ts` — add logger param, extraction stage logs
-- [x] **3.3** Update `api/src/routes/ingest.ts` — `Hono<AppEnv>`, pass logger to extractArticle
+## Phase 3: Makefile 更新
 
----
+- [x] **3.1** `build-db` ターゲット追加
+- [x] **3.2** `build` ターゲットに db を含める
+- [x] **3.3** `push` ターゲットに db image push を追加
+- [x] **3.4** `deploy-pull` / `deploy-up` ターゲット追加（dev ホスト用）
 
-## Phase 4: Remaining Migration
+## Phase 4: ドキュメント
 
-- [x] **4.1** Update `api/src/middleware/error-handler.ts` — structured error logging
-- [x] **4.2** Update all routes with `<AppEnv>` type parameter (articles, sources, digest, feed, health, sse)
-- [x] **4.3** Update background services (article-monitor, sse-broker) — child loggers
+- [x] **4.1** `docs/runbooks/release-process.md` 更新 — registry deploy 手順を追記
+- [x] **4.2** README に deploy 手順への参照を追加（必要なら）
 
----
+## Phase 5: 検証
 
-## Phase 5: Cleanup & Verification
-
-- [x] **5.1** Add `LOG_LEVEL=silent` to test setup
-- [x] **5.2** `tsc --noEmit` — passes
-- [x] **5.3** `biome check src/` — passes (auto-fixed)
-- [x] **5.4** `npm test` — 146 tests pass, 15 files, no log noise
-- [x] **5.5** `grep console.* api/src/` — zero remaining calls
-- [ ] **5.6** Commit
+- [x] **5.1** ローカルで `docker compose -f docker-compose.deploy.yml config` が通る
+- [x] **5.2** db Dockerfile の build が通る
+- [x] **5.3** Commit
 
 ---
 
@@ -53,21 +43,28 @@
 
 | Action | File |
 |--------|------|
-| **NEW** | `api/src/lib/logger.ts` |
-| **NEW** | `api/src/types.ts` |
-| **NEW** | `api/src/middleware/request-logger.ts` |
-| MODIFY | `api/src/index.ts` |
-| MODIFY | `api/src/middleware/error-handler.ts` |
-| MODIFY | `api/src/routes/ingest.ts` |
-| MODIFY | `api/src/routes/articles.ts` |
-| MODIFY | `api/src/routes/sources.ts` |
-| MODIFY | `api/src/routes/digest.ts` |
-| MODIFY | `api/src/routes/feed.ts` |
-| MODIFY | `api/src/routes/health.ts` |
-| MODIFY | `api/src/routes/sse.ts` |
-| MODIFY | `api/src/services/safe-fetch.ts` |
-| MODIFY | `api/src/services/ingest-service.ts` |
-| MODIFY | `api/src/services/article-monitor.ts` |
-| MODIFY | `api/src/services/sse-broker.ts` |
-| MODIFY | `api/tests/setup.ts` |
-| MODIFY | `api/package.json` |
+| **NEW** | `db/.dockerignore` |
+| **NEW** | `db/Dockerfile` |
+| **NEW** | `docker-compose.deploy.yml` |
+| MODIFY | `Makefile` |
+| MODIFY | `docs/runbooks/release-process.md` |
+
+---
+
+## Review
+
+### What was built
+- `db/Dockerfile` (+ `.dockerignore`) — postgres:16.11 with init scripts and SSL certs baked in. `ca.key` and `generate-certs.sh` are excluded from the image.
+- `docker-compose.deploy.yml` — single compose file with no `build:` directives; pulls all 3 images with `pull_policy: always`. Includes `news-migrate` as a one-shot service that runs `node dist/run-migrate.js` and exits, gating `news-api` startup via `service_completed_successfully`.
+- `Makefile` — added `build-db`, `deploy-pull`, `deploy-up`, `deploy-down` targets. `build` and `push` now include the db image.
+- `docs/runbooks/release-process.md` — documented the registry-pull deploy flow.
+
+### Verified
+- `docker compose -f docker-compose.deploy.yml config` produces valid output.
+- `docker build ./db` succeeds. The resulting image contains init scripts and the 3 expected SSL files (no CA key).
+
+### Deploy host workflow
+```
+docker-compose.deploy.yml + .env  →  make deploy-pull && make deploy-up
+```
+Chain: db (healthy) → migrate (exits 0) → api (healthy) → frontend.
