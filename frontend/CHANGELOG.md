@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.6.2...tech-news-curator-frontend-v0.7.0) (2026-05-30)
+
+
+### Features
+
+* **deploy:** registry-pull deployment with test push and linux/amd64 builds ([a76a16e](https://github.com/sho7650/tech-news-curator/commit/a76a16ee66a7a7f8b97b07514b950844777c79a4))
+* **deploy:** test registry support, linux/amd64 builds, configurable API bind ([a80ebc8](https://github.com/sho7650/tech-news-curator/commit/a80ebc80fa8fbdc437c45117df38230f18495023))
+
 ## [0.6.2](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.6.1...tech-news-curator-frontend-v0.6.2) (2026-03-13)
 
 
