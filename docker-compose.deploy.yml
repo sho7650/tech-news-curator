@@ -48,7 +48,7 @@ services:
   news-migrate:
     image: ${REGISTRY:-registry.oshiire.to}/news-curator/api:latest
     pull_policy: always
-    command: ["node", "dist/run-migrate.js"]
+    command: ["node", "dist/db/run-migrate.js"]
     environment:
       DATABASE_URL: postgresql://news_app:${NEWS_APP_PASSWORD}@news-db:5432/news_curator?ssl=require
       DATABASE_ADMIN_URL: postgresql://news:${POSTGRES_PASSWORD}@news-db:5432/news_curator?ssl=require
@@ -76,7 +76,10 @@ services:
       news-migrate:
         condition: service_completed_successfully
     ports:
-      - "127.0.0.1:8100:8100"
+      # Bind defaults to loopback (production with co-located n8n).
+      # Set API_BIND_ADDR=0.0.0.0 in the host's .env to expose externally
+      # (test environments where the ingest client lives on a different host).
+      - "${API_BIND_ADDR:-127.0.0.1}:8100:8100"
     cpus: "1.0"
     mem_limit: 512m
     restart: "on-failure:3"
