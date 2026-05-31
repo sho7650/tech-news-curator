@@ -35,8 +35,19 @@ Docker Compose
 ## Prerequisites
 
 - Docker & Docker Compose v2
-- Python 3.12+ (for running tests locally)
-- Node.js 20+ (for frontend development outside Docker)
+- Node.js 22+ (for development outside Docker) — or use the [Nix dev shell](#nix-dev-shell-optional), which pins it for you
+
+## Nix dev shell (optional)
+
+A [Nix flake](flake.nix) provides a reproducible toolchain (Node 22 + `make`,
+`psql`, `git`, `jq`) so you don't need `nvm`. With [direnv](https://direnv.net/):
+
+```bash
+direnv allow           # auto-loads the toolchain on cd into the repo
+```
+
+Or manually: `nix develop`. The database and tests still require Docker.
+See [docs/NIX-DEVELOPMENT.md](docs/NIX-DEVELOPMENT.md) for details.
 
 ## Quick Start
 

@@ -46,3 +46,8 @@ frontend/test-results/
 .DS_Store
 .serena/
 api/dist/
+
+# Nix / direnv
+.direnv/
+result
+result-*

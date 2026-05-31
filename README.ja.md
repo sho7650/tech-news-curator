@@ -35,8 +35,19 @@ Docker Compose
 ## 必要要件
 
 - Docker & Docker Compose v2
-- Python 3.12 以上（テストをローカル実行する場合）
-- Node.js 20 以上（Docker 外でフロントエンド開発する場合）
+- Node.js 22 以上（Docker 外で開発する場合）— または [Nix 開発シェル](#nix-開発シェル任意)を使えばバージョンを自動で固定できます
+
+## Nix 開発シェル（任意）
+
+[Nix flake](flake.nix) が再現性のあるツールチェーン（Node 22 + `make`・`psql`・
+`git`・`jq`）を提供します。`nvm` は不要です。[direnv](https://direnv.net/) 利用時:
+
+```bash
+direnv allow           # リポジトリに cd するだけでツールチェーンが自動有効化
+```
+
+手動の場合は `nix develop`。DB とテストは引き続き Docker が必要です。
+詳細は [docs/NIX-DEVELOPMENT.md](docs/NIX-DEVELOPMENT.md) を参照してください。
 
 ## クイックスタート
 
