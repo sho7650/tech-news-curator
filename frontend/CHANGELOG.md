@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.7.0...tech-news-curator-frontend-v0.7.1) (2026-06-11)
+
+
+### Bug Fixes
+
+* **frontend:** self-host fonts via [@fontsource](https://github.com/fontsource) to fix Docker build ([a5e77f6](https://github.com/sho7650/tech-news-curator/commit/a5e77f65ad1c88a2a1f54fb427c7a4dc8d16930b))
+* **frontend:** self-host fonts via [@fontsource](https://github.com/fontsource) to fix Docker build ([e76df33](https://github.com/sho7650/tech-news-curator/commit/e76df3350bdc0fc7a8bbe902206a1e52f6bc6618))
+
 ## [0.7.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.6.2...tech-news-curator-frontend-v0.7.0) (2026-05-30)
 
 
