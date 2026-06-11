@@ -1,23 +1,15 @@
 import type { Metadata } from 'next'
-import { Inter, Noto_Sans_JP } from 'next/font/google'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import ThemeProvider from '@/components/ThemeProvider'
+// Fonts are bundled from npm (@fontsource) instead of next/font/google:
+// Turbopack's build-time download from fonts.gstatic.com is unreliable inside
+// Docker builds (see docs/DESIGN-font-self-hosting.md). Same self-hosting and
+// unicode-range subsetting, but fetched via npm ci. font-display: swap built in.
+import '@fontsource-variable/inter'
+import '@fontsource/noto-sans-jp/400.css'
+import '@fontsource/noto-sans-jp/700.css'
 import './globals.css'
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-})
-
-const notoSansJP = Noto_Sans_JP({
-  weight: ['400', '700'],
-  subsets: ['latin'],
-  variable: '--font-noto-sans-jp',
-  display: 'swap',
-  preload: false,
-})
 
 export const metadata: Metadata = {
   title: 'Tech News Curator',
@@ -35,8 +27,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`}
-          suppressHydrationWarning>
+    <html lang="ja" suppressHydrationWarning>
       <body className="flex min-h-screen flex-col bg-bg-primary text-text-primary antialiased">
         <ThemeProvider>
           <Header />

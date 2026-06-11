@@ -16,7 +16,8 @@
   --color-accent-hover: #d45a5a;
   --color-badge-bg: #fde8e8;
   --color-badge-text: #b91c1c;
-  --font-sans: var(--font-inter), var(--font-noto-sans-jp), ui-sans-serif, system-ui, sans-serif;
+  /* Family names from @fontsource CSS (see layout.tsx imports) */
+  --font-sans: 'Inter Variable', 'Noto Sans JP', ui-sans-serif, system-ui, sans-serif;
 }
 
 /* --- Dark mode overrides (in base layer so Tailwind preserves them) --- */
