@@ -50,6 +50,8 @@
 
 > **根拠**: [Next.js Font Optimization](https://nextjs.org/docs/app/getting-started/fonts) — `next/font` はフォントをビルド時にセルフホストし、Googleへの外部リクエストを排除する。Variable Fontが推奨。Noto Sans JPはVariable Fontではないため、weight指定が必要。
 
+> **変更 (2026-06-11)**: フォント供給方式は next/font/google から @fontsource パッケージ同梱に変更された。Turbopack のビルド時ダウンロードが Docker ビルドで失敗するため。セルフホスト・unicode-range サブセットの特性は維持。詳細: [DESIGN-font-self-hosting.md](./DESIGN-font-self-hosting.md)
+
 ---
 
 ## 2. Phase 3.0 — UI刷新
