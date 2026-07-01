@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.12.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.11.0...tech-news-curator-api-v1.12.0) (2026-07-01)
+
+
+### Features
+
+* **api:** add digest source-articles endpoint for n8n digest generation ([d26f007](https://github.com/sho7650/tech-news-curator/commit/d26f0071e605db8e82ffeb35e9d1832ba99588e8))
+* **api:** digest source-articles endpoint for n8n digest generation ([2516008](https://github.com/sho7650/tech-news-curator/commit/2516008de4c99fdff3a582211b65c08abbb6ce20))
+
+
+### Bug Fixes
+
+* **api:** return 422 instead of 500 for invalid date strings ([6df8e68](https://github.com/sho7650/tech-news-curator/commit/6df8e68917575f9cd0e64f49603929a9441eeb7c))
+
 ## [1.11.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.10.0...tech-news-curator-api-v1.11.0) (2026-04-05)
 
 
