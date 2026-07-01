@@ -21,7 +21,8 @@ export const dateString = z
   .refine(
     (d) => {
       const parsed = new Date(`${d}T00:00:00Z`);
-      return parsed.toISOString().startsWith(d);
+      // Guard against Invalid Date: toISOString() throws on NaN time values.
+      return !Number.isNaN(parsed.getTime()) && parsed.toISOString().startsWith(d);
     },
     { message: "Invalid date" },
   );
