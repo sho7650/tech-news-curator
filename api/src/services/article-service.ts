@@ -1,9 +1,13 @@
 import { and, arrayContains, asc, count, desc, eq, gt, gte, lt, ne, or, sql } from "drizzle-orm";
 import type { DB } from "../database.js";
 import { articles } from "../db/schema/index.js";
+import { jstDayInterval } from "../lib/jst-date.js";
 import type { ArticleCreate } from "../schemas/article.js";
 
 const MS_PER_DAY = 86_400_000;
+
+// Safety cap on the number of articles returned for a single digest source request.
+export const DIGEST_SOURCE_MAX = 500;
 
 export async function checkArticleExists(db: DB, url: string): Promise<boolean> {
   const result = await db
@@ -83,6 +87,56 @@ export async function getArticles(
     .limit(perPage);
 
   return { items, total };
+}
+
+export interface DigestSourceRow {
+  id: string;
+  sourceUrl: string;
+  sourceName: string | null;
+  titleOriginal: string | null;
+  titleJa: string | null;
+  summaryJa: string | null;
+  bodyTranslated: string | null;
+  author: string | null;
+  publishedAt: Date | null;
+  categories: string[] | null;
+  createdAt: Date;
+}
+
+/**
+ * Fetch a JST calendar day's articles for digest generation, including the
+ * Japanese body (`bodyTranslated`) and `summaryJa`, ordered newest-first.
+ * Filters on `created_at` (collection date) using a half-open JST interval.
+ * Returns up to `limit` rows and flags `truncated` when more were available.
+ */
+export async function getArticlesForDigest(
+  db: DB,
+  date: string,
+  limit: number = DIGEST_SOURCE_MAX,
+): Promise<{ items: DigestSourceRow[]; truncated: boolean }> {
+  const { start, end } = jstDayInterval(date);
+
+  const rows = await db
+    .select({
+      id: articles.id,
+      sourceUrl: articles.sourceUrl,
+      sourceName: articles.sourceName,
+      titleOriginal: articles.titleOriginal,
+      titleJa: articles.titleJa,
+      summaryJa: articles.summaryJa,
+      bodyTranslated: articles.bodyTranslated,
+      author: articles.author,
+      publishedAt: articles.publishedAt,
+      categories: articles.categories,
+      createdAt: articles.createdAt,
+    })
+    .from(articles)
+    .where(and(gte(articles.createdAt, start), lt(articles.createdAt, end)))
+    .orderBy(desc(articles.createdAt))
+    .limit(limit + 1);
+
+  const truncated = rows.length > limit;
+  return { items: truncated ? rows.slice(0, limit) : rows, truncated };
 }
 
 export async function getArticleById(db: DB, articleId: string) {

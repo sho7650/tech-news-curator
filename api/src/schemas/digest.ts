@@ -15,6 +15,35 @@ export type DigestCreate = z.infer<typeof digestCreateSchema>;
 
 export const digestListQuerySchema = paginationQuery;
 
+export const digestSourceQuerySchema = z
+  .object({
+    date: dateString.optional(),
+  })
+  .strict();
+
+export type DigestSourceQuery = z.infer<typeof digestSourceQuerySchema>;
+
+export interface DigestSourceArticle {
+  id: string;
+  source_url: string;
+  source_name: string | null;
+  title_original: string | null;
+  title_ja: string | null;
+  summary_ja: string | null;
+  body_translated: string | null;
+  author: string | null;
+  published_at: string | null;
+  categories: string[] | null;
+  created_at: string;
+}
+
+export interface DigestSourceResponse {
+  date: string;
+  count: number;
+  truncated: boolean;
+  articles: DigestSourceArticle[];
+}
+
 export interface DigestResponse {
   id: string;
   digest_date: string;
