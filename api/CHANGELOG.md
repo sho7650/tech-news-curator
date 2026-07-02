@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.13.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.12.0...tech-news-curator-api-v1.13.0) (2026-07-02)
+
+
+### Features
+
+* **api:** harden ingest fetch against Cloudflare bot blocking ([1862dd5](https://github.com/sho7650/tech-news-curator/commit/1862dd56dc1a50100e7e685a959664c4adb57675))
+* **api:** harden ingest fetch against Cloudflare bot blocking ([18f5b3b](https://github.com/sho7650/tech-news-curator/commit/18f5b3bd78eef8f7836d1024f4b59000945b57ce))
+
 ## [1.12.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.11.0...tech-news-curator-api-v1.12.0) (2026-07-01)
 
 
