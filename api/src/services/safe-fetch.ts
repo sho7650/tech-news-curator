@@ -1,9 +1,14 @@
 import http from "node:http";
 import https from "node:https";
+import type tls from "node:tls";
 import ipaddr from "ipaddr.js";
 import { config } from "../config.js";
 import type { AppLogger } from "../lib/logger.js";
 import { rootLogger } from "../lib/logger.js";
+import { buildBrowserHeaders } from "./browser-headers.js";
+import { createCookieStore } from "./cookie-store.js";
+import { decompressBody } from "./http-decompress.js";
+import { buildTlsOptions } from "./tls-fingerprint.js";
 import { UnsafeURLError, isSafeIp, resolveWithTimeout } from "./url-validator.js";
 
 const MAX_REDIRECTS = 5;
@@ -11,6 +16,11 @@ const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const CONNECT_TIMEOUT = 5000;
 const READ_TIMEOUT = 30000;
 const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10 MB
+
+// Persist Cloudflare's __cf_bm cookie across ingests so its bot-score smoothing
+// applies (see docs/DESIGN-ingest-fetch-hardening.md). Keyed by hostname only,
+// so it does not affect SSRF IP validation.
+const cookieStore = createCookieStore();
 
 async function resolveAndValidate(hostname: string): Promise<string> {
   // IP literal
@@ -43,6 +53,7 @@ async function resolveAndValidate(hostname: string): Promise<string> {
 function buildRequestOptions(
   url: string,
   resolvedIp: string,
+  cookieHeader: string,
 ): { options: http.RequestOptions | https.RequestOptions; isHttps: boolean } {
   const parsed = new URL(url);
   const isHttps = parsed.protocol === "https:";
@@ -53,27 +64,49 @@ function buildRequestOptions(
   // Host header: include port only if non-default
   const hostHeader = parsed.port ? `${parsed.hostname}:${parsed.port}` : parsed.hostname;
 
+  const headers: http.OutgoingHttpHeaders = {
+    ...buildBrowserHeaders(config.fetchUserAgent),
+    Host: hostHeader,
+  };
+  if (cookieHeader) headers.Cookie = cookieHeader;
+
   const options: http.RequestOptions | https.RequestOptions = {
     hostname: resolvedIp,
     port,
     path,
     method: "GET",
-    headers: {
-      Host: hostHeader,
-      "User-Agent": config.fetchUserAgent,
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Accept-Encoding": "identity",
-    },
+    headers,
     timeout: CONNECT_TIMEOUT,
   };
 
   if (isHttps) {
-    (options as https.RequestOptions).servername = parsed.hostname;
-    (options as https.RequestOptions).rejectUnauthorized = true;
+    const tlsOptions = buildTlsOptions();
+    // ALPNProtocols lives on tls.ConnectionOptions (honored at runtime by
+    // https.request via tls.connect) but is absent from https.RequestOptions.
+    const httpsOptions = options as https.RequestOptions & tls.ConnectionOptions;
+    httpsOptions.servername = parsed.hostname;
+    httpsOptions.rejectUnauthorized = true;
+    httpsOptions.minVersion = tlsOptions.minVersion;
+    httpsOptions.ALPNProtocols = tlsOptions.ALPNProtocols;
+    httpsOptions.ciphers = tlsOptions.ciphers;
   }
 
   return { options, isHttps };
+}
+
+// Store Set-Cookie (e.g. __cf_bm) then decompress the body by Content-Encoding.
+function finalizeResponse(
+  res: http.IncomingMessage,
+  cookieHost: string,
+  chunks: Buffer[],
+): { status: number; headers: http.IncomingHttpHeaders; body: string } {
+  cookieStore.storeSetCookies(cookieHost, res.headers["set-cookie"], Date.now());
+  const body = decompressBody(
+    Buffer.concat(chunks),
+    res.headers["content-encoding"],
+    MAX_BODY_SIZE,
+  ).toString("utf-8");
+  return { status: res.statusCode ?? 0, headers: res.headers, body };
 }
 
 function makeRequest(
@@ -81,7 +114,9 @@ function makeRequest(
   resolvedIp: string,
 ): Promise<{ status: number; headers: http.IncomingHttpHeaders; body: string }> {
   return new Promise((resolve, reject) => {
-    const { options, isHttps } = buildRequestOptions(url, resolvedIp);
+    const cookieHost = new URL(url).hostname;
+    const cookieHeader = cookieStore.getCookieHeader(cookieHost, Date.now());
+    const { options, isHttps } = buildRequestOptions(url, resolvedIp, cookieHeader);
 
     const client = isHttps ? https : http;
     const req = client.request(options, (res) => {
@@ -104,11 +139,11 @@ function makeRequest(
       });
       res.on("end", () => {
         clearTimeout(readTimer);
-        resolve({
-          status: res.statusCode ?? 0,
-          headers: res.headers,
-          body: Buffer.concat(chunks).toString("utf-8"),
-        });
+        try {
+          resolve(finalizeResponse(res, cookieHost, chunks));
+        } catch (err) {
+          reject(err);
+        }
       });
       res.on("error", (err) => {
         clearTimeout(readTimer);
