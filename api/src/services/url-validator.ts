@@ -20,12 +20,34 @@ const UNSAFE_IP_RANGES = new Set([
   "uniqueLocal",
   "broadcastAddress",
   "carrierGradeNat",
+  // IPv6 transition ranges embed an IPv4 address that the OS may route to
+  // directly (6to4, Teredo, NAT64, deprecated IPv4-compatible). Block them all.
+  "ipv4Mapped",
+  "rfc6052",
+  "rfc6145",
+  "6to4",
+  "teredo",
 ]);
+
+const IPV4_COMPATIBLE_PREFIX = ipaddr.IPv6.parse("::");
+const IPV4_COMPATIBLE_PREFIX_LENGTH = 96;
+
+// The deprecated IPv4-compatible form (::a.b.c.d, RFC 4291 §2.5.5.1) has no
+// named range in ipaddr.js, so judge it by the embedded IPv4 address.
+function unwrapIPv4Compatible(addr: ipaddr.IPv4 | ipaddr.IPv6): ipaddr.IPv4 | ipaddr.IPv6 {
+  if (addr.kind() !== "ipv6") return addr;
+  const v6 = addr as ipaddr.IPv6;
+  if (!v6.match(IPV4_COMPATIBLE_PREFIX, IPV4_COMPATIBLE_PREFIX_LENGTH)) return addr;
+  const [hi, lo] = v6.parts.slice(6);
+  return new ipaddr.IPv4([hi >> 8, hi & 0xff, lo >> 8, lo & 0xff]);
+}
 
 export function isSafeIp(ip: string): boolean {
   let parsed: ipaddr.IPv4 | ipaddr.IPv6;
   try {
-    parsed = ipaddr.parse(ip);
+    // process() unwraps IPv4-mapped IPv6 (::ffff:a.b.c.d) to plain IPv4 so the
+    // embedded address is range-checked, not the ::ffff:0:0/96 wrapper.
+    parsed = unwrapIPv4Compatible(ipaddr.process(ip));
   } catch {
     return false;
   }
