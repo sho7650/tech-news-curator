@@ -1,3 +1,5 @@
+> **Historical (Python/FastAPI era).** Superseded by the TypeScript implementation (Feb 2026). Kept for context; see [docs/README.md](README.md).
+
 # Phase 3 要件仕様 — ブレインストーミング結果
 
 > **Status**: ブレインストーミング完了 → 設計フェーズ待ち

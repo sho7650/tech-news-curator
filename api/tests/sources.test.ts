@@ -1,22 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { zValidator } from "@hono/zod-validator";
+import { describe, expect, it } from "vitest";
+import { createApp } from "../src/app.js";
+import { jsonHeaders } from "./helpers.js";
 import { getTestDb } from "./setup.js";
-import { createTestApp, jsonHeaders, TEST_API_KEY } from "./helpers.js";
-import { verifyApiKey } from "../src/middleware/auth.js";
-import { getPgErrorCode } from "../src/middleware/error-handler.js";
-import {
-  sourceCreateSchema,
-  sourceListQuerySchema,
-  sourceUpdateSchema,
-  type SourceResponse,
-} from "../src/schemas/source.js";
-import {
-  createSource,
-  deactivateSource,
-  getSourceById,
-  getSources,
-  updateSource,
-} from "../src/services/source-service.js";
 
 const SAMPLE_SOURCE = {
   name: "TechCrunch",
@@ -25,86 +10,8 @@ const SAMPLE_SOURCE = {
   category: "general",
 };
 
-function formatSourceResponse(source: any): SourceResponse {
-  return {
-    id: source.id,
-    name: source.name ?? null,
-    rss_url: source.rssUrl,
-    site_url: source.siteUrl ?? null,
-    category: source.category ?? null,
-    is_active: source.isActive,
-    created_at: source.createdAt.toISOString(),
-  };
-}
-
 function buildApp() {
-  const app = createTestApp();
-  const db = getTestDb();
-
-  app.get(
-    "/sources",
-    zValidator("query", sourceListQuerySchema, (result, c) => {
-      if (!result.success) return c.json({ detail: result.error.errors }, 422);
-    }),
-    async (c) => {
-      const { page, per_page, active_only } = c.req.valid("query");
-      const { items, total } = await getSources(db, page, per_page, active_only);
-      return c.json({ items: items.map(formatSourceResponse), total, page, per_page });
-    },
-  );
-
-  app.post(
-    "/sources",
-    verifyApiKey,
-    zValidator("json", sourceCreateSchema, (result, c) => {
-      if (!result.success) return c.json({ detail: result.error.errors }, 422);
-    }),
-    async (c) => {
-      const data = c.req.valid("json");
-      try {
-        const source = await createSource(db, data);
-        return c.json(formatSourceResponse(source), 201);
-      } catch (err) {
-        if (getPgErrorCode(err) === "23505") {
-          return c.json({ detail: "Source with this RSS URL already exists" }, 409);
-        }
-        throw err;
-      }
-    },
-  );
-
-  app.put(
-    "/sources/:source_id",
-    verifyApiKey,
-    zValidator("json", sourceUpdateSchema, (result, c) => {
-      if (!result.success) return c.json({ detail: result.error.errors }, 422);
-    }),
-    async (c) => {
-      const sourceId = c.req.param("source_id");
-      const existing = await getSourceById(db, sourceId);
-      if (!existing) return c.json({ detail: "Source not found" }, 404);
-      const data = c.req.valid("json");
-      try {
-        const updated = await updateSource(db, sourceId, data);
-        return c.json(formatSourceResponse(updated!));
-      } catch (err) {
-        if (getPgErrorCode(err) === "23505") {
-          return c.json({ detail: "Source with this RSS URL already exists" }, 409);
-        }
-        throw err;
-      }
-    },
-  );
-
-  app.delete("/sources/:source_id", verifyApiKey, async (c) => {
-    const sourceId = c.req.param("source_id");
-    const existing = await getSourceById(db, sourceId);
-    if (!existing) return c.json({ detail: "Source not found" }, 404);
-    const deactivated = await deactivateSource(db, sourceId);
-    return c.json(formatSourceResponse(deactivated));
-  });
-
-  return app;
+  return createApp(getTestDb());
 }
 
 describe("Sources API", () => {
@@ -125,8 +32,16 @@ describe("Sources API", () => {
 
   it("should reject duplicate source", async () => {
     const app = buildApp();
-    await app.request("/sources", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(SAMPLE_SOURCE) });
-    const res = await app.request("/sources", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(SAMPLE_SOURCE) });
+    await app.request("/sources", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(SAMPLE_SOURCE),
+    });
+    const res = await app.request("/sources", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(SAMPLE_SOURCE),
+    });
     expect(res.status).toBe(409);
     const data = await res.json();
     expect(data.detail).toContain("already exists");
@@ -148,7 +63,11 @@ describe("Sources API", () => {
       await app.request("/sources", {
         method: "POST",
         headers: jsonHeaders(),
-        body: JSON.stringify({ ...SAMPLE_SOURCE, rss_url: `https://example.com/feed/${i}`, name: `Source ${i}` }),
+        body: JSON.stringify({
+          ...SAMPLE_SOURCE,
+          rss_url: `https://example.com/feed/${i}`,
+          name: `Source ${i}`,
+        }),
       });
     }
     const res = await app.request("/sources");
@@ -160,8 +79,16 @@ describe("Sources API", () => {
 
   it("should filter active only", async () => {
     const app = buildApp();
-    await app.request("/sources", { method: "POST", headers: jsonHeaders(), body: JSON.stringify({ ...SAMPLE_SOURCE, rss_url: "https://example.com/feed/active" }) });
-    const res2 = await app.request("/sources", { method: "POST", headers: jsonHeaders(), body: JSON.stringify({ ...SAMPLE_SOURCE, rss_url: "https://example.com/feed/inactive" }) });
+    await app.request("/sources", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ ...SAMPLE_SOURCE, rss_url: "https://example.com/feed/active" }),
+    });
+    const res2 = await app.request("/sources", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ ...SAMPLE_SOURCE, rss_url: "https://example.com/feed/inactive" }),
+    });
     const source2Id = (await res2.json()).id;
     await app.request(`/sources/${source2Id}`, { method: "DELETE", headers: jsonHeaders() });
 
@@ -177,7 +104,11 @@ describe("Sources API", () => {
       await app.request("/sources", {
         method: "POST",
         headers: jsonHeaders(),
-        body: JSON.stringify({ ...SAMPLE_SOURCE, rss_url: `https://example.com/feed/page-${i}`, name: `Source ${i}` }),
+        body: JSON.stringify({
+          ...SAMPLE_SOURCE,
+          rss_url: `https://example.com/feed/page-${i}`,
+          name: `Source ${i}`,
+        }),
       });
     }
     const res = await app.request("/sources?page=1&per_page=2");
@@ -191,7 +122,11 @@ describe("Sources API", () => {
 
   it("should update source", async () => {
     const app = buildApp();
-    const createRes = await app.request("/sources", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(SAMPLE_SOURCE) });
+    const createRes = await app.request("/sources", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(SAMPLE_SOURCE),
+    });
     const { id } = await createRes.json();
 
     const res = await app.request(`/sources/${id}`, {
@@ -219,8 +154,16 @@ describe("Sources API", () => {
 
   it("should reject updating to duplicate rss_url", async () => {
     const app = buildApp();
-    await app.request("/sources", { method: "POST", headers: jsonHeaders(), body: JSON.stringify({ ...SAMPLE_SOURCE, rss_url: "https://example.com/feed/first" }) });
-    const createRes2 = await app.request("/sources", { method: "POST", headers: jsonHeaders(), body: JSON.stringify({ ...SAMPLE_SOURCE, rss_url: "https://example.com/feed/second" }) });
+    await app.request("/sources", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ ...SAMPLE_SOURCE, rss_url: "https://example.com/feed/first" }),
+    });
+    const createRes2 = await app.request("/sources", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify({ ...SAMPLE_SOURCE, rss_url: "https://example.com/feed/second" }),
+    });
     const { id: source2Id } = await createRes2.json();
 
     const res = await app.request(`/sources/${source2Id}`, {
@@ -233,7 +176,11 @@ describe("Sources API", () => {
 
   it("should delete (deactivate) source", async () => {
     const app = buildApp();
-    const createRes = await app.request("/sources", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(SAMPLE_SOURCE) });
+    const createRes = await app.request("/sources", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(SAMPLE_SOURCE),
+    });
     const { id } = await createRes.json();
 
     const res = await app.request(`/sources/${id}`, { method: "DELETE", headers: jsonHeaders() });
@@ -255,7 +202,11 @@ describe("Sources API", () => {
 
   it("should verify deactivation via list", async () => {
     const app = buildApp();
-    const createRes = await app.request("/sources", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(SAMPLE_SOURCE) });
+    const createRes = await app.request("/sources", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(SAMPLE_SOURCE),
+    });
     const { id } = await createRes.json();
 
     await app.request(`/sources/${id}`, { method: "DELETE", headers: jsonHeaders() });

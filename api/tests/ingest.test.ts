@@ -1,37 +1,12 @@
-import { describe, it, expect, vi } from "vitest";
-import { createTestApp, jsonHeaders, TEST_API_KEY } from "./helpers.js";
-import { verifyApiKey } from "../src/middleware/auth.js";
-import { zValidator } from "@hono/zod-validator";
-import { ingestRequestSchema } from "../src/schemas/ingest.js";
+import { describe, expect, it, vi } from "vitest";
+import { createApp } from "../src/app.js";
+import type { ExtractArticle } from "../src/routes/index.js";
 import { UnsafeURLError } from "../src/services/url-validator.js";
+import { TEST_API_KEY, jsonHeaders } from "./helpers.js";
+import { getTestDb } from "./setup.js";
 
-function buildApp(mockExtractArticle: any) {
-  const app = createTestApp();
-
-  app.post(
-    "/ingest",
-    verifyApiKey,
-    zValidator("json", ingestRequestSchema, (result, c) => {
-      if (!result.success) return c.json({ detail: result.error.errors }, 422);
-    }),
-    async (c) => {
-      const { url } = c.req.valid("json");
-      try {
-        const result = await mockExtractArticle(url);
-        if (!result) {
-          return c.json({ detail: "Failed to extract content from URL" }, 422);
-        }
-        return c.json(result);
-      } catch (err) {
-        if (err instanceof UnsafeURLError) {
-          return c.json({ detail: "URL points to a private or reserved address" }, 400);
-        }
-        throw err;
-      }
-    },
-  );
-
-  return app;
+function buildApp(mockExtractArticle: ExtractArticle) {
+  return createApp(getTestDb(), { extractArticle: mockExtractArticle });
 }
 
 describe("Ingest API", () => {

@@ -1,5 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { SSEBroker, ConnectionLimitExceeded } from "../src/services/sse-broker.js";
+import { describe, expect, it } from "vitest";
+import { createApp } from "../src/app.js";
+import { ConnectionLimitExceeded, SSEBroker, articleBroker } from "../src/services/sse-broker.js";
+import { waitForBrokerDrain } from "./helpers.js";
+import { getTestDb } from "./setup.js";
 
 describe("SSE Broker", () => {
   it("should broadcast events to all subscribers", async () => {
@@ -67,5 +70,37 @@ describe("SSE Broker", () => {
     expect(broker.clientCount).toBe(1);
     broker.unsubscribe(id2);
     expect(broker.clientCount).toBe(0);
+  });
+});
+
+describe("GET /articles/stream (route)", () => {
+  it("opens an event stream, sends an initial ping, and unsubscribes on abort", async () => {
+    const app = createApp(getTestDb());
+    const controller = new AbortController();
+    const res = await app.request("/articles/stream", { signal: controller.signal });
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/event-stream");
+    expect(articleBroker.clientCount).toBe(1);
+    const reader = res.body?.getReader();
+    const { value } = (await reader?.read()) ?? {};
+    expect(new TextDecoder().decode(value)).toContain("event: ping");
+
+    controller.abort();
+    await reader?.cancel();
+    await waitForBrokerDrain();
+  });
+
+  it("returns 503 when the broker connection cap is reached", async () => {
+    const app = createApp(getTestDb());
+    const ids: number[] = [];
+    try {
+      while (articleBroker.clientCount < 20) ids.push(articleBroker.subscribe());
+      const res = await app.request("/articles/stream");
+      expect(res.status).toBe(503);
+      expect((await res.json()).detail).toBe("Too many SSE connections");
+    } finally {
+      for (const id of ids) articleBroker.unsubscribe(id);
+    }
   });
 });

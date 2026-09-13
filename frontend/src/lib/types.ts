@@ -1,89 +1,23 @@
-export interface ArticleListItem {
-  id: string
-  source_url: string
-  source_name: string | null
-  title_ja: string | null
-  summary_ja: string | null
-  author: string | null
-  published_at: string | null
-  og_image_url: string | null
-  categories: string[] | null
-  created_at: string
-}
+// Response types derived from the API's OpenAPI document.
+// Regenerate api-types.ts with `npm run types:generate` after
+// `cd ../api && npm run openapi:export`; never edit api-types.ts by hand.
+import type { paths } from './api-types'
 
-export interface ArticleDetail {
-  id: string
-  source_url: string
-  source_name: string | null
-  title_original: string | null
-  title_ja: string | null
-  body_translated: string | null
-  summary_ja: string | null
-  author: string | null
-  published_at: string | null
-  og_image_url: string | null
-  categories: string[] | null
-  metadata: Record<string, unknown> | null
-  created_at: string
-}
+type Json<T> = T extends { content: { 'application/json': infer Body } } ? Body : never
 
-export interface ArticleListResponse {
-  items: ArticleListItem[]
-  total: number
-  page: number
-  per_page: number
-}
+export type ArticleListResponse = Json<paths['/articles']['get']['responses'][200]>
+export type ArticleListItem = ArticleListResponse['items'][number]
 
-export interface DigestListItem {
-  id: string
-  digest_date: string
-  title: string | null
-  article_count: number | null
-  created_at: string
-}
+export type ArticleDetail = Json<paths['/articles/{article_id}']['get']['responses'][200]>
 
-export interface DigestResponse {
-  id: string
-  digest_date: string
-  title: string | null
-  content: string | null
-  article_count: number | null
-  article_ids: string[] | null
-  created_at: string
-}
+export type ArticleNeighborsResponse = Json<
+  paths['/articles/{article_id}/neighbors']['get']['responses'][200]
+>
+export type ArticleNeighborItem = NonNullable<ArticleNeighborsResponse['prev']>
 
-export interface DigestListResponse {
-  items: DigestListItem[]
-  total: number
-  page: number
-  per_page: number
-}
+export type DigestListResponse = Json<paths['/digest']['get']['responses'][200]>
+export type DigestListItem = DigestListResponse['items'][number]
+export type DigestResponse = Json<paths['/digest/{digest_date}']['get']['responses'][200]>
 
-export interface SourceResponse {
-  id: string
-  name: string | null
-  rss_url: string
-  site_url: string | null
-  category: string | null
-  is_active: boolean
-  created_at: string
-}
-
-export interface SourceListResponse {
-  items: SourceResponse[]
-  total: number
-  page: number
-  per_page: number
-}
-
-export interface ArticleNeighborItem {
-  id: string
-  title_ja: string | null
-  og_image_url: string | null
-  published_at: string | null
-}
-
-export interface ArticleNeighborsResponse {
-  prev: ArticleNeighborItem | null
-  next: ArticleNeighborItem | null
-}
+export type SourceListResponse = Json<paths['/sources']['get']['responses'][200]>
+export type SourceResponse = SourceListResponse['items'][number]

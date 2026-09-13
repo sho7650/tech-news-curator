@@ -1,3 +1,5 @@
+> **Historical (Python/FastAPI era).** Superseded by the TypeScript implementation (Feb 2026). Kept for context; see [docs/README.md](README.md).
+
 # Phase 2 実装ワークフロー
 
 > **Version**: 1.0
