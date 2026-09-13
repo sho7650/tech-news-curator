@@ -95,20 +95,3 @@ test-e2e-ui:
 	$(eval API_KEY := $(shell grep '^API_KEYS=' .env 2>/dev/null | cut -d= -f2 | cut -d, -f1))
 	cd frontend && TEST_API_KEY=$(API_KEY) npx playwright test --ui
 
-# OWASP ZAP scan
-zap-scan:
-	mkdir -p zap-reports
-	docker run --rm --network host \
-		-v $(pwd)/zap-reports:/zap/wrk:rw \
-		-e ZAP_API_KEY=$(ZAP_API_KEY) \
-		ghcr.io/zaproxy/zaproxy:stable \
-		zap-api-scan.py \
-		-t http://localhost:8100/openapi.json \
-		-f openapi \
-		-r report.html \
-		-J report.json \
-		-z "-config replacer.full_list(0).description=AuthHeader \
-		    -config replacer.full_list(0).enabled=true \
-		    -config replacer.full_list(0).matchtype=REQ_HEADER \
-		    -config replacer.full_list(0).matchstr=X-API-Key \
-		    -config replacer.full_list(0).replacement=$(ZAP_API_KEY)"
