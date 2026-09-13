@@ -1,12 +1,8 @@
-import { describe, it, expect } from "vitest";
 import { randomUUID } from "node:crypto";
-import { zValidator } from "@hono/zod-validator";
+import { describe, expect, it } from "vitest";
+import { createApp } from "../src/app.js";
+import { jsonHeaders } from "./helpers.js";
 import { getTestDb } from "./setup.js";
-import { createTestApp, jsonHeaders, TEST_API_KEY } from "./helpers.js";
-import { verifyApiKey } from "../src/middleware/auth.js";
-import { getPgErrorCode } from "../src/middleware/error-handler.js";
-import { digestCreateSchema, digestListQuerySchema, type DigestResponse, type DigestListItem } from "../src/schemas/digest.js";
-import { createDigest, getDigestByDate, getDigests } from "../src/services/digest-service.js";
 
 const SAMPLE_DIGEST = {
   digest_date: "2026-01-15",
@@ -16,72 +12,8 @@ const SAMPLE_DIGEST = {
   article_ids: [randomUUID(), randomUUID()],
 };
 
-function formatDigestResponse(digest: any): DigestResponse {
-  return {
-    id: digest.id,
-    digest_date: digest.digestDate,
-    title: digest.title ?? null,
-    content: digest.content ?? null,
-    article_count: digest.articleCount ?? null,
-    article_ids: digest.articleIds ?? null,
-    created_at: digest.createdAt.toISOString(),
-  };
-}
-
-function formatDigestListItem(digest: any): DigestListItem {
-  return {
-    id: digest.id,
-    digest_date: digest.digestDate,
-    title: digest.title ?? null,
-    article_count: digest.articleCount ?? null,
-    created_at: digest.createdAt.toISOString(),
-  };
-}
-
 function buildApp() {
-  const app = createTestApp();
-  const db = getTestDb();
-
-  app.post(
-    "/digest",
-    verifyApiKey,
-    zValidator("json", digestCreateSchema, (result, c) => {
-      if (!result.success) return c.json({ detail: result.error.errors }, 422);
-    }),
-    async (c) => {
-      const data = c.req.valid("json");
-      try {
-        const digest = await createDigest(db, data);
-        return c.json(formatDigestResponse(digest), 201);
-      } catch (err) {
-        if (getPgErrorCode(err) === "23505") {
-          return c.json({ detail: "Digest for this date already exists" }, 409);
-        }
-        throw err;
-      }
-    },
-  );
-
-  app.get(
-    "/digest",
-    zValidator("query", digestListQuerySchema, (result, c) => {
-      if (!result.success) return c.json({ detail: result.error.errors }, 422);
-    }),
-    async (c) => {
-      const { page, per_page } = c.req.valid("query");
-      const { items, total } = await getDigests(db, page, per_page);
-      return c.json({ items: items.map(formatDigestListItem), total, page, per_page });
-    },
-  );
-
-  app.get("/digest/:digest_date", async (c) => {
-    const digestDate = c.req.param("digest_date");
-    const digest = await getDigestByDate(db, digestDate);
-    if (!digest) return c.json({ detail: "Digest not found" }, 404);
-    return c.json(formatDigestResponse(digest));
-  });
-
-  return app;
+  return createApp(getTestDb());
 }
 
 describe("Digest API", () => {
@@ -101,8 +33,16 @@ describe("Digest API", () => {
 
   it("should reject duplicate date", async () => {
     const app = buildApp();
-    await app.request("/digest", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(SAMPLE_DIGEST) });
-    const res = await app.request("/digest", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(SAMPLE_DIGEST) });
+    await app.request("/digest", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(SAMPLE_DIGEST),
+    });
+    const res = await app.request("/digest", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(SAMPLE_DIGEST),
+    });
     expect(res.status).toBe(409);
     const data = await res.json();
     expect(data.detail).toContain("already exists");
@@ -130,7 +70,11 @@ describe("Digest API", () => {
 
   it("should get digest by date", async () => {
     const app = buildApp();
-    await app.request("/digest", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(SAMPLE_DIGEST) });
+    await app.request("/digest", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(SAMPLE_DIGEST),
+    });
 
     const res = await app.request("/digest/2026-01-15");
     expect(res.status).toBe(200);

@@ -1,12 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { zValidator } from "@hono/zod-validator";
+import { describe, expect, it } from "vitest";
+import { createApp } from "../src/app.js";
+import { jsonHeaders } from "./helpers.js";
 import { getTestDb } from "./setup.js";
-import { createTestApp, jsonHeaders } from "./helpers.js";
-import { verifyApiKey } from "../src/middleware/auth.js";
-import { getPgErrorCode } from "../src/middleware/error-handler.js";
-import { articleCreateSchema, type ArticleDetail } from "../src/schemas/article.js";
-import { createArticle } from "../src/services/article-service.js";
-import { generateRssFeed } from "../src/services/rss-service.js";
 
 const SAMPLE_ARTICLE = {
   source_url: "https://example.com/feed-test",
@@ -21,55 +16,8 @@ const SAMPLE_ARTICLE = {
   categories: ["AI"],
 };
 
-function formatArticleDetail(article: any): ArticleDetail {
-  return {
-    id: article.id,
-    source_url: article.sourceUrl,
-    source_name: article.sourceName ?? null,
-    title_original: article.titleOriginal ?? null,
-    title_ja: article.titleJa ?? null,
-    summary_ja: article.summaryJa ?? null,
-    author: article.author ?? null,
-    published_at: article.publishedAt?.toISOString() ?? null,
-    og_image_url: article.ogImageUrl ?? null,
-    categories: article.categories ?? null,
-    metadata: article.metadata ?? null,
-    created_at: article.createdAt.toISOString(),
-  };
-}
-
 function buildApp() {
-  const app = createTestApp();
-  const db = getTestDb();
-
-  app.post(
-    "/articles",
-    verifyApiKey,
-    zValidator("json", articleCreateSchema, (result, c) => {
-      if (!result.success) return c.json({ detail: result.error.errors }, 422);
-    }),
-    async (c) => {
-      const data = c.req.valid("json");
-      try {
-        const article = await createArticle(db, data);
-        return c.json(formatArticleDetail(article), 201);
-      } catch (err) {
-        if (getPgErrorCode(err) === "23505") {
-          return c.json({ detail: "Article with this URL already exists" }, 409);
-        }
-        throw err;
-      }
-    },
-  );
-
-  app.get("/feed/rss", async (c) => {
-    const rssXml = await generateRssFeed(db);
-    return new Response(rssXml, {
-      headers: { "Content-Type": "application/rss+xml; charset=utf-8" },
-    });
-  });
-
-  return app;
+  return createApp(getTestDb());
 }
 
 describe("RSS Feed API", () => {
@@ -125,7 +73,10 @@ describe("RSS Feed API", () => {
       await app.request("/articles", {
         method: "POST",
         headers: jsonHeaders(),
-        body: JSON.stringify({ ...SAMPLE_ARTICLE, source_url: `https://example.com/feed-max-${i}` }),
+        body: JSON.stringify({
+          ...SAMPLE_ARTICLE,
+          source_url: `https://example.com/feed-max-${i}`,
+        }),
       });
     }
 

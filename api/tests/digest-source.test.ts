@@ -1,20 +1,11 @@
-import { describe, it, expect } from "vitest";
 import { randomUUID } from "node:crypto";
-import { zValidator } from "@hono/zod-validator";
-import { getTestDb } from "./setup.js";
-import { createTestApp } from "./helpers.js";
+import { describe, expect, it } from "vitest";
+import { createApp } from "../src/app.js";
 import { articles } from "../src/db/schema/index.js";
 import { jstYesterday } from "../src/lib/jst-date.js";
-import {
-  digestSourceQuerySchema,
-  type DigestSourceArticle,
-  type DigestSourceResponse,
-} from "../src/schemas/digest.js";
-import {
-  DIGEST_SOURCE_MAX,
-  getArticlesForDigest,
-  type DigestSourceRow,
-} from "../src/services/article-service.js";
+import type { DigestSourceResponse } from "../src/schemas/digest.js";
+import { DIGEST_SOURCE_MAX, getArticlesForDigest } from "../src/services/article-service.js";
+import { getTestDb } from "./setup.js";
 
 interface SeedOverrides {
   createdAt: Date;
@@ -44,45 +35,8 @@ async function seedArticle(overrides: SeedOverrides) {
   return row;
 }
 
-// Rebuild the route wired to the test DB (mirrors the real handler in routes/digest.ts).
-function formatDigestSourceArticle(row: DigestSourceRow): DigestSourceArticle {
-  return {
-    id: row.id,
-    source_url: row.sourceUrl,
-    source_name: row.sourceName ?? null,
-    title_original: row.titleOriginal ?? null,
-    title_ja: row.titleJa ?? null,
-    summary_ja: row.summaryJa ?? null,
-    body_translated: row.bodyTranslated ?? null,
-    author: row.author ?? null,
-    published_at: row.publishedAt?.toISOString() ?? null,
-    categories: row.categories ?? null,
-    created_at: row.createdAt.toISOString(),
-  };
-}
-
 function buildApp() {
-  const app = createTestApp();
-  const db = getTestDb();
-  app.get(
-    "/digest/source-articles",
-    zValidator("query", digestSourceQuerySchema, (result, c) => {
-      if (!result.success) return c.json({ detail: result.error.errors }, 422);
-    }),
-    async (c) => {
-      const { date } = c.req.valid("query");
-      const targetDate = date ?? jstYesterday(new Date());
-      const { items, truncated } = await getArticlesForDigest(db, targetDate);
-      const response: DigestSourceResponse = {
-        date: targetDate,
-        count: items.length,
-        truncated,
-        articles: items.map(formatDigestSourceArticle),
-      };
-      return c.json(response);
-    },
-  );
-  return app;
+  return createApp(getTestDb());
 }
 
 describe("getArticlesForDigest (service)", () => {
