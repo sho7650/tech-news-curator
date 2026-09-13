@@ -90,6 +90,18 @@ describe("URL Validator (SSRF Protection)", () => {
       expect(isSafeIp("::a9fe:a9fe")).toBe(false); // IPv4-compatible link-local
     });
 
+    it("should keep :: and ::1 on their native classification", () => {
+      expect(isSafeIp("::")).toBe(false);
+      expect(isSafeIp("::1")).toBe(false);
+      expect(isSafeIp("::2")).toBe(false); // IPv4-compatible 0.0.0.2, unspecified range
+    });
+
+    it("should reject IPv6 literals carrying a zone ID", async () => {
+      // WHATWG URL parsing refuses %-encoded zone IDs, so this fails closed as an invalid URL.
+      await expect(validateUrl("http://[fe80::1%25eth0]/")).rejects.toThrow(UnsafeURLError);
+      expect(isSafeIp("fe80::1%eth0")).toBe(false);
+    });
+
     it("should reject URLs with IPv4-mapped literal hosts", async () => {
       await expect(validateUrl("http://[::ffff:127.0.0.1]:5432/")).rejects.toThrow(UnsafeURLError);
       await expect(

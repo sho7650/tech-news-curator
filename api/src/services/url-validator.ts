@@ -34,25 +34,25 @@ const IPV4_COMPATIBLE_PREFIX_LENGTH = 96;
 
 // The deprecated IPv4-compatible form (::a.b.c.d, RFC 4291 §2.5.5.1) has no
 // named range in ipaddr.js, so judge it by the embedded IPv4 address.
+// :: and ::1 share the prefix but have native names; leave them alone.
 function unwrapIPv4Compatible(addr: ipaddr.IPv4 | ipaddr.IPv6): ipaddr.IPv4 | ipaddr.IPv6 {
   if (addr.kind() !== "ipv6") return addr;
   const v6 = addr as ipaddr.IPv6;
   if (!v6.match(IPV4_COMPATIBLE_PREFIX, IPV4_COMPATIBLE_PREFIX_LENGTH)) return addr;
   const [hi, lo] = v6.parts.slice(6);
+  if (hi === 0 && lo <= 1) return addr;
   return new ipaddr.IPv4([hi >> 8, hi & 0xff, lo >> 8, lo & 0xff]);
 }
 
 export function isSafeIp(ip: string): boolean {
-  let parsed: ipaddr.IPv4 | ipaddr.IPv6;
   try {
     // process() unwraps IPv4-mapped IPv6 (::ffff:a.b.c.d) to plain IPv4 so the
     // embedded address is range-checked, not the ::ffff:0:0/96 wrapper.
-    parsed = unwrapIPv4Compatible(ipaddr.process(ip));
+    const parsed = unwrapIPv4Compatible(ipaddr.process(ip));
+    return !UNSAFE_IP_RANGES.has(parsed.range());
   } catch {
     return false;
   }
-
-  return !UNSAFE_IP_RANGES.has(parsed.range());
 }
 
 function withDnsTimeout<T>(promise: Promise<T>, hostname: string): Promise<T> {
