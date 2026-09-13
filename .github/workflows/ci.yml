@@ -29,6 +29,10 @@ jobs:
         working-directory: api
         run: npm ci
 
+      - name: Lint
+        working-directory: api
+        run: npx biome check src/
+
       - name: Type check
         working-directory: api
         run: npx tsc --noEmit
