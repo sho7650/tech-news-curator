@@ -59,6 +59,41 @@ describe("createApp wiring", () => {
     expect(res.status).toBe(404);
   });
 
+  it("serves an OpenAPI 3.1 document describing the routes", async () => {
+    const app = createApp(getTestDb());
+    const res = await app.request("/openapi.json");
+
+    expect(res.status).toBe(200);
+    const spec = await res.json();
+    expect(spec.openapi).toMatch(/^3\.1/);
+    expect(Object.keys(spec.paths)).toEqual(
+      expect.arrayContaining([
+        "/health",
+        "/ingest",
+        "/articles",
+        "/articles/check",
+        "/articles/{article_id}",
+        "/articles/{article_id}/neighbors",
+        "/articles/stream",
+        "/digest",
+        "/digest/source-articles",
+        "/digest/{digest_date}",
+        "/sources",
+        "/sources/{source_id}",
+        "/feed/rss",
+      ]),
+    );
+    expect(spec.components.securitySchemes.apiKey).toMatchObject({
+      type: "apiKey",
+      in: "header",
+      name: "X-API-Key",
+    });
+    expect(spec.paths["/articles"].post.security).toEqual([{ apiKey: [] }]);
+    expect(spec.paths["/articles"].get.security).toBeUndefined();
+    const detail = spec.paths["/articles/{article_id}"].get.responses["200"];
+    expect(detail.content["application/json"].schema).toBeDefined();
+  });
+
   it("lets tests inject the article extractor for /ingest", async () => {
     const extractArticle = async () => ({
       title: "Injected",
