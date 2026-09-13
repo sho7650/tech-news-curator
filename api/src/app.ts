@@ -1,10 +1,12 @@
 import { Hono } from "hono";
+import { openAPIRouteHandler } from "hono-openapi";
 import { cors } from "hono/cors";
 import { config } from "./config.js";
 import type { DB } from "./database.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { requestLogger } from "./middleware/request-logger.js";
 import { securityHeaders } from "./middleware/security-headers.js";
+import { openApiDocumentation, validationErrorResponse } from "./openapi.js";
 import {
   type ExtractArticle,
   createArticlesRoute,
@@ -47,6 +49,17 @@ export function createApp(db: DB, deps: AppDeps = {}): Hono<AppEnv> {
   app.route("", createDigestRoute(db));
   app.route("", createSourcesRoute(db));
   app.route("", createFeedRoute(db));
+
+  // Generated from the validators and describeRoute() metadata above; the
+  // frontend types are produced from this document (see api/openapi.json).
+  app.get(
+    "/openapi.json",
+    openAPIRouteHandler(app, {
+      documentation: openApiDocumentation,
+      excludeMethods: ["OPTIONS"],
+      defaultValidationErrorResponse: validationErrorResponse,
+    }),
+  );
 
   return app;
 }

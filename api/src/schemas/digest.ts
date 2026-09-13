@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { dateString, paginationQuery } from "./base.js";
+import { dateString, isoDateTime, paginatedSchema, paginationQuery } from "./base.js";
 
 export const digestCreateSchema = z
   .object({
@@ -23,41 +23,46 @@ export const digestSourceQuerySchema = z
 
 export type DigestSourceQuery = z.infer<typeof digestSourceQuerySchema>;
 
-export interface DigestSourceArticle {
-  id: string;
-  source_url: string;
-  source_name: string | null;
-  title_original: string | null;
-  title_ja: string | null;
-  summary_ja: string | null;
-  body_translated: string | null;
-  author: string | null;
-  published_at: string | null;
-  categories: string[] | null;
-  created_at: string;
-}
+export const digestSourceArticleSchema = z.object({
+  id: z.string().uuid(),
+  source_url: z.string(),
+  source_name: z.string().nullable(),
+  title_original: z.string().nullable(),
+  title_ja: z.string().nullable(),
+  summary_ja: z.string().nullable(),
+  body_translated: z.string().nullable(),
+  author: z.string().nullable(),
+  published_at: isoDateTime.nullable(),
+  categories: z.array(z.string()).nullable(),
+  created_at: isoDateTime,
+});
 
-export interface DigestSourceResponse {
-  date: string;
-  count: number;
-  truncated: boolean;
-  articles: DigestSourceArticle[];
-}
+export type DigestSourceArticle = z.infer<typeof digestSourceArticleSchema>;
 
-export interface DigestResponse {
-  id: string;
-  digest_date: string;
-  title: string | null;
-  content: string | null;
-  article_count: number | null;
-  article_ids: string[] | null;
-  created_at: string;
-}
+export const digestSourceResponseSchema = z.object({
+  date: dateString,
+  count: z.number().int(),
+  truncated: z.boolean(),
+  articles: z.array(digestSourceArticleSchema),
+});
 
-export interface DigestListItem {
-  id: string;
-  digest_date: string;
-  title: string | null;
-  article_count: number | null;
-  created_at: string;
-}
+export type DigestSourceResponse = z.infer<typeof digestSourceResponseSchema>;
+
+export const digestListItemSchema = z.object({
+  id: z.string().uuid(),
+  digest_date: dateString,
+  title: z.string().nullable(),
+  article_count: z.number().int().nullable(),
+  created_at: isoDateTime,
+});
+
+export type DigestListItem = z.infer<typeof digestListItemSchema>;
+
+export const digestListResponseSchema = paginatedSchema(digestListItemSchema);
+
+export const digestResponseSchema = digestListItemSchema.extend({
+  content: z.string().nullable(),
+  article_ids: z.array(z.string().uuid()).nullable(),
+});
+
+export type DigestResponse = z.infer<typeof digestResponseSchema>;

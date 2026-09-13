@@ -6,12 +6,12 @@ export const ingestRequestSchema = z
   })
   .strict();
 
-type IngestRequest = z.infer<typeof ingestRequestSchema>;
+export const ingestResponseSchema = z.object({
+  title: z.string().nullable(),
+  body: z.string().nullable(),
+  author: z.string().nullable(),
+  published_at: z.string().nullable(),
+  og_image_url: z.string().nullable(),
+});
 
-export interface IngestResponse {
-  title: string | null;
-  body: string | null;
-  author: string | null;
-  published_at: string | null;
-  og_image_url: string | null;
-}
+export type IngestResponse = z.infer<typeof ingestResponseSchema>;

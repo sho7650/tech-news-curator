@@ -1,8 +1,9 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { describeRoute, validator } from "hono-openapi";
 import { writeGuard } from "../middleware/guards.js";
 import { validationHook } from "../middleware/validation.js";
-import { ingestRequestSchema } from "../schemas/ingest.js";
+import { API_KEY_SECURITY, errorResponse, jsonResponse } from "../openapi.js";
+import { ingestRequestSchema, ingestResponseSchema } from "../schemas/ingest.js";
 import { extractArticle } from "../services/ingest-service.js";
 import { safeFetch } from "../services/safe-fetch.js";
 import { UnsafeURLError } from "../services/url-validator.js";
@@ -17,7 +18,18 @@ export function createIngestRoute(extract: ExtractArticle = extractArticle): Hon
   route.post(
     "/ingest",
     ...writeGuard(10),
-    zValidator("json", ingestRequestSchema, validationHook),
+    describeRoute({
+      tags: ["Ingest"],
+      summary: "Fetch a URL and extract the article as Markdown (no storage)",
+      security: API_KEY_SECURITY,
+      responses: {
+        200: jsonResponse("Extracted article", ingestResponseSchema),
+        400: errorResponse("URL points to a private or reserved address"),
+        401: errorResponse("Missing or invalid API key"),
+        422: errorResponse("Fetch or extraction failed"),
+      },
+    }),
+    validator("json", ingestRequestSchema, validationHook),
     async (c) => {
       const { url } = c.req.valid("json");
       const logger = c.get("logger");

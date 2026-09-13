@@ -1,5 +1,5 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { describeRoute, validator } from "hono-openapi";
 import type { DB } from "../database.js";
 import {
   formatArticleDetail,
@@ -10,10 +10,15 @@ import { PG_UNIQUE_VIOLATION, getPgErrorCode } from "../middleware/error-handler
 import { writeGuard } from "../middleware/guards.js";
 import { createRateLimiter } from "../middleware/rate-limit.js";
 import { validationHook } from "../middleware/validation.js";
+import { API_KEY_SECURITY, errorResponse, jsonResponse } from "../openapi.js";
 import {
   articleCheckQuerySchema,
+  articleCheckResponseSchema,
   articleCreateSchema,
+  articleDetailSchema,
   articleListQuerySchema,
+  articleListResponseSchema,
+  articleNeighborsResponseSchema,
 } from "../schemas/article.js";
 import { uuidParamSchema } from "../schemas/base.js";
 import {
@@ -25,6 +30,8 @@ import {
 } from "../services/article-service.js";
 import type { AppEnv } from "../types.js";
 
+const TAGS = ["Articles"];
+
 export function createArticlesRoute(db: DB): Hono<AppEnv> {
   const route = new Hono<AppEnv>();
 
@@ -32,7 +39,12 @@ export function createArticlesRoute(db: DB): Hono<AppEnv> {
   route.get(
     "/articles/check",
     createRateLimiter(100),
-    zValidator("query", articleCheckQuerySchema, (result, c) => {
+    describeRoute({
+      tags: TAGS,
+      summary: "Check whether an article URL is already stored",
+      responses: { 200: jsonResponse("Existence flag", articleCheckResponseSchema) },
+    }),
+    validator("query", articleCheckQuerySchema, (result, c) => {
       if (!result.success) {
         return c.json({ detail: "url query parameter is required" }, 422);
       }
@@ -48,7 +60,17 @@ export function createArticlesRoute(db: DB): Hono<AppEnv> {
   route.post(
     "/articles",
     ...writeGuard(30),
-    zValidator("json", articleCreateSchema, validationHook),
+    describeRoute({
+      tags: TAGS,
+      summary: "Store a processed article",
+      security: API_KEY_SECURITY,
+      responses: {
+        201: jsonResponse("Created article", articleDetailSchema),
+        401: errorResponse("Missing or invalid API key"),
+        409: errorResponse("An article with this source_url already exists"),
+      },
+    }),
+    validator("json", articleCreateSchema, validationHook),
     async (c) => {
       const data = c.req.valid("json");
       try {
@@ -67,7 +89,12 @@ export function createArticlesRoute(db: DB): Hono<AppEnv> {
   route.get(
     "/articles",
     createRateLimiter(200),
-    zValidator("query", articleListQuerySchema, validationHook),
+    describeRoute({
+      tags: TAGS,
+      summary: "List articles, newest first (summaries only)",
+      responses: { 200: jsonResponse("Paginated articles", articleListResponseSchema) },
+    }),
+    validator("query", articleListQuerySchema, validationHook),
     async (c) => {
       const { page, per_page, date, category } = c.req.valid("query");
       const { items, total } = await getArticles(db, page, per_page, date, category);
@@ -84,7 +111,15 @@ export function createArticlesRoute(db: DB): Hono<AppEnv> {
   route.get(
     "/articles/:article_id/neighbors",
     createRateLimiter(200),
-    zValidator("param", uuidParamSchema, validationHook),
+    describeRoute({
+      tags: TAGS,
+      summary: "Previous and next article by published date",
+      responses: {
+        200: jsonResponse("Neighbors", articleNeighborsResponseSchema),
+        404: errorResponse("Article not found"),
+      },
+    }),
+    validator("param", uuidParamSchema, validationHook),
     async (c) => {
       const { article_id: articleId } = c.req.valid("param");
       const neighbors = await getArticleNeighbors(db, articleId);
@@ -99,7 +134,15 @@ export function createArticlesRoute(db: DB): Hono<AppEnv> {
   route.get(
     "/articles/:article_id",
     createRateLimiter(200),
-    zValidator("param", uuidParamSchema, validationHook),
+    describeRoute({
+      tags: TAGS,
+      summary: "Article detail including original and translated bodies",
+      responses: {
+        200: jsonResponse("Article", articleDetailSchema),
+        404: errorResponse("Article not found"),
+      },
+    }),
+    validator("param", uuidParamSchema, validationHook),
     async (c) => {
       const { article_id: articleId } = c.req.valid("param");
       const article = await getArticleById(db, articleId);
