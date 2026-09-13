@@ -1,12 +1,18 @@
 # Deploy-only compose: pulls images from registry, no source code required on host.
+# It is intentionally standalone rather than an overlay on docker-compose.yml:
+# the base file bind-mounts ./db/init and ./db/ssl from a source checkout, and a
+# compose overlay can extend but not remove those mounts.
+#
 # Usage on deploy host:
 #   docker compose -f docker-compose.deploy.yml up -d
 #
-# Required .env keys: REGISTRY, POSTGRES_PASSWORD, NEWS_APP_PASSWORD, API_KEYS, CORS_ORIGINS
+# Required .env keys: REGISTRY, POSTGRES_PASSWORD, NEWS_APP_PASSWORD, API_KEYS, CORS_ORIGINS, PUBLIC_URL
+# Optional: API_IMAGE_TAG / FRONTEND_IMAGE_TAG — release versions pushed by the
+# release-images workflow (api and db share API_IMAGE_TAG); default latest.
 
 services:
   news-db:
-    image: ${REGISTRY:-registry.oshiire.to}/news-curator/db:latest
+    image: ${REGISTRY:-registry.oshiire.to}/news-curator/db:${API_IMAGE_TAG:-latest}
     pull_policy: always
     command:
       - "postgres"
@@ -46,7 +52,7 @@ services:
       - backend-net
 
   news-migrate:
-    image: ${REGISTRY:-registry.oshiire.to}/news-curator/api:latest
+    image: ${REGISTRY:-registry.oshiire.to}/news-curator/api:${API_IMAGE_TAG:-latest}
     pull_policy: always
     command: ["node", "dist/db/run-migrate.js"]
     environment:
@@ -62,7 +68,7 @@ services:
       - backend-net
 
   news-api:
-    image: ${REGISTRY:-registry.oshiire.to}/news-curator/api:latest
+    image: ${REGISTRY:-registry.oshiire.to}/news-curator/api:${API_IMAGE_TAG:-latest}
     pull_policy: always
     environment:
       DATABASE_URL: postgresql://news_app:${NEWS_APP_PASSWORD}@news-db:5432/news_curator?ssl=require
@@ -95,7 +101,7 @@ services:
       - backend-net
 
   news-frontend:
-    image: ${REGISTRY:-registry.oshiire.to}/news-curator/frontend:latest
+    image: ${REGISTRY:-registry.oshiire.to}/news-curator/frontend:${FRONTEND_IMAGE_TAG:-latest}
     pull_policy: always
     environment:
       API_URL: http://news-api:8100
