@@ -2,6 +2,7 @@ import { gt } from "drizzle-orm";
 import type { DB } from "../database.js";
 import { articles } from "../db/schema/index.js";
 import { rootLogger } from "../lib/logger.js";
+import { formatArticleListItem } from "../mappers/article.js";
 import { articleBroker } from "./sse-broker.js";
 
 const POLL_INTERVAL_MS = 5000;
@@ -10,11 +11,13 @@ const logger = rootLogger.child({ service: "article-monitor" });
 let monitorInterval: ReturnType<typeof setInterval> | null = null;
 let lastChecked = new Date();
 
-async function pollNewArticles(db: DB): Promise<void> {
+// Broadcast articles created after `since` and return the next cursor.
+// Errors are logged and the cursor is kept, so a transient DB failure never
+// stops the loop or skips articles.
+export async function pollNewArticles(db: DB, since: Date): Promise<Date> {
   if (articleBroker.clientCount === 0) {
-    // No clients connected: advance lastChecked to prevent flooding
-    lastChecked = new Date();
-    return;
+    // No clients connected: advance the cursor to avoid a flood on reconnect.
+    return new Date();
   }
 
   try {
@@ -32,29 +35,17 @@ async function pollNewArticles(db: DB): Promise<void> {
         createdAt: articles.createdAt,
       })
       .from(articles)
-      .where(gt(articles.createdAt, lastChecked))
+      .where(gt(articles.createdAt, since))
       .orderBy(articles.createdAt);
 
     for (const article of result) {
-      articleBroker.broadcast({
-        id: article.id,
-        source_url: article.sourceUrl,
-        source_name: article.sourceName ?? null,
-        title_ja: article.titleJa ?? null,
-        summary_ja: article.summaryJa ?? null,
-        author: article.author ?? null,
-        published_at: article.publishedAt?.toISOString() ?? null,
-        og_image_url: article.ogImageUrl ?? null,
-        categories: article.categories ?? null,
-        created_at: article.createdAt.toISOString(),
-      });
+      articleBroker.broadcast(formatArticleListItem(article));
     }
 
-    if (result.length > 0) {
-      lastChecked = result[result.length - 1].createdAt;
-    }
+    return result.length > 0 ? result[result.length - 1].createdAt : since;
   } catch (err) {
     logger.error({ err }, "polling error");
+    return since;
   }
 }
 
@@ -64,9 +55,13 @@ export function startMonitor(db: DB): void {
   }
   lastChecked = new Date();
   monitorInterval = setInterval(() => {
-    pollNewArticles(db).catch((err) => {
-      logger.error({ err }, "polling error");
-    });
+    pollNewArticles(db, lastChecked)
+      .then((next) => {
+        lastChecked = next;
+      })
+      .catch((err) => {
+        logger.error({ err }, "polling error");
+      });
   }, POLL_INTERVAL_MS);
 }
 
