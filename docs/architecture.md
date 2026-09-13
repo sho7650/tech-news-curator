@@ -28,7 +28,7 @@ Tech News Curator is a news aggregation system that collects, translates, and su
 - Article deduplication
 - Translation via Ollama
 - Summarization
-- Pushes processed articles to `POST /ingest`
+- Calls `POST /ingest` to extract content from URLs, then `POST /articles` to store processed articles
 
 ### news-api (Hono + Node.js)
 
@@ -68,7 +68,7 @@ api/src/
 │   ├── article-service.ts    Article CRUD operations
 │   ├── article-monitor.ts    Article change monitoring (SSE)
 │   ├── digest-service.ts     Digest generation
-│   ├── ingest-service.ts     Content extraction + storage
+│   ├── ingest-service.ts     Content extraction (@mozilla/readability + linkedom)
 │   ├── rss-service.ts        RSS feed generation
 │   ├── source-service.ts     Source management
 │   ├── sse-broker.ts         SSE client management
@@ -104,7 +104,7 @@ Client Request
 ## Key Design Decisions
 
 - **SSRF Protection**: Custom `url-validator.ts` + `safe-fetch.ts` validate all external URLs
-- **Copyright Compliance**: Public endpoints return `summary_ja` + source link only; `body_original` and `body_translated` are stored but excluded from public responses
+- **Content Response Fields**: Article detail endpoint returns all stored fields including `body_original` and `body_translated`; list endpoint and RSS feed return summaries only for payload size optimization
 - **SSE Architecture**: EventEmitter + Map-based client tracking via `sse-broker.ts`
 - **Error Handling**: Drizzle ORM wraps PG errors in `DrizzleQueryError`; use `getPgErrorCode()` to access error codes
 
