@@ -1,6 +1,7 @@
+import dns from "node:dns";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { IngestResponse } from "../src/schemas/ingest.js";
 import { extractArticle } from "../src/services/ingest-service.js";
 
@@ -64,6 +65,16 @@ const FIXTURE_CASES: FixtureCase[] = [
 ];
 
 describe("ingest E2E (fixture-based snapshot)", () => {
+  // og:image hosts in the fixtures are real CDNs; keep the suite offline-safe
+  // by answering every lookup with a public address.
+  beforeAll(() => {
+    vi.spyOn(dns.promises, "resolve4").mockResolvedValue(["93.184.216.34"]);
+  });
+
+  afterAll(() => {
+    vi.restoreAllMocks();
+  });
+
   for (const fixture of FIXTURE_CASES) {
     describe(`Article #${fixture.id}: ${fixture.label}`, () => {
       let result: IngestResponse | null;

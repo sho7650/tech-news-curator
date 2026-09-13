@@ -1,5 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { htmlToMarkdown, cleanArticleText } from "../src/services/ingest-service.js";
+import dns from "node:dns";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  cleanArticleText,
+  extractArticle,
+  htmlToMarkdown,
+} from "../src/services/ingest-service.js";
 
 describe("htmlToMarkdown", () => {
   it("should convert headings to atx style", () => {
@@ -181,8 +186,7 @@ describe("cleanArticleText", () => {
   });
 
   it("should not remove author-named paragraph in the middle of the article", () => {
-    const bio =
-      "Andrew is a Senior Technology Reporter at Ars Technica, covering smartphones.";
+    const bio = "Andrew is a Senior Technology Reporter at Ars Technica, covering smartphones.";
     const input = `First.\n\n${bio}\n\nThird.\n\nFourth.\n\nFifth.\n\nSixth.`;
     const result = cleanArticleText(input, { byline: "Andrew C" });
     expect(result).toBe(input);
@@ -249,8 +253,7 @@ describe("cleanArticleText", () => {
   // --- Leading metadata removal (Category C) ---
 
   it("should remove In Brief + Posted + timestamp", () => {
-    const input =
-      "In Brief\n\nPosted:\n\n2:07 PM PST · February 28, 2026\n\nArticle content here.";
+    const input = "In Brief\n\nPosted:\n\n2:07 PM PST · February 28, 2026\n\nArticle content here.";
     const result = cleanArticleText(input);
     expect(result).toBe("Article content here.");
   });
@@ -386,5 +389,67 @@ describe("cleanArticleText", () => {
     expect(result).toBe(
       "Main article content about the tech industry.\n\nMore article content with important details.",
     );
+  });
+});
+
+describe("extractArticle og:image validation", () => {
+  const paragraph =
+    "This is a sufficiently long paragraph of article text so that Readability treats the document as a real article. ".repeat(
+      8,
+    );
+
+  function pageWithOgImage(ogImage: string): string {
+    return `<!doctype html><html><head><title>Test Article</title>
+<meta property="og:image" content="${ogImage}">
+</head><body><article><h1>Test Article</h1><p>${paragraph}</p><p>${paragraph}</p></article></body></html>`;
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("should keep an og:image on a public host", async () => {
+    vi.spyOn(dns.promises, "resolve4").mockResolvedValue(["93.184.216.34"]);
+    const fetcher = vi.fn().mockResolvedValue(pageWithOgImage("https://cdn.example.com/a.jpg"));
+
+    const result = await extractArticle("https://example.com/post", fetcher);
+
+    expect(result?.og_image_url).toBe("https://cdn.example.com/a.jpg");
+  });
+
+  it("should null an og:image pointing at a link-local address", async () => {
+    const fetcher = vi.fn().mockResolvedValue(pageWithOgImage("http://169.254.169.254/x.png"));
+
+    const result = await extractArticle("https://example.com/post", fetcher);
+
+    expect(result).not.toBeNull();
+    expect(result?.og_image_url).toBeNull();
+  });
+
+  it("should null an og:image pointing at an IPv4-mapped loopback", async () => {
+    const fetcher = vi.fn().mockResolvedValue(pageWithOgImage("https://[::ffff:127.0.0.1]/x.png"));
+
+    const result = await extractArticle("https://example.com/post", fetcher);
+
+    expect(result?.og_image_url).toBeNull();
+  });
+
+  it("should null an og:image whose host resolves to a private address", async () => {
+    vi.spyOn(dns.promises, "resolve4").mockResolvedValue(["10.0.0.5"]);
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue(pageWithOgImage("https://internal.example.com/x.png"));
+
+    const result = await extractArticle("https://example.com/post", fetcher);
+
+    expect(result?.og_image_url).toBeNull();
+  });
+
+  it("should null an og:image with a non-http scheme", async () => {
+    const fetcher = vi.fn().mockResolvedValue(pageWithOgImage("ftp://cdn.example.com/a.jpg"));
+
+    const result = await extractArticle("https://example.com/post", fetcher);
+
+    expect(result?.og_image_url).toBeNull();
   });
 });
