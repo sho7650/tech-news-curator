@@ -104,13 +104,24 @@ jobs:
         working-directory: api
         run: npm ci
 
-      - name: Apply DB schema
+      # Run the same SQL migrations production applies (not drizzle-kit push)
+      # so the checked-in migration files are exercised on every CI run.
+      - name: Run DB migrations
         working-directory: api
-        run: |
-          npx drizzle-kit push
-          PGPASSWORD=testpassword psql -h localhost -U news -d news_curator -c "\dt" | grep -q articles || { echo "::error::Table 'articles' not found — drizzle-kit push likely failed silently"; exit 1; }
+        run: npm run db:migrate
         env:
           DATABASE_URL: postgresql://news:testpassword@localhost:5432/news_curator
+          DATABASE_ADMIN_URL: postgresql://news:testpassword@localhost:5432/news_curator
+
+      - name: Verify migrated schema
+        env:
+          PGPASSWORD: testpassword
+        run: |
+          psql -h localhost -U news -d news_curator -c "\dt" | grep -q articles \
+            || { echo "::error::Table 'articles' not found — migrations did not apply"; exit 1; }
+          psql -h localhost -U news -d news_curator -tAc \
+            "SELECT 1 FROM pg_indexes WHERE indexname = 'ix_articles_published_at_desc'" | grep -qx 1 \
+            || { echo "::error::Index 'ix_articles_published_at_desc' not found — migration 0001 did not apply"; exit 1; }
 
       - name: Start API server
         working-directory: api
