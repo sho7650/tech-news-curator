@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.14.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.14.0...tech-news-curator-api-v1.14.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* **api:** raise /ingest rate limit to 60 req/min ([d67f6bc](https://github.com/sho7650/tech-news-curator/commit/d67f6bcb45a3063c1b5ff724996b584df5a5e546))
+* **api:** raise /ingest rate limit to 60 req/min ([23a7ce4](https://github.com/sho7650/tech-news-curator/commit/23a7ce402630dd7294f462e51a4f12f5effc31a4))
+
 ## [1.14.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.13.1...tech-news-curator-api-v1.14.0) (2026-10-14)
 
 
