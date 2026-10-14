@@ -45,6 +45,8 @@ services:
       # Public frontend URL embedded in the RSS feed; production refuses localhost.
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:3100}
       FETCH_USER_AGENT: ${FETCH_USER_AGENT:-}
+      # CIDRs of reverse proxies allowed to set X-Real-IP / X-Forwarded-For; empty = trust none.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
     depends_on:
       news-db:
         condition: service_healthy

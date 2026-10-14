@@ -73,6 +73,8 @@ services:
       # Public frontend URL embedded in the RSS feed; required for deploy.
       PUBLIC_URL: ${PUBLIC_URL:?PUBLIC_URL must be set to the public frontend URL}
       FETCH_USER_AGENT: ${FETCH_USER_AGENT:-}
+      # CIDRs of reverse proxies allowed to set X-Real-IP / X-Forwarded-For; empty = trust none.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
     depends_on:
       news-db:
         condition: service_healthy
