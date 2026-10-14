@@ -6,6 +6,7 @@ import { rootLogger } from "../lib/logger.js";
 import type { IngestResponse } from "../schemas/ingest.js";
 import { safeFetch } from "./safe-fetch.js";
 import { cleanArticleText } from "./text-cleaner.js";
+import { UnsafeURLError, validateUrl } from "./url-validator.js";
 
 const NOISE_SELECTORS = ["figcaption", "aside", "nav", '[role="complementary"]', "figure"];
 
@@ -59,6 +60,22 @@ export function htmlToMarkdown(html: string): string {
 // Re-export for backwards compatibility with tests
 export { cleanArticleText } from "./text-cleaner.js";
 
+// The frontend image optimizer fetches og:image server-side, so it must pass
+// the same SSRF validation as the article URL. A rejected image is dropped;
+// it never fails the ingest.
+async function validateOgImage(raw: string | null, log: AppLogger): Promise<string | null> {
+  if (!raw || !/^https?:\/\//i.test(raw)) return null;
+  try {
+    return await validateUrl(raw);
+  } catch (err) {
+    if (err instanceof UnsafeURLError) {
+      log.warn({ ogImage: raw, reason: err.message }, "og:image rejected by SSRF validator");
+      return null;
+    }
+    throw err;
+  }
+}
+
 export async function extractArticle(
   url: string,
   fetcher: (url: string, logger?: AppLogger) => Promise<string | null> = safeFetch,
@@ -86,10 +103,9 @@ export async function extractArticle(
   const rawMd = article.content ? htmlToMarkdown(article.content) : null;
   const body = rawMd ? cleanArticleText(rawMd, { byline: article.byline ?? null }) : null;
 
-  // Extract og:image from meta tags (only allow http(s) URLs)
   const rawOgImage =
     document.querySelector('meta[property="og:image"]')?.getAttribute("content") ?? null;
-  const ogImage = rawOgImage && /^https?:\/\//i.test(rawOgImage) ? rawOgImage : null;
+  const ogImage = await validateOgImage(rawOgImage, log);
 
   // Extract published date from meta tags (validate as parseable date)
   const rawPublishedAt =

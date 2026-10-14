@@ -42,6 +42,9 @@ services:
       ENVIRONMENT: production
       API_KEYS: ${API_KEYS}
       CORS_ORIGINS: ${CORS_ORIGINS}
+      # Public frontend URL embedded in the RSS feed; production refuses localhost.
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:3100}
+      FETCH_USER_AGENT: ${FETCH_USER_AGENT:-}
     depends_on:
       news-db:
         condition: service_healthy

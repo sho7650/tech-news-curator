@@ -35,11 +35,16 @@ function loadConfig(): Config {
     environment,
     corsOrigins: parseCsv(corsOriginsRaw),
     apiKeys: parseCsv(apiKeysRaw),
-    publicUrl: process.env.PUBLIC_URL ?? "http://localhost:3100",
+    // `||` so an empty value passed through compose falls back to the default.
+    publicUrl: process.env.PUBLIC_URL || "http://localhost:3100",
     fetchUserAgent:
-      process.env.FETCH_USER_AGENT ??
+      process.env.FETCH_USER_AGENT ||
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
   };
+}
+
+function isLocalhost(value: string): boolean {
+  return value.includes("localhost") || value.includes("127.0.0.1");
 }
 
 export function validateProduction(config: Config): void {
@@ -56,11 +61,16 @@ export function validateProduction(config: Config): void {
     );
   }
   for (const origin of config.corsOrigins) {
-    if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+    if (isLocalhost(origin)) {
       throw new Error(
         `CORS origin '${origin}' contains localhost. Remove localhost origins in production.`,
       );
     }
+  }
+  if (isLocalhost(config.publicUrl)) {
+    throw new Error(
+      `PUBLIC_URL '${config.publicUrl}' points at localhost. Set PUBLIC_URL to the public frontend URL; it is embedded in the RSS feed.`,
+    );
   }
 }
 

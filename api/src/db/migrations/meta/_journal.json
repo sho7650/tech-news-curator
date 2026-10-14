@@ -8,6 +8,13 @@
       "when": 1775297427762,
       "tag": "0000_deep_tana_nile",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789283596473,
+      "tag": "0001_article_indexes",
+      "breakpoints": true
     }
   ]
 }

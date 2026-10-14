@@ -18,7 +18,14 @@ export const articles = pgTable(
     metadata: jsonb("metadata"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("ix_articles_published_at").on(table.publishedAt)],
+  (table) => [
+    // ASC serves the "next article" neighbor query; DESC NULLS LAST serves the
+    // list, RSS, related-articles, and "previous article" queries.
+    index("ix_articles_published_at").on(table.publishedAt),
+    index("ix_articles_published_at_desc").on(table.publishedAt.desc().nullsLast()),
+    // Polled every 5s by the SSE article monitor and used by the digest source query.
+    index("ix_articles_created_at").on(table.createdAt),
+  ],
 );
 
 export type Article = typeof articles.$inferSelect;
