@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.2](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.7.1...tech-news-curator-frontend-v0.7.2) (2026-10-14)
+
+
+### Bug Fixes
+
+* audit remediation phase 1 — SSRF bypass, dependency advisories, indexes, deploy config ([5c88cb7](https://github.com/sho7650/tech-news-curator/commit/5c88cb7c845bc0e756cd855d2cac9678c12aa1fb))
+
 ## [0.7.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.7.0...tech-news-curator-frontend-v0.7.1) (2026-06-11)
 
 
