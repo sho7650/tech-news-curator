@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.14.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.13.1...tech-news-curator-api-v1.14.0) (2026-10-14)
+
+
+### Features
+
+* **api:** serve an OpenAPI document generated from route schemas ([9561a9c](https://github.com/sho7650/tech-news-curator/commit/9561a9c74fc352d1adf435b80d35438532f9ffef))
+* **frontend:** derive API types from the OpenAPI document ([9561a9c](https://github.com/sho7650/tech-news-curator/commit/9561a9c74fc352d1adf435b80d35438532f9ffef))
+
+
+### Bug Fixes
+
+* **deps:** bump next to 16.4.0 and patch sharp and source-map-js ([9561a9c](https://github.com/sho7650/tech-news-curator/commit/9561a9c74fc352d1adf435b80d35438532f9ffef))
+* **frontend:** sync refs in effects instead of during render ([9561a9c](https://github.com/sho7650/tech-news-curator/commit/9561a9c74fc352d1adf435b80d35438532f9ffef))
+* **security:** trust proxy headers only from allowlisted peers ([9561a9c](https://github.com/sho7650/tech-news-curator/commit/9561a9c74fc352d1adf435b80d35438532f9ffef))
+
 ## [1.13.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.13.0...tech-news-curator-api-v1.13.1) (2026-10-14)
 
 
