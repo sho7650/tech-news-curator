@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.13.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.13.0...tech-news-curator-api-v1.13.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* audit remediation phase 1 — SSRF bypass, dependency advisories, indexes, deploy config ([5c88cb7](https://github.com/sho7650/tech-news-curator/commit/5c88cb7c845bc0e756cd855d2cac9678c12aa1fb))
+* **config:** wire PUBLIC_URL and FETCH_USER_AGENT into compose ([1d5ca30](https://github.com/sho7650/tech-news-curator/commit/1d5ca30d36c841afa922e02c2bae43c0a3fa5163))
+* **security:** block IPv4-mapped IPv6 addresses in SSRF guard ([a924dde](https://github.com/sho7650/tech-news-curator/commit/a924ddede7b566fbff1ccadcfdf28cb7993fe167))
+* **security:** keep :: and ::1 on native IPv6 classification ([7023a30](https://github.com/sho7650/tech-news-curator/commit/7023a300fbb9f000416cb1ba5f8fcd88273b79aa))
+* **security:** validate og:image URL through SSRF validator at ingest ([9ebd496](https://github.com/sho7650/tech-news-curator/commit/9ebd496fe5c14a99afece30f991a139077e6957c))
+
+
+### Performance
+
+* **db:** add published_at DESC and created_at indexes ([f9eba0a](https://github.com/sho7650/tech-news-curator/commit/f9eba0af41fa4b9cd3349a0f65299e00ca67c3af))
+
 ## [1.13.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-api-v1.12.0...tech-news-curator-api-v1.13.0) (2026-07-02)
 
 
