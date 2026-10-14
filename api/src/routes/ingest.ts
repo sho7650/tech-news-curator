@@ -17,7 +17,7 @@ export function createIngestRoute(extract: ExtractArticle = extractArticle): Hon
 
   route.post(
     "/ingest",
-    ...writeGuard(10),
+    ...writeGuard(60),
     describeRoute({
       tags: ["Ingest"],
       summary: "Fetch a URL and extract the article as Markdown (no storage)",
