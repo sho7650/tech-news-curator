@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { dateString, paginationQuery } from "./base.js";
+import { dateString, isoDateTime, paginatedSchema, paginationQuery } from "./base.js";
 
 export const articleCreateSchema = z
   .object({
@@ -25,57 +25,52 @@ export const articleListQuerySchema = paginationQuery.extend({
   category: z.string().max(50).optional(),
 });
 
-type ArticleListQuery = z.infer<typeof articleListQuerySchema>;
-
 export const articleCheckQuerySchema = z.object({
   url: z.string().url(),
 });
 
-export interface ArticleListItem {
-  id: string;
-  source_url: string;
-  source_name: string | null;
-  title_ja: string | null;
-  summary_ja: string | null;
-  author: string | null;
-  published_at: string | null;
-  og_image_url: string | null;
-  categories: string[] | null;
-  created_at: string;
-}
+export const articleCheckResponseSchema = z.object({
+  exists: z.boolean(),
+});
 
-export interface ArticleDetail {
-  id: string;
-  source_url: string;
-  source_name: string | null;
-  title_original: string | null;
-  title_ja: string | null;
-  body_original: string | null;
-  body_translated: string | null;
-  summary_ja: string | null;
-  author: string | null;
-  published_at: string | null;
-  og_image_url: string | null;
-  categories: string[] | null;
-  metadata: Record<string, unknown> | null; // matches Zod z.record(z.unknown())
-  created_at: string;
-}
+export const articleListItemSchema = z.object({
+  id: z.string().uuid(),
+  source_url: z.string(),
+  source_name: z.string().nullable(),
+  title_ja: z.string().nullable(),
+  summary_ja: z.string().nullable(),
+  author: z.string().nullable(),
+  published_at: isoDateTime.nullable(),
+  og_image_url: z.string().nullable(),
+  categories: z.array(z.string()).nullable(),
+  created_at: isoDateTime,
+});
 
-interface ArticleListResponse {
-  items: ArticleListItem[];
-  total: number;
-  page: number;
-  per_page: number;
-}
+export type ArticleListItem = z.infer<typeof articleListItemSchema>;
 
-export interface ArticleNeighborItem {
-  id: string;
-  title_ja: string | null;
-  og_image_url: string | null;
-  published_at: string | null;
-}
+export const articleListResponseSchema = paginatedSchema(articleListItemSchema);
 
-export interface ArticleNeighborsResponse {
-  prev: ArticleNeighborItem | null;
-  next: ArticleNeighborItem | null;
-}
+export const articleDetailSchema = articleListItemSchema.extend({
+  title_original: z.string().nullable(),
+  body_original: z.string().nullable(),
+  body_translated: z.string().nullable(),
+  metadata: z.record(z.unknown()).nullable(),
+});
+
+export type ArticleDetail = z.infer<typeof articleDetailSchema>;
+
+export const articleNeighborItemSchema = z.object({
+  id: z.string().uuid(),
+  title_ja: z.string().nullable(),
+  og_image_url: z.string().nullable(),
+  published_at: isoDateTime.nullable(),
+});
+
+export type ArticleNeighborItem = z.infer<typeof articleNeighborItemSchema>;
+
+export const articleNeighborsResponseSchema = z.object({
+  prev: articleNeighborItemSchema.nullable(),
+  next: articleNeighborItemSchema.nullable(),
+});
+
+export type ArticleNeighborsResponse = z.infer<typeof articleNeighborsResponseSchema>;

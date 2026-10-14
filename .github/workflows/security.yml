@@ -38,3 +38,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: docker build api/ -t news-api-test
       - run: docker build frontend/ -t news-frontend-test
+      # db/Dockerfile COPYs gitignored SSL certs; generate throwaway ones.
+      # sudo: the script chowns the key to the container's postgres UID.
+      - run: sudo bash db/ssl/generate-certs.sh
+      - run: docker build db/ -t news-db-test

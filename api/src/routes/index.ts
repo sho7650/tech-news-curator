@@ -1,7 +1,7 @@
-export { health } from "./health.js";
-export { ingestRoute } from "./ingest.js";
+export { createHealthRoute } from "./health.js";
+export { createIngestRoute, type ExtractArticle } from "./ingest.js";
 export { sseRoute } from "./sse.js";
-export { articlesRoute } from "./articles.js";
-export { digestRoute } from "./digest.js";
-export { sourcesRoute } from "./sources.js";
-export { feedRoute } from "./feed.js";
+export { createArticlesRoute } from "./articles.js";
+export { createDigestRoute } from "./digest.js";
+export { createSourcesRoute } from "./sources.js";
+export { createFeedRoute } from "./feed.js";

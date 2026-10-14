@@ -13,10 +13,13 @@ export class ConnectionLimitExceeded extends Error {
   }
 }
 
+// Any JSON-serializable object; the route stringifies it as the SSE payload.
+export type SSEEvent = object;
+
 interface ClientQueue {
   id: number;
-  events: Record<string, unknown>[];
-  resolve: ((value: Record<string, unknown>) => void) | null;
+  events: SSEEvent[];
+  resolve: ((value: SSEEvent) => void) | null;
 }
 
 export class SSEBroker {
@@ -40,7 +43,7 @@ export class SSEBroker {
     this.clients.delete(clientId);
   }
 
-  broadcast(event: Record<string, unknown>): void {
+  broadcast(event: SSEEvent): void {
     for (const [, client] of this.clients) {
       if (client.resolve) {
         // Client is waiting for an event
@@ -55,7 +58,7 @@ export class SSEBroker {
     }
   }
 
-  async waitForEvent(clientId: number, timeoutMs = 1000): Promise<Record<string, unknown> | null> {
+  async waitForEvent(clientId: number, timeoutMs = 1000): Promise<SSEEvent | null> {
     const client = this.clients.get(clientId);
     if (!client) return null;
 
@@ -65,7 +68,7 @@ export class SSEBroker {
     }
 
     // Wait for next event
-    return new Promise<Record<string, unknown> | null>((resolve) => {
+    return new Promise<SSEEvent | null>((resolve) => {
       const timer = setTimeout(() => {
         client.resolve = null;
         resolve(null);

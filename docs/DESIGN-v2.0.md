@@ -1,3 +1,5 @@
+> **Historical (Python/FastAPI era).** Superseded by the TypeScript implementation (Feb 2026). Kept for context; see [docs/README.md](README.md).
+
 # Phase 1.2 設計書 — セキュリティ強化・品質向上
 
 > **Version**: 2.1

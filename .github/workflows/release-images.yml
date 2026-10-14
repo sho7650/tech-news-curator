@@ -1,0 +1,138 @@
+# Build and push the Docker images for a release.
+#
+# Triggered by the tags release-please creates (see release-please-config.json:
+# component + "-v" + version), or manually via workflow_dispatch.
+#
+# Tag -> images:
+#   tech-news-curator-api-v*       -> api, db   (db ships with the api release)
+#   tech-news-curator-frontend-v*  -> frontend
+#   workflow_dispatch (version=X)  -> api, db, frontend
+#
+# Each image is pushed as <REGISTRY>/news-curator/<image>:<version> and :latest.
+#
+# Required repository configuration:
+#   vars.REGISTRY              registry host (+ optional namespace), e.g. ghcr.io/your-org
+#   secrets.REGISTRY_USERNAME  registry login
+#   secrets.REGISTRY_PASSWORD  registry password / token
+#   secrets.DB_SSL_CA_CRT      PEM contents baked into the db image (db/ssl/ is gitignored)
+#   secrets.DB_SSL_SERVER_CRT
+#   secrets.DB_SSL_SERVER_KEY
+name: Release Images
+
+on:
+  push:
+    tags:
+      - "tech-news-curator-api-v*"
+      - "tech-news-curator-frontend-v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to tag all images with (e.g. 1.13.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  # Deploy hosts are linux/amd64 (matches PLATFORM in the Makefile).
+  PLATFORM: linux/amd64
+
+jobs:
+  plan:
+    name: Resolve version and images
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      images: ${{ steps.plan.outputs.images }}
+      registry_host: ${{ steps.plan.outputs.registry_host }}
+    steps:
+      - name: Derive version and image list
+        id: plan
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          REGISTRY: ${{ vars.REGISTRY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$REGISTRY" ]; then
+            echo "::error::Repository variable REGISTRY is not set"; exit 1
+          fi
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            version="$INPUT_VERSION"
+            images='["api","db","frontend"]'
+          else
+            version="${REF_NAME##*-v}"
+            component="${REF_NAME#tech-news-curator-}"
+            component="${component%-v*}"
+            case "$component" in
+              api)      images='["api","db"]' ;;
+              frontend) images='["frontend"]' ;;
+              *) echo "::error::Unrecognised release tag: $REF_NAME"; exit 1 ;;
+            esac
+          fi
+
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.]+)?$'; then
+            echo "::error::Version '$version' is not semver"; exit 1
+          fi
+
+          {
+            echo "version=$version"
+            echo "images=$images"
+            echo "registry_host=${REGISTRY%%/*}"
+          } >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.image }}
+    needs: plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJSON(needs.plan.outputs.images) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # db/Dockerfile COPYs the SSL material, which is gitignored.
+      - name: Materialize DB SSL certificates
+        if: matrix.image == 'db'
+        env:
+          CA_CRT: ${{ secrets.DB_SSL_CA_CRT }}
+          SERVER_CRT: ${{ secrets.DB_SSL_SERVER_CRT }}
+          SERVER_KEY: ${{ secrets.DB_SSL_SERVER_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CA_CRT" ] || [ -z "$SERVER_CRT" ] || [ -z "$SERVER_KEY" ]; then
+            echo "::error::DB_SSL_CA_CRT, DB_SSL_SERVER_CRT and DB_SSL_SERVER_KEY secrets are required"; exit 1
+          fi
+          printf '%s\n' "$CA_CRT"     > db/ssl/ca.crt
+          printf '%s\n' "$SERVER_CRT" > db/ssl/server.crt
+          printf '%s\n' "$SERVER_KEY" > db/ssl/server.key
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ needs.plan.outputs.registry_host }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.image }}
+          platforms: ${{ env.PLATFORM }}
+          push: true
+          tags: |
+            ${{ vars.REGISTRY }}/news-curator/${{ matrix.image }}:${{ needs.plan.outputs.version }}
+            ${{ vars.REGISTRY }}/news-curator/${{ matrix.image }}:latest
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,scope=${{ matrix.image }},mode=max

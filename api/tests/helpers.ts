@@ -1,31 +1,22 @@
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { config } from "../src/config.js";
-import { errorHandler } from "../src/middleware/error-handler.js";
+import { expect } from "vitest";
 import { setRateLimitEnabled } from "../src/middleware/rate-limit.js";
-import { securityHeaders } from "../src/middleware/security-headers.js";
+import { articleBroker } from "../src/services/sse-broker.js";
 
 // Disable rate limiting in tests
 setRateLimitEnabled(false);
 
-// Set test API key
-config.apiKeys = ["test-key-for-testing"];
-
+// Must match API_KEYS set in setup.ts before config loads.
 export const TEST_API_KEY = "test-key-for-testing";
 
-export function createTestApp(): Hono {
-  const app = new Hono();
-  app.onError(errorHandler);
-  app.use(
-    "*",
-    cors({
-      origin: ["http://localhost:3100"],
-      allowMethods: ["GET", "POST", "PUT", "DELETE"],
-      allowHeaders: ["Content-Type", "Accept", "X-API-Key"],
-    }),
-  );
-  app.use("*", securityHeaders);
-  return app;
+// The SSE route unsubscribes in a finally block after its 1s wait loop notices
+// the abort, so tests that open a stream must drain the shared broker before
+// another test reasons about its client count.
+export async function waitForBrokerDrain(timeoutMs = 3000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (articleBroker.clientCount > 0 && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  expect(articleBroker.clientCount).toBe(0);
 }
 
 export function jsonHeaders(): Record<string, string> {

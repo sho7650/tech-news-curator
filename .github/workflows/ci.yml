@@ -41,6 +41,14 @@ jobs:
         working-directory: api
         run: npm test
 
+      # openapi.json is committed so the frontend types can be generated from
+      # it; fail if a route change was not exported.
+      - name: Check OpenAPI document is up to date
+        working-directory: api
+        run: |
+          npm run openapi:export
+          git diff --exit-code openapi.json
+
   frontend-lint:
     name: Frontend Lint
     runs-on: ubuntu-latest
@@ -63,6 +71,12 @@ jobs:
       - name: Lint
         working-directory: frontend
         run: npm run lint
+
+      - name: Check generated API types are up to date
+        working-directory: frontend
+        run: |
+          npm run types:generate
+          git diff --exit-code src/lib/api-types.ts
 
       - name: Type check
         working-directory: frontend
@@ -104,13 +118,24 @@ jobs:
         working-directory: api
         run: npm ci
 
-      - name: Apply DB schema
+      # Run the same SQL migrations production applies (not drizzle-kit push)
+      # so the checked-in migration files are exercised on every CI run.
+      - name: Run DB migrations
         working-directory: api
-        run: |
-          npx drizzle-kit push
-          PGPASSWORD=testpassword psql -h localhost -U news -d news_curator -c "\dt" | grep -q articles || { echo "::error::Table 'articles' not found — drizzle-kit push likely failed silently"; exit 1; }
+        run: npm run db:migrate
         env:
           DATABASE_URL: postgresql://news:testpassword@localhost:5432/news_curator
+          DATABASE_ADMIN_URL: postgresql://news:testpassword@localhost:5432/news_curator
+
+      - name: Verify migrated schema
+        env:
+          PGPASSWORD: testpassword
+        run: |
+          psql -h localhost -U news -d news_curator -c "\dt" | grep -q articles \
+            || { echo "::error::Table 'articles' not found — migrations did not apply"; exit 1; }
+          psql -h localhost -U news -d news_curator -tAc \
+            "SELECT 1 FROM pg_indexes WHERE indexname = 'ix_articles_published_at_desc'" | grep -qx 1 \
+            || { echo "::error::Index 'ix_articles_published_at_desc' not found — migration 0001 did not apply"; exit 1; }
 
       - name: Start API server
         working-directory: api

@@ -1,23 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { zValidator } from "@hono/zod-validator";
+import { describe, expect, it } from "vitest";
+import { createApp } from "../src/app.js";
+import { jsonHeaders } from "./helpers.js";
 import { getTestDb } from "./setup.js";
-import { createTestApp, jsonHeaders, TEST_API_KEY } from "./helpers.js";
-import { verifyApiKey } from "../src/middleware/auth.js";
-import { getPgErrorCode } from "../src/middleware/error-handler.js";
-import {
-  articleCheckQuerySchema,
-  articleCreateSchema,
-  articleListQuerySchema,
-  type ArticleDetail,
-  type ArticleListItem,
-} from "../src/schemas/article.js";
-import {
-  checkArticleExists,
-  createArticle,
-  getArticleById,
-  getArticleNeighbors,
-  getArticles,
-} from "../src/services/article-service.js";
 
 const SAMPLE_ARTICLE = {
   source_url: "https://example.com/article-1",
@@ -34,116 +18,8 @@ const SAMPLE_ARTICLE = {
   metadata: { source_feed: "main" },
 };
 
-function formatArticleListItem(article: any): ArticleListItem {
-  return {
-    id: article.id,
-    source_url: article.sourceUrl,
-    source_name: article.sourceName ?? null,
-    title_ja: article.titleJa ?? null,
-    summary_ja: article.summaryJa ?? null,
-    author: article.author ?? null,
-    published_at: article.publishedAt?.toISOString() ?? null,
-    og_image_url: article.ogImageUrl ?? null,
-    categories: article.categories ?? null,
-    created_at: article.createdAt.toISOString(),
-  };
-}
-
-function formatArticleDetail(article: any): ArticleDetail {
-  return {
-    id: article.id,
-    source_url: article.sourceUrl,
-    source_name: article.sourceName ?? null,
-    title_original: article.titleOriginal ?? null,
-    title_ja: article.titleJa ?? null,
-    body_original: article.bodyOriginal ?? null,
-    body_translated: article.bodyTranslated ?? null,
-    summary_ja: article.summaryJa ?? null,
-    author: article.author ?? null,
-    published_at: article.publishedAt?.toISOString() ?? null,
-    og_image_url: article.ogImageUrl ?? null,
-    categories: article.categories ?? null,
-    metadata: article.metadata ?? null,
-    created_at: article.createdAt.toISOString(),
-  };
-}
-
 function buildApp() {
-  const app = createTestApp();
-  const db = getTestDb();
-
-  app.get(
-    "/articles/check",
-    zValidator("query", articleCheckQuerySchema, (result, c) => {
-      if (!result.success) return c.json({ detail: "url query parameter is required" }, 422);
-    }),
-    async (c) => {
-      const { url } = c.req.valid("query");
-      const exists = await checkArticleExists(db, url);
-      return c.json({ exists });
-    },
-  );
-
-  app.post(
-    "/articles",
-    verifyApiKey,
-    zValidator("json", articleCreateSchema, (result, c) => {
-      if (!result.success) return c.json({ detail: result.error.errors }, 422);
-    }),
-    async (c) => {
-      const data = c.req.valid("json");
-      try {
-        const article = await createArticle(db, data);
-        return c.json(formatArticleDetail(article), 201);
-      } catch (err) {
-        if (getPgErrorCode(err) === "23505") {
-          return c.json({ detail: "Article with this URL already exists" }, 409);
-        }
-        throw err;
-      }
-    },
-  );
-
-  app.get(
-    "/articles",
-    zValidator("query", articleListQuerySchema, (result, c) => {
-      if (!result.success) return c.json({ detail: result.error.errors }, 422);
-    }),
-    async (c) => {
-      const { page, per_page, date, category } = c.req.valid("query");
-      if (date) {
-        const parsed = new Date(`${date}T00:00:00Z`);
-        if (Number.isNaN(parsed.getTime())) {
-          return c.json({ detail: `Invalid date: ${date}` }, 400);
-        }
-      }
-      const { items, total } = await getArticles(db, page, per_page, date, category);
-      return c.json({ items: items.map(formatArticleListItem), total, page, per_page });
-    },
-  );
-
-  app.get("/articles/:article_id/neighbors", async (c) => {
-    const articleId = c.req.param("article_id");
-    const neighbors = await getArticleNeighbors(db, articleId);
-    if (!neighbors) return c.json({ detail: "Article not found" }, 404);
-    return c.json({
-      prev: neighbors.prev
-        ? { id: neighbors.prev.id, title_ja: neighbors.prev.titleJa, og_image_url: neighbors.prev.ogImageUrl, published_at: neighbors.prev.publishedAt?.toISOString() ?? null }
-        : null,
-      next: neighbors.next
-        ? { id: neighbors.next.id, title_ja: neighbors.next.titleJa, og_image_url: neighbors.next.ogImageUrl, published_at: neighbors.next.publishedAt?.toISOString() ?? null }
-        : null,
-    });
-  });
-
-  app.get("/articles/:article_id", async (c) => {
-    const articleId = c.req.param("article_id");
-    const article = await getArticleById(db, articleId);
-    if (!article) return c.json({ detail: "Article not found" }, 404);
-    return c.json(formatArticleDetail(article));
-  });
-
-  return app;
+  return createApp(getTestDb());
 }
 
 describe("Articles API", () => {
@@ -195,9 +71,7 @@ describe("Articles API", () => {
 
   it("should check article not exists", async () => {
     const app = buildApp();
-    const res = await app.request(
-      "/articles/check?url=https://nonexistent.example.com",
-    );
+    const res = await app.request("/articles/check?url=https://nonexistent.example.com");
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.exists).toBe(false);
@@ -225,11 +99,27 @@ describe("Articles API", () => {
 
   it("should filter articles by date", async () => {
     const app = buildApp();
-    const article1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/jan15", published_at: "2026-01-15T10:00:00Z" };
-    const article2 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/jan16", published_at: "2026-01-16T10:00:00Z" };
+    const article1 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/jan15",
+      published_at: "2026-01-15T10:00:00Z",
+    };
+    const article2 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/jan16",
+      published_at: "2026-01-16T10:00:00Z",
+    };
 
-    await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(article1) });
-    await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(article2) });
+    await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(article1),
+    });
+    await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(article2),
+    });
 
     const res = await app.request("/articles?date=2026-01-15");
     expect(res.status).toBe(200);
@@ -332,11 +222,27 @@ describe("Articles API", () => {
 
   it("should filter articles by category", async () => {
     const app = buildApp();
-    const articleAi = { ...SAMPLE_ARTICLE, source_url: "https://example.com/ai-article", categories: ["AI", "Startups"] };
-    const articleHw = { ...SAMPLE_ARTICLE, source_url: "https://example.com/hw-article", categories: ["Hardware"] };
+    const articleAi = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/ai-article",
+      categories: ["AI", "Startups"],
+    };
+    const articleHw = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/hw-article",
+      categories: ["Hardware"],
+    };
 
-    await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(articleAi) });
-    await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(articleHw) });
+    await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(articleAi),
+    });
+    await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(articleHw),
+    });
 
     const res = await app.request("/articles?category=AI");
     expect(res.status).toBe(200);
@@ -362,13 +268,40 @@ describe("Articles API", () => {
 
   it("should filter by both category and date", async () => {
     const app = buildApp();
-    const article1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/ai-jan15", categories: ["AI"], published_at: "2026-01-15T10:00:00Z" };
-    const article2 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/ai-jan16", categories: ["AI"], published_at: "2026-01-16T10:00:00Z" };
-    const article3 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/hw-jan15", categories: ["Hardware"], published_at: "2026-01-15T10:00:00Z" };
+    const article1 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/ai-jan15",
+      categories: ["AI"],
+      published_at: "2026-01-15T10:00:00Z",
+    };
+    const article2 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/ai-jan16",
+      categories: ["AI"],
+      published_at: "2026-01-16T10:00:00Z",
+    };
+    const article3 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/hw-jan15",
+      categories: ["Hardware"],
+      published_at: "2026-01-15T10:00:00Z",
+    };
 
-    await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(article1) });
-    await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(article2) });
-    await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(article3) });
+    await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(article1),
+    });
+    await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(article2),
+    });
+    await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(article3),
+    });
 
     const res = await app.request("/articles?category=AI&date=2026-01-15");
     expect(res.status).toBe(200);
@@ -381,13 +314,37 @@ describe("Articles API", () => {
 describe("Article Neighbors API", () => {
   it("should return prev and next neighbors", async () => {
     const app = buildApp();
-    const a1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n1", published_at: "2026-01-10T10:00:00Z" };
-    const a2 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n2", published_at: "2026-01-11T10:00:00Z" };
-    const a3 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n3", published_at: "2026-01-12T10:00:00Z" };
+    const a1 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/n1",
+      published_at: "2026-01-10T10:00:00Z",
+    };
+    const a2 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/n2",
+      published_at: "2026-01-11T10:00:00Z",
+    };
+    const a3 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/n3",
+      published_at: "2026-01-12T10:00:00Z",
+    };
 
-    const r1 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
-    const r2 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a2) });
-    const r3 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a3) });
+    const r1 = await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a1),
+    });
+    const r2 = await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a2),
+    });
+    const r3 = await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a3),
+    });
     const { id: id1 } = await r1.json();
     const { id: id2 } = await r2.json();
     const { id: id3 } = await r3.json();
@@ -402,11 +359,27 @@ describe("Article Neighbors API", () => {
 
   it("should return null next for newest article", async () => {
     const app = buildApp();
-    const a1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n1", published_at: "2026-01-10T10:00:00Z" };
-    const a2 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n2", published_at: "2026-01-11T10:00:00Z" };
+    const a1 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/n1",
+      published_at: "2026-01-10T10:00:00Z",
+    };
+    const a2 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/n2",
+      published_at: "2026-01-11T10:00:00Z",
+    };
 
-    await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
-    const r2 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a2) });
+    await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a1),
+    });
+    const r2 = await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a2),
+    });
     const { id: id2 } = await r2.json();
 
     const res = await app.request(`/articles/${id2}/neighbors`);
@@ -418,11 +391,27 @@ describe("Article Neighbors API", () => {
 
   it("should return null prev for oldest article", async () => {
     const app = buildApp();
-    const a1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n1", published_at: "2026-01-10T10:00:00Z" };
-    const a2 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n2", published_at: "2026-01-11T10:00:00Z" };
+    const a1 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/n1",
+      published_at: "2026-01-10T10:00:00Z",
+    };
+    const a2 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/n2",
+      published_at: "2026-01-11T10:00:00Z",
+    };
 
-    const r1 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
-    await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a2) });
+    const r1 = await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a1),
+    });
+    await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a2),
+    });
     const { id: id1 } = await r1.json();
 
     const res = await app.request(`/articles/${id1}/neighbors`);
@@ -443,7 +432,11 @@ describe("Article Neighbors API", () => {
     const app = buildApp();
     const a1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n1", published_at: undefined };
 
-    const r1 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
+    const r1 = await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a1),
+    });
     const { id: id1 } = await r1.json();
 
     const res = await app.request(`/articles/${id1}/neighbors`);
@@ -455,9 +448,17 @@ describe("Article Neighbors API", () => {
 
   it("should return both null when only one article exists", async () => {
     const app = buildApp();
-    const a1 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/n1", published_at: "2026-01-10T10:00:00Z" };
+    const a1 = {
+      ...SAMPLE_ARTICLE,
+      source_url: "https://example.com/n1",
+      published_at: "2026-01-10T10:00:00Z",
+    };
 
-    const r1 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
+    const r1 = await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a1),
+    });
     const { id: id1 } = await r1.json();
 
     const res = await app.request(`/articles/${id1}/neighbors`);
@@ -475,9 +476,21 @@ describe("Article Neighbors API", () => {
     const a2 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/t2", published_at: sameTime };
     const a3 = { ...SAMPLE_ARTICLE, source_url: "https://example.com/t3", published_at: sameTime };
 
-    const r1 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a1) });
-    const r2 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a2) });
-    const r3 = await app.request("/articles", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(a3) });
+    const r1 = await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a1),
+    });
+    const r2 = await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a2),
+    });
+    const r3 = await app.request("/articles", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(a3),
+    });
     const { id: id1 } = await r1.json();
     const { id: id2 } = await r2.json();
     const { id: id3 } = await r3.json();

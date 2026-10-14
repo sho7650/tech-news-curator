@@ -1,3 +1,5 @@
+> **Historical (Python/FastAPI era).** Superseded by the TypeScript implementation (Feb 2026). Kept for context; see [docs/README.md](README.md).
+
 # 実装ワークフロー: GitHub 公開前セキュリティ・品質修正
 
 設計書: `docs/SECURITY-FIXES.md` (v1.0)
