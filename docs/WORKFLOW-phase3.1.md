@@ -1,3 +1,5 @@
+> **Historical (Python/FastAPI era).** Superseded by the TypeScript implementation (Feb 2026). Kept for context; see [docs/README.md](README.md).
+
 # Phase 3.1 Implementation Workflow — OAuth認証
 
 > **Generated**: 2026-02-19

@@ -1,5 +1,7 @@
 // Suppress log output during tests
 process.env.LOG_LEVEL = "silent";
+// Set before any module imports config so the singleton is never mutated.
+process.env.API_KEYS = "test-key-for-testing";
 
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { drizzle } from "drizzle-orm/postgres-js";

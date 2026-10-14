@@ -6,6 +6,7 @@ interface Config {
   apiKeys: string[];
   publicUrl: string;
   fetchUserAgent: string;
+  trustedProxies: string[];
 }
 
 function parseCsv(value: string): string[] {
@@ -40,6 +41,8 @@ function loadConfig(): Config {
     fetchUserAgent:
       process.env.FETCH_USER_AGENT ||
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    // CIDRs of reverse proxies whose forwarding headers the rate limiter may trust.
+    trustedProxies: parseCsv(process.env.TRUSTED_PROXIES ?? ""),
   };
 }
 

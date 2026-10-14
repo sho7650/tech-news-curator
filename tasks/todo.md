@@ -1,70 +1,36 @@
-# Deploy From Registry — Single-File Compose
+# Audit Remediation Plan — tech-news-curator
 
-**Branch**: `feat/deploy-from-registry` (from `main`)
-**Goal**: dev ホストにソースコードを置かず、registry から pull した image だけで `docker compose up -d` 一発起動できる構成を追加する
+Source: audit at commit 6855e0b (2026-09-13). Three phases, one feature branch each,
+stacked: fix/audit-phase1-security-perf → docs/audit-phase2-cleanup → refactor/audit-phase3-structure.
 
----
+## Phase 1 — This week (critical/high)  · branch `fix/audit-phase1-security-perf` · DONE
+- [x] 1.1 SSRF IPv4-mapped bypass: `ipaddr.process()` unwrap, IPv4-compatible unwrap, transition ranges blocked; 17 validator tests
+- [x] 1.2 og:image validated through `validateUrl()` at ingest (rejection nulls the field); fixture tests mock DNS
+- [x] 1.3 hono 4.13.7 / @hono/node-server 1.19.17; next 16.3.5; frontend audit job in CI; API audit threshold moderate
+- [x] 1.4 `ix_articles_published_at_desc` (DESC NULLS LAST) + `ix_articles_created_at` via drizzle-kit migration 0001
+- [x] 1.5 PUBLIC_URL / FETCH_USER_AGENT wired into both compose files; production rejects localhost PUBLIC_URL
+- [x] Code review fix: `::` / `::1` keep native classification; zone IDs documented
+- [ ] `.env.example`: add FETCH_USER_AGENT, TRUSTED_PROXIES; dedupe REGISTRY; drop PUBLIC_API_URL — **blocked: file denied by tool permissions, needs manual edit**
 
-## Phase 1: DB image の独立化
+## Phase 2 — Quick wins  · branch `docs/audit-phase2-cleanup` · DONE
+- [x] READMEs rewritten for the TypeScript stack (full endpoint table, API key note, env vars)
+- [x] docs/architecture.md: three factual corrections
+- [x] Stale files removed (tools/.gitkeep ×2, zap-config.conf, `make zap-scan`); tasks/todo.md now holds this plan
+- [x] security.yml: duplicate lint/test jobs removed; Biome lint moved into ci.yml (it was the only lint in CI)
+- [x] Rate limiter: forwarding headers trusted only from `TRUSTED_PROXIES` CIDRs; keyed on socket address otherwise
+- [ ] `.env.example` dedupe — blocked (see above)
 
-- [x] **1.1** `db/.dockerignore` 作成 — `ca.key`, `generate-certs.sh` を除外
-- [x] **1.2** `db/Dockerfile` 作成 — postgres:16.11 ベース、init scripts と SSL 証明書を焼き込み
+## Phase 3 — Structural  · branch `refactor/audit-phase3-structure` · DONE
+1. [x] Route factories + `createApp(db)` + `src/mappers/`; every HTTP test mounts the real app; SSE route, pollNewArticles, and app wiring tests added
+2. [x] OpenAPI 3.1 from zod via hono-openapi at `GET /openapi.json`; `npm run openapi:export` → `api/openapi.json`; frontend `npm run types:generate` → `src/lib/api-types.ts`; `types.ts` aliases generated types
+3. [x] `release-images.yml`: tag-triggered build + push of api/db/frontend under release version and latest
+4. [x] CI E2E job runs `npm run db:migrate` and asserts the 0001 index; docker-build job builds the db image
+5. [x] Deploy compose kept standalone (base bind-mounts source; overlays cannot remove mounts) — instead `API_IMAGE_TAG` / `FRONTEND_IMAGE_TAG` pin release versions
+6. [x] Middleware grouping via `writeGuard(limit)` (rate limit + API key pair in one place); per-route order preserved
+7. [x] `docs/README.md` index, superseded banners on 17 Python-era docs, ADR-002 for the migration
 
-## Phase 2: 単一 deploy compose
-
-- [x] **2.1** `docker-compose.deploy.yml` 作成
-  - 全 service を `image:` 参照のみ（build 無し）
-  - `pull_policy: always`
-  - `news-migrate` を one-shot サービスとして追加
-  - `depends_on` で db→migrate→api→frontend をチェーン
-  - prod 相当の resource limit / port mapping を内包
-
-## Phase 3: Makefile 更新
-
-- [x] **3.1** `build-db` ターゲット追加
-- [x] **3.2** `build` ターゲットに db を含める
-- [x] **3.3** `push` ターゲットに db image push を追加
-- [x] **3.4** `deploy-pull` / `deploy-up` ターゲット追加（dev ホスト用）
-
-## Phase 4: ドキュメント
-
-- [x] **4.1** `docs/runbooks/release-process.md` 更新 — registry deploy 手順を追記
-- [x] **4.2** README に deploy 手順への参照を追加（必要なら）
-
-## Phase 5: 検証
-
-- [x] **5.1** ローカルで `docker compose -f docker-compose.deploy.yml config` が通る
-- [x] **5.2** db Dockerfile の build が通る
-- [x] **5.3** Commit
-
----
-
-## Files Changed
-
-| Action | File |
-|--------|------|
-| **NEW** | `db/.dockerignore` |
-| **NEW** | `db/Dockerfile` |
-| **NEW** | `docker-compose.deploy.yml` |
-| MODIFY | `Makefile` |
-| MODIFY | `docs/runbooks/release-process.md` |
-
----
-
-## Review
-
-### What was built
-- `db/Dockerfile` (+ `.dockerignore`) — postgres:16.11 with init scripts and SSL certs baked in. `ca.key` and `generate-certs.sh` are excluded from the image.
-- `docker-compose.deploy.yml` — single compose file with no `build:` directives; pulls all 3 images with `pull_policy: always`. Includes `news-migrate` as a one-shot service that runs `node dist/run-migrate.js` and exits, gating `news-api` startup via `service_completed_successfully`.
-- `Makefile` — added `build-db`, `deploy-pull`, `deploy-up`, `deploy-down` targets. `build` and `push` now include the db image.
-- `docs/runbooks/release-process.md` — documented the registry-pull deploy flow.
-
-### Verified
-- `docker compose -f docker-compose.deploy.yml config` produces valid output.
-- `docker build ./db` succeeds. The resulting image contains init scripts and the 3 expected SSL files (no CA key).
-
-### Deploy host workflow
-```
-docker-compose.deploy.yml + .env  →  make deploy-pull && make deploy-up
-```
-Chain: db (healthy) → migrate (exits 0) → api (healthy) → frontend.
+## Follow-ups (not in scope of the audit plan)
+- [ ] Add Vitest unit tests for frontend `lib/` helpers (audit MEDIUM)
+- [ ] Redo Phase 3.1 auth design for TypeScript (jose / arctic) — see docs/README.md
+- [ ] Consider moving extraction to a worker thread if ingest volume grows
+- [ ] Configure repo variable `REGISTRY` and secrets `REGISTRY_USERNAME`, `REGISTRY_PASSWORD`, `DB_SSL_*` for release-images.yml

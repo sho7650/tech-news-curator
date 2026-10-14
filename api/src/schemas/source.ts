@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { paginationQuery } from "./base.js";
+import { isoDateTime, paginatedSchema, paginationQuery } from "./base.js";
 
 export const sourceCreateSchema = z
   .object({
@@ -40,12 +40,16 @@ export const sourceListQuerySchema = paginationQuery.extend({
     .default("false"),
 });
 
-export interface SourceResponse {
-  id: string;
-  name: string | null;
-  rss_url: string;
-  site_url: string | null;
-  category: string | null;
-  is_active: boolean;
-  created_at: string;
-}
+export const sourceResponseSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().nullable(),
+  rss_url: z.string(),
+  site_url: z.string().nullable(),
+  category: z.string().nullable(),
+  is_active: z.boolean(),
+  created_at: isoDateTime,
+});
+
+export type SourceResponse = z.infer<typeof sourceResponseSchema>;
+
+export const sourceListResponseSchema = paginatedSchema(sourceResponseSchema);

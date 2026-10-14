@@ -58,9 +58,12 @@ export default function ArticleListLive({
   const isLoadingRef = useRef(false)
   const hasMoreRef = useRef(initialArticles.length < total)
 
-  // category ref for stale closure avoidance
+  // category ref for stale closure avoidance; synced in an effect because
+  // refs must not be written during render (react-hooks/refs)
   const categoryRef = useRef(category)
-  categoryRef.current = category
+  useEffect(() => {
+    categoryRef.current = category
+  }, [category])
 
   // All client-side fetches use same-origin proxy (next.config.ts rewrites)
   // to avoid CORS issues regardless of browser origin
@@ -119,9 +122,12 @@ export default function ArticleListLive({
     }
   }, [perPage, apiBase])
 
-  // Stable ref so Observer never needs to re-subscribe
+  // Stable ref so Observer never needs to re-subscribe; synced in an effect
+  // (declared before the Observer effect so it runs first on each commit)
   const loadMoreRef = useRef(loadMore)
-  loadMoreRef.current = loadMore
+  useEffect(() => {
+    loadMoreRef.current = loadMore
+  }, [loadMore])
 
   // Intersection Observer for infinite scroll — set up once
   useEffect(() => {

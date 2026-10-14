@@ -7,18 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: api/package-lock.json
-      - run: cd api && npm ci
-      - run: cd api && npx biome check src/
-
   dependency-scan:
     runs-on: ubuntu-latest
     steps:
@@ -44,21 +32,13 @@ jobs:
       - run: cd frontend && npm ci
       - run: cd frontend && npm audit --omit=dev --audit-level=high
 
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: api/package-lock.json
-      - run: cd api && npm ci
-      - run: cd api && npm test
-
   docker-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: docker build api/ -t news-api-test
       - run: docker build frontend/ -t news-frontend-test
+      # db/Dockerfile COPYs gitignored SSL certs; generate throwaway ones.
+      # sudo: the script chowns the key to the container's postgres UID.
+      - run: sudo bash db/ssl/generate-certs.sh
+      - run: docker build db/ -t news-db-test

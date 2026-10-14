@@ -17,7 +17,8 @@ HTTP endpoint definitions using Hono's routing API.
 
 ## Conventions
 
-- Each route file exports a Hono app instance
-- Request validation uses `@hono/zod-validator` with schemas from `../schemas/`
+- Each route file exports a factory (`createXxxRoute(db)`) returning a Hono sub-app; `src/app.ts` mounts them
+- Request validation uses `validator` from `hono-openapi` with schemas from `../schemas/`; `describeRoute` on every handler feeds `GET /openapi.json`
+- Row-to-DTO formatting lives in `../mappers/`, never inline in a route
 - Routes delegate business logic to services — no DB queries in route handlers
 - All routes go through middleware stack: auth → rate-limit → security-headers

@@ -19,6 +19,18 @@ describe("loadConfig env fallbacks", () => {
     expect(config.fetchUserAgent).toMatch(/^Mozilla\/5\.0/);
   });
 
+  it("parses TRUSTED_PROXIES as a CSV list and defaults to empty", async () => {
+    vi.stubEnv("TRUSTED_PROXIES", "10.0.0.0/8, 172.16.0.0/12");
+    vi.resetModules();
+    const withProxies = await import("../src/config.js");
+    expect(withProxies.config.trustedProxies).toEqual(["10.0.0.0/8", "172.16.0.0/12"]);
+
+    vi.stubEnv("TRUSTED_PROXIES", "");
+    vi.resetModules();
+    const without = await import("../src/config.js");
+    expect(without.config.trustedProxies).toEqual([]);
+  });
+
   it("uses PUBLIC_URL and FETCH_USER_AGENT when set", async () => {
     vi.stubEnv("PUBLIC_URL", "https://news.example.com");
     vi.stubEnv("FETCH_USER_AGENT", "curator-bot/1.0");

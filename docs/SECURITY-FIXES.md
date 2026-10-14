@@ -1,3 +1,5 @@
+> **Historical (Python/FastAPI era).** Superseded by the TypeScript implementation (Feb 2026). Kept for context; see [docs/README.md](README.md).
+
 # 設計書: GitHub 公開前セキュリティ・品質修正 (v1.0)
 
 ## 概要
