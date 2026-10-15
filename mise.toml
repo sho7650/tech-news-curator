@@ -1,0 +1,5 @@
+# Node.js and pnpm come from flake.nix (loaded by direnv); mise must not manage
+# them here, or PATH order depends on shell hook order.
+# See docs/DESIGN-toolchain-modernization.md D8. Run `mise trust` once.
+[settings]
+disable_tools = ["node", "pnpm"]

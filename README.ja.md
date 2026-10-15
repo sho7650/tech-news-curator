@@ -26,7 +26,7 @@ Docker Compose
 
 | レイヤー | 技術 |
 |---------|------|
-| API | Node.js 22、Hono 4.x、Drizzle ORM、Zod |
+| API | Node.js 26、Hono 4.x、Drizzle ORM、Zod |
 | データベース | PostgreSQL 16、drizzle-kit（マイグレーション） |
 | コンテンツ抽出 | @mozilla/readability + linkedom |
 | フロントエンド | Next.js 16.3、React 19.2、TypeScript 5、Tailwind CSS 4 |
@@ -35,11 +35,11 @@ Docker Compose
 ## 必要要件
 
 - Docker & Docker Compose v2
-- Node.js 22 以上（Docker 外で開発する場合）— または [Nix 開発シェル](#nix-開発シェル任意)を使えばバージョンを自動で固定できます
+- Node.js 26（Docker 外で開発する場合）— または [Nix 開発シェル](#nix-開発シェル任意)を使えばバージョンを自動で固定できます
 
 ## Nix 開発シェル（任意）
 
-[Nix flake](flake.nix) が再現性のあるツールチェーン（Node 22 + `make`・`psql`・
+[Nix flake](flake.nix) が再現性のあるツールチェーン（Node 26 + pnpm 12 + `make`・`psql`・
 `git`・`jq`）を提供します。`nvm` は不要です。[direnv](https://direnv.net/) 利用時:
 
 ```bash
