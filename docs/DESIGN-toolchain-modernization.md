@@ -1,6 +1,6 @@
 # Toolchain Modernization Design (Node.js 26 / pnpm 12 / TypeScript 7)
 
-**Version**: 1.10
+**Version**: 1.11
 **Status**: Approved
 **Date**: 2026-10-15
 **ADR**: [ADR-003](decisions/ADR-003-toolchain-nix-pnpm-split-typescript.md)
@@ -85,6 +85,7 @@
 | D21 | PR2 で api の tsconfig から `declaration` / `declarationMap` を削除 | `noEmit` + tsup `dts: false` のため何も出力しない設定。pnpm の非 hoist 構成では推論型が `.pnpm/` 内を参照して `TS2742` になる（§10） |
 | D22 | PR1 で frontend の production ステージに `ENV HOSTNAME=0.0.0.0` | Next standalone サーバーは `HOSTNAME` に bind し、Docker はそれをコンテナ ID に設定する。そのため `localhost:3000` 宛ての HEALTHCHECK が失敗し、**本番の frontend は現在 unhealthy**（2026-10-15 確認）。pnpm とは無関係の既存不具合 |
 | D23 | PR1 で api の dependencies に `zod-openapi`（`^4.2.4`）を明示的に追加 | hono-openapi が依存する `@standard-community/standard-openapi` は zod v3 のスキーマ変換に `zod-openapi` を使うが、**任意の peer 依存**として宣言しているだけ。旧 lock には残っていたが、Node 26 同梱の npm 11 で lock を更新すると入らなくなり、`/openapi.json` が 500 を返した（PR1 の実装中に確認、2026-10-15）。D20 と同じく「使っているのに宣言していない依存」。PR2 の pnpm 化もこの明示的な宣言を前提にする |
+| D24 | PR1 で frontend の `@playwright/test` を `^1.63.0`（lock は 1.63.0）に上げる | Playwright 1.58.2 は Node 26 上でブラウザの zip 展開中に停止し、CI の E2E ジョブが「Install Playwright Browsers」で止まった（PR #67、2026-10-15）。ローカルの Node 26.11.1 でも再現。1.63.0 と 1.64.1 は正常にインストールできることを確認。公開から1日の 1.64.1 ではなく、1か月以上経つ 1.63.0 を選んだ |
 
 ## 4. PR1: Node.js 26
 
@@ -100,6 +101,7 @@
 | `frontend/Dockerfile` | `node:22.14.0-slim` → `node:26.x.y-slim`（全ステージ）。production に `ENV HOSTNAME=0.0.0.0`（D22） |
 | `api/tsup.config.ts` | `target: "node22"` → `"node26"` |
 | `api/package.json` | dependencies に `zod-openapi` を追加（D23） |
+| `frontend/package.json` | `@playwright/test` → `^1.63.0`（D24） |
 | `api/package.json` / `frontend/package.json` | `devEngines.runtime`、`@types/node` → `^26` |
 | `{api,frontend}/package-lock.json` | `@types/node` 変更後に `npm install` で更新 |
 | `.github/workflows/{ci,security}.yml` | `node-version: "22"` → `node-version-file: .node-version` |
