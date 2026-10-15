@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.8.0...tech-news-curator-frontend-v0.8.1) (2026-10-15)
+
+
+### Bug Fixes
+
+* **frontend:** bump Playwright to 1.63.0 for Node 26 ([cd97167](https://github.com/sho7650/tech-news-curator/commit/cd971679f8098f1c3f7794998b2198cd3178b401))
+
 ## [0.8.0](https://github.com/sho7650/tech-news-curator/compare/tech-news-curator-frontend-v0.7.2...tech-news-curator-frontend-v0.8.0) (2026-10-14)
 
 
