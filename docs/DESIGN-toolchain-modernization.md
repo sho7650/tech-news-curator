@@ -1,6 +1,6 @@
 # Toolchain Modernization Design (Node.js 26 / pnpm 12 / TypeScript 7)
 
-**Version**: 1.9
+**Version**: 1.10
 **Status**: Approved
 **Date**: 2026-10-15
 **ADR**: [ADR-003](decisions/ADR-003-toolchain-nix-pnpm-split-typescript.md)
@@ -84,6 +84,7 @@
 | D20 | PR2 で api の devDependencies に `openapi-types` を `pnpm add -D` で追加（lock にも反映） | `src/openapi.ts` が型 import しているが未宣言（phantom dependency）。npm では hoist で偶然見えていたが、pnpm では `TS2307` になる（§10） |
 | D21 | PR2 で api の tsconfig から `declaration` / `declarationMap` を削除 | `noEmit` + tsup `dts: false` のため何も出力しない設定。pnpm の非 hoist 構成では推論型が `.pnpm/` 内を参照して `TS2742` になる（§10） |
 | D22 | PR1 で frontend の production ステージに `ENV HOSTNAME=0.0.0.0` | Next standalone サーバーは `HOSTNAME` に bind し、Docker はそれをコンテナ ID に設定する。そのため `localhost:3000` 宛ての HEALTHCHECK が失敗し、**本番の frontend は現在 unhealthy**（2026-10-15 確認）。pnpm とは無関係の既存不具合 |
+| D23 | PR1 で api の dependencies に `zod-openapi`（`^4.2.4`）を明示的に追加 | hono-openapi が依存する `@standard-community/standard-openapi` は zod v3 のスキーマ変換に `zod-openapi` を使うが、**任意の peer 依存**として宣言しているだけ。旧 lock には残っていたが、Node 26 同梱の npm 11 で lock を更新すると入らなくなり、`/openapi.json` が 500 を返した（PR1 の実装中に確認、2026-10-15）。D20 と同じく「使っているのに宣言していない依存」。PR2 の pnpm 化もこの明示的な宣言を前提にする |
 
 ## 4. PR1: Node.js 26
 
@@ -98,6 +99,7 @@
 | `api/Dockerfile` | `node:22-slim` → `node:26.x.y-slim`（全ステージ） |
 | `frontend/Dockerfile` | `node:22.14.0-slim` → `node:26.x.y-slim`（全ステージ）。production に `ENV HOSTNAME=0.0.0.0`（D22） |
 | `api/tsup.config.ts` | `target: "node22"` → `"node26"` |
+| `api/package.json` | dependencies に `zod-openapi` を追加（D23） |
 | `api/package.json` / `frontend/package.json` | `devEngines.runtime`、`@types/node` → `^26` |
 | `{api,frontend}/package-lock.json` | `@types/node` 変更後に `npm install` で更新 |
 | `.github/workflows/{ci,security}.yml` | `node-version: "22"` → `node-version-file: .node-version` |
@@ -111,6 +113,7 @@
 - [ ] api: `npm test` / `npx biome check src/` / `npx tsc --noEmit` / `npm run build`
 - [ ] frontend: `npm run lint` / `npx tsc --noEmit` / `npm run build`
 - [ ] `docker compose build` → 起動 → `/health` 応答、frontend 表示
+- [ ] `/openapi.json` が 200 を返し、`npm run openapi:export` の出力が main と同一（D23）
 - [ ] frontend コンテナが `docker ps` で **healthy** になる（D22）
 - [ ] `make test-e2e`
 - [ ] `tsx watch`（dev）が動作すること（`DEP0205` の `module.register()` 非推奨警告が出ることは確認済み、警告のみで許容）
