@@ -9,7 +9,8 @@ installed on the host machine — no `nvm`, no version drift.
 
 | Concern | Provided by | Notes |
 |---------|-------------|-------|
-| Node.js 22 + npm | **Nix** (`nodejs_22`) | Matches the Dockerfiles (`node:22`) |
+| Node.js 26 + npm | **Nix** (`nodejs_26`) | Same major as the Dockerfiles (`node:26.x.y-slim`) and `.node-version` |
+| pnpm 12 | **Nix** (`pnpm_12`) | Provided ahead of the npm → pnpm switch (see `docs/DESIGN-toolchain-modernization.md`) |
 | `make`, `psql` (client), `git`, `jq` | **Nix** | `psql` is the client only; the server runs in Docker |
 | biome, tsc, tsx, tsup, vitest, drizzle-kit, next, eslint, playwright | **`node_modules`** | Stay in `package.json`; Nix does not duplicate them |
 | PostgreSQL server | **Docker** (`docker compose`) | Not replaced by Nix |
@@ -63,16 +64,21 @@ cd ../frontend && npm ci
 
 ```bash
 nix flake check                       # evaluates the dev shell — "all checks passed!"
-nix develop -c node --version         # -> v22.x  (host Node is ignored)
+nix develop -c node --version         # -> v26.x  (host Node is ignored)
 nix develop -c sh -c 'cd api && npx tsc --noEmit && npx biome check src/'
 ```
 
-## Why Node 22?
+## Why Node 26?
 
-The API and frontend Dockerfiles build on `node:22` / `node:22.14.0`. Pinning
-the dev shell to the same major version keeps local development, CI, and
-production aligned. The exact patch version is whatever `nixpkgs` (pinned in
-`flake.lock`) provides for `nodejs_22`; major-version parity is what matters.
+The API and frontend Dockerfiles build on `node:26.x.y-slim` (exact patch
+pinned), and CI reads `.node-version` (`26`). Pinning the dev shell to the same
+major version keeps local development, CI, and production aligned. The exact
+patch version is whatever `nixpkgs-unstable` (pinned in `flake.lock`) provides
+for `nodejs_26`; major-version parity is what matters, and `devEngines.runtime`
+in each `package.json` fails fast on any other major.
+
+If you use mise, run `mise trust` once: the committed `mise.toml` stops mise
+from managing Node and pnpm here so the Nix versions always win.
 
 ## Updating the pinned toolchain
 

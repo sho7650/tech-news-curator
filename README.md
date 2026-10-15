@@ -26,7 +26,7 @@ Docker Compose
 
 | Layer | Technology |
 |-------|-----------|
-| API | Node.js 22, Hono 4.x, Drizzle ORM, Zod |
+| API | Node.js 26, Hono 4.x, Drizzle ORM, Zod |
 | Database | PostgreSQL 16, drizzle-kit (migrations) |
 | Content extraction | @mozilla/readability + linkedom |
 | Frontend | Next.js 16.3, React 19.2, TypeScript 5, Tailwind CSS 4 |
@@ -35,11 +35,11 @@ Docker Compose
 ## Prerequisites
 
 - Docker & Docker Compose v2
-- Node.js 22+ (for development outside Docker) — or use the [Nix dev shell](#nix-dev-shell-optional), which pins it for you
+- Node.js 26 (for development outside Docker) — or use the [Nix dev shell](#nix-dev-shell-optional), which pins it for you
 
 ## Nix dev shell (optional)
 
-A [Nix flake](flake.nix) provides a reproducible toolchain (Node 22 + `make`,
+A [Nix flake](flake.nix) provides a reproducible toolchain (Node 26 + pnpm 12 + `make`,
 `psql`, `git`, `jq`) so you don't need `nvm`. With [direnv](https://direnv.net/):
 
 ```bash

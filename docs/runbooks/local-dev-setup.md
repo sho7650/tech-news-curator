@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Docker Desktop (required for PostgreSQL via testcontainers)
-- Node.js 22.x
+- Node.js 26.x
 - npm
 
 ## Quick Start
